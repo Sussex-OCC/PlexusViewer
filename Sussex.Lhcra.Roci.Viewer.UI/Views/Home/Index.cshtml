@@ -1,0 +1,258 @@
+﻿@model Sussex.Lhcra.Roci.Viewer.UI.Models.ResourceViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<link href="~/css/CoolTable.css" rel="stylesheet" />
+
+<style>
+
+    input {
+        border: 5px solid white;
+        -webkit-box-shadow: inset 0 0 8px rgba(0,0,0,0.1), 0 0 16px rgba(0,0,0,0.1);
+        -moz-box-shadow: inset 0 0 8px rgba(0,0,0,0.1), 0 0 16px rgba(0,0,0,0.1);
+        box-shadow: inset 0 0 8px rgba(0,0,0,0.1), 0 0 16px rgba(0,0,0,0.1);
+        padding: 15px;
+        background: rgba(255,255,255,0.5);
+        margin: 0 0 10px 0;
+    }
+
+    h1 {
+        color: #F90B6D;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 34px;
+        font-weight: 300;
+        line-height: 40px;
+        margin: 0 0 16px;
+        border-bottom: #cfcfcf solid 0px;
+        background-color: #d9edf7;
+        padding: 5px 15px 5px 15px; /* Top Right  Bottom Left  */
+        margin: 15px 0px 0px 0px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    p {
+        padding: 5px;
+        margin: 5px;
+        background-color: lavender;
+    }
+
+    h2 {
+        background-color: #d9edf7;
+        padding: 5px;
+    }
+
+    #customers {
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        #customers td, #customers th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #customers tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #customers tr:hover {
+            background-color: #ddd;
+        }
+
+        #customers th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+    #customers1 {
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+        #customers1 td, #customers1 th {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #customers1 tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        #customers1 tr:hover {
+            background-color: #ddd;
+        }
+
+        #customers1 th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+    .file-input {
+        display: inline-block;
+        text-align: left;
+        background: #fff;
+        padding: 16px;
+        width: 450px;
+        position: relative;
+        border-radius: 3px;
+    }
+
+        .file-input > [type='file'] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            z-index: 10;
+            cursor: pointer;
+        }
+
+        .file-input > .button {
+            display: inline-block;
+            cursor: pointer;
+            background: #eee;
+            padding: 8px 16px;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+
+        .file-input:hover > .button {
+            background: dodgerblue;
+            color: white;
+        }
+
+        .file-input > .label {
+            color: #333;
+            white-space: nowrap;
+            opacity: .3;
+        }
+
+        .file-input.-chosen > .label {
+            opacity: 1;
+        }
+</style>
+
+<link href="https://cdn.jsdelivr.net/npm/gijgo@1.9.6/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gijgo@1.9.6/js/gijgo.min.js" type="text/javascript"></script>
+<script src="~/lib/Dashboard.js" type="text/javascript"></script>
+
+<script>
+    $(function () {
+
+        $('#DateOfBirth').datepicker({
+            uiLibrary: 'bootstrap4',
+            format: 'dd/mm/yyyy'
+        });
+
+        // Also see: https://www.quirksmode.org/dom/inputfile.html
+
+        var inputs = document.querySelectorAll('.file-input')
+
+        for (var i = 0, len = inputs.length; i < len; i++) {
+            customInput(inputs[i])
+        }
+
+        function customInput(el) {
+            const fileInput = el.querySelector('[type="file"]')
+            const label = el.querySelector('[data-js-label]')
+
+            fileInput.onchange =
+                fileInput.onmouseout = function () {
+                    if (!fileInput.value) return
+
+                    var value = fileInput.value.replace(/^.*[\\\/]/, '')
+                    el.className += ' -chosen'
+                    label.innerText = value
+                }
+        }
+    });
+
+</script>
+
+<div class="row">
+    <div class="panel panel-default">
+
+        <div class="panel-heading">
+
+        </div>
+
+        <div class="panel-body">
+
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a href="#detail" data-toggle="tab">ROCI</a>
+                </li>
+
+            </ul>
+
+            <div class="tab-content">
+
+                <div class="tab-pane fade in active" id="detail">
+
+                    <div class="row">
+
+                        <div class="row-heading">
+                            Patient Search
+                        </div>
+
+                        <div class="col-md-12">
+
+
+                            <div class="col-md-12">
+
+                                <form method="post" enctype="multipart/form-data" action="@Url.Action("Summary")">
+
+                                    <div class="form-group-page" style="border:none;">
+                                        <span class="readLabel">Nhs Number</span>
+                                        <span class="readValue">@Html.TextBoxFor(model => model.NhsNumber)</span>
+                                    </div>
+
+                                    <div class="form-group-page" style="border:none;">
+                                        <span class="readLabel">Date Of Birth</span>
+                                        <span class="readValue">@Html.TextBoxFor(model => model.DateOfBirth)</span>
+                                        <br />
+                                        <br />
+                                    </div>
+
+
+
+                                    <div class="form-group-pagexx" style="margin:10px; padding:10px;">
+                                        <span class="readLabel"></span>
+                                        @*<span class="readValue"><input type="submit" value="Submit" name="btnButton" class="btn btn-success" /></span>*@
+                                        <span class="readValue"><button class="btn btn-success" value="Submit" type="submit"> Submit <i class="fa fa-ambulance"></i></button></span>
+                                    </div>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+

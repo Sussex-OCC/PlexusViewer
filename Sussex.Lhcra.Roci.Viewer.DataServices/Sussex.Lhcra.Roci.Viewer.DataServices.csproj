@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\OCC Common\Sussex.Lhcra.Common.Libraries\Sussex.Lhcra.Common.ClientServices\Sussex.Lhcra.Common.ClientServices.csproj" />
+    <ProjectReference Include="..\..\..\OCC Common\Sussex.Lhcra.Common.Libraries\Sussex.Lhcra.Common.Domain\Sussex.Lhcra.Common.Domain.csproj" />
+    <ProjectReference Include="..\..\..\OCC Common\Sussex.Lhcra.GpConnect.Libraries\Sussex.Lhcra.GpConnect.Domain\Sussex.Lhcra.GpConnect.Domain.csproj" />
+    <ProjectReference Include="..\..\..\OCC Common\Sussex.Lhcra.Smsp.Libraries\Sussex.Lhcra.Smsp.Domain\Sussex.Lhcra.Smsp.Domain.csproj" />
+    <ProjectReference Include="..\Sussex.Lhcra.Roci.Viewer.Domain\Sussex.Lhcra.Roci.Viewer.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

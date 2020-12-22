@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Configs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\OCC Common\Sussex.Lhcra.Smsp.Libraries\Sussex.Lhcra.Smsp.Domain\Sussex.Lhcra.Smsp.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
