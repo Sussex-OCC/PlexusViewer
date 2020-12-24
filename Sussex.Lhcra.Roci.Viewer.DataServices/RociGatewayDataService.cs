@@ -59,7 +59,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
                 return result;
             }
-            catch
+            catch(Exception ex)
             {
 
                 return null;
