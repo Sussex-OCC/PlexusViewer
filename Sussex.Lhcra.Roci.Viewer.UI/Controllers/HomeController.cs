@@ -480,6 +480,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 NhsNumber = model.NhsNumber,
                 DeviceId = Guid.NewGuid().ToString(),
                 UserToken = correlationId.ToString(),
+                UserName = "Todo: Added username", 
                 PractitionerRoleId = Guid.NewGuid().ToString()
             };
 

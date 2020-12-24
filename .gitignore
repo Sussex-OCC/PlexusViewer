@@ -328,3 +328,4 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+/Sussex.Lhcra.Roci.Viewer.UI/.config/dotnet-tools.json
