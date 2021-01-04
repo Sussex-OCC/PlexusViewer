@@ -59,5 +59,8 @@ namespace Sussex.Lhcra.Roci.Viewer.Domain.Models
 
         [JsonProperty("username")]
         public string Username { get; set; }
+
+        [JsonProperty("userToken")]
+        public string UserToken { get; set; }
     }
 }
