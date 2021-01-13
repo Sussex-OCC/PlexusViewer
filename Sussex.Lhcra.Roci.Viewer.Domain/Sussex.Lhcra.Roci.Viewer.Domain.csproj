@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\OCC Common\Sussex.Lhcra.Smsp.Libraries\Sussex.Lhcra.Smsp.Domain\Sussex.Lhcra.Smsp.Domain.csproj" />
+    <PackageReference Include="Sussex.Lhcra.Smsp.Domain" Version="1.1.1" />
   </ItemGroup>
 
 </Project>

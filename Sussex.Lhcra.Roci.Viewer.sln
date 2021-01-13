@@ -3,21 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sussex.Lhcra.Roci.Viewer.Domain", "Sussex.Lhcra.Roci.Viewer.Domain\Sussex.Lhcra.Roci.Viewer.Domain.csproj", "{35B15858-8AED-4A58-8E46-629D12F29F60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Roci.Viewer.Domain", "Sussex.Lhcra.Roci.Viewer.Domain\Sussex.Lhcra.Roci.Viewer.Domain.csproj", "{35B15858-8AED-4A58-8E46-629D12F29F60}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{3A3C09BA-5AD6-4AFA-91B6-F94B1B4BF567}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Roci.Viewer.UI", "Sussex.Lhcra.Roci.Viewer.UI\Sussex.Lhcra.Roci.Viewer.UI.csproj", "{5EE871D0-7542-4B7E-B0AA-E2691665DEC4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Common.Domain", "..\..\OCC Common\Sussex.Lhcra.Common.Libraries\Sussex.Lhcra.Common.Domain\Sussex.Lhcra.Common.Domain.csproj", "{D9591BCA-9A50-4DE7-B25B-37DEA5144A73}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Common.ClientServices", "..\..\OCC Common\Sussex.Lhcra.Common.Libraries\Sussex.Lhcra.Common.ClientServices\Sussex.Lhcra.Common.ClientServices.csproj", "{3696290F-DD76-4E26-A2B0-691968E72C06}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sussex.Lhcra.Roci.Viewer.UI", "Sussex.Lhcra.Roci.Viewer.UI\Sussex.Lhcra.Roci.Viewer.UI.csproj", "{5EE871D0-7542-4B7E-B0AA-E2691665DEC4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sussex.Lhcra.Roci.Viewer.DataServices", "Sussex.Lhcra.Roci.Viewer.DataServices\Sussex.Lhcra.Roci.Viewer.DataServices.csproj", "{9380EBBB-44DF-4A6B-9E58-7A08691305F8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.GpConnect.Domain", "..\..\OCC Common\Sussex.Lhcra.GpConnect.Libraries\Sussex.Lhcra.GpConnect.Domain\Sussex.Lhcra.GpConnect.Domain.csproj", "{DDAB9CEB-C1C3-4A35-B52F-759D4C650B2D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Smsp.Domain", "..\..\OCC Common\Sussex.Lhcra.Smsp.Libraries\Sussex.Lhcra.Smsp.Domain\Sussex.Lhcra.Smsp.Domain.csproj", "{C9B2B5D6-565B-4BF4-9E28-B0205AA1D9BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Roci.Viewer.DataServices", "Sussex.Lhcra.Roci.Viewer.DataServices\Sussex.Lhcra.Roci.Viewer.DataServices.csproj", "{9380EBBB-44DF-4A6B-9E58-7A08691305F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,14 +19,6 @@ Global
 		{35B15858-8AED-4A58-8E46-629D12F29F60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35B15858-8AED-4A58-8E46-629D12F29F60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35B15858-8AED-4A58-8E46-629D12F29F60}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D9591BCA-9A50-4DE7-B25B-37DEA5144A73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D9591BCA-9A50-4DE7-B25B-37DEA5144A73}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D9591BCA-9A50-4DE7-B25B-37DEA5144A73}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D9591BCA-9A50-4DE7-B25B-37DEA5144A73}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3696290F-DD76-4E26-A2B0-691968E72C06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3696290F-DD76-4E26-A2B0-691968E72C06}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3696290F-DD76-4E26-A2B0-691968E72C06}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3696290F-DD76-4E26-A2B0-691968E72C06}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5EE871D0-7542-4B7E-B0AA-E2691665DEC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5EE871D0-7542-4B7E-B0AA-E2691665DEC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5EE871D0-7542-4B7E-B0AA-E2691665DEC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,23 +27,9 @@ Global
 		{9380EBBB-44DF-4A6B-9E58-7A08691305F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9380EBBB-44DF-4A6B-9E58-7A08691305F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9380EBBB-44DF-4A6B-9E58-7A08691305F8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DDAB9CEB-C1C3-4A35-B52F-759D4C650B2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DDAB9CEB-C1C3-4A35-B52F-759D4C650B2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DDAB9CEB-C1C3-4A35-B52F-759D4C650B2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DDAB9CEB-C1C3-4A35-B52F-759D4C650B2D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9B2B5D6-565B-4BF4-9E28-B0205AA1D9BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9B2B5D6-565B-4BF4-9E28-B0205AA1D9BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9B2B5D6-565B-4BF4-9E28-B0205AA1D9BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9B2B5D6-565B-4BF4-9E28-B0205AA1D9BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{D9591BCA-9A50-4DE7-B25B-37DEA5144A73} = {3A3C09BA-5AD6-4AFA-91B6-F94B1B4BF567}
-		{3696290F-DD76-4E26-A2B0-691968E72C06} = {3A3C09BA-5AD6-4AFA-91B6-F94B1B4BF567}
-		{DDAB9CEB-C1C3-4A35-B52F-759D4C650B2D} = {3A3C09BA-5AD6-4AFA-91B6-F94B1B4BF567}
-		{C9B2B5D6-565B-4BF4-9E28-B0205AA1D9BE} = {3A3C09BA-5AD6-4AFA-91B6-F94B1B4BF567}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {544C1962-397F-47A5-97BA-FF1655C10C9A}
