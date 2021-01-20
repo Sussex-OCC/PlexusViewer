@@ -13,6 +13,7 @@ WORKDIR /src
 COPY ["Sussex.Lhcra.Roci.Viewer.UI/Sussex.Lhcra.Roci.Viewer.UI.csproj", "Sussex.Lhcra.Roci.Viewer.UI/"]
 COPY ["Sussex.Lhcra.Roci.Viewer.DataServices/Sussex.Lhcra.Roci.Viewer.DataServices.csproj", "Sussex.Lhcra.Roci.Viewer.DataServices/"]
 COPY ["Sussex.Lhcra.Roci.Viewer.Domain/Sussex.Lhcra.Roci.Viewer.Domain.csproj", "Sussex.Lhcra.Roci.Viewer.Domain/"]
+COPY NuGet.Config ./
 RUN dotnet restore "Sussex.Lhcra.Roci.Viewer.UI/Sussex.Lhcra.Roci.Viewer.UI.csproj"
 COPY . .
 WORKDIR "/src/Sussex.Lhcra.Roci.Viewer.UI"
