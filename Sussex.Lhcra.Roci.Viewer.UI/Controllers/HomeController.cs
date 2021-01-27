@@ -18,37 +18,51 @@ using Sussex.Lhcra.Roci.Viewer.Domain.Models;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
 using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Options;
+using Microsoft.Identity.Web;
+using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
 
         private readonly ViewerAppSettingsConfiguration _configuration;
-        
+
         private readonly ISmspProxyDataService _smspProxyDataService;
         private readonly IRociGatewayDataService _rociGatewayDataService;
         private readonly IAuditDataService _auditDataService;
         private readonly ILoggingDataService _loggingDataService;
         private readonly IIpAddressProvider _ipAddressProvider;
+        private readonly ITokenAcquisition _tokenAcquisition;
+        private readonly LoggingServiceADSetting _loggingAdSettings;
+        private readonly AuditServiceADSetting _auditAdSettings;
 
         public HomeController(
             ILogger<HomeController> logger,
-            ViewerAppSettingsConfiguration configuration,
+            IOptions<ViewerAppSettingsConfiguration> configurationOption,
             ISmspProxyDataService smspProxyDataService,
             IRociGatewayDataService rociGatewayDataService,
             IAuditDataService auditDataService,
             ILoggingDataService loggingDataService,
-            IIpAddressProvider ipAddressProvider)
+            IIpAddressProvider ipAddressProvider,
+             ITokenAcquisition tokenAcquisition,
+             IOptions<LoggingServiceADSetting> loggingServiceOption,
+             IOptions<AuditServiceADSetting> auditServiceOption)
         {
             _logger = logger;
-            _configuration = configuration;
+            _configuration = configurationOption.Value;
             _smspProxyDataService = smspProxyDataService;
             _loggingDataService = loggingDataService;
             _rociGatewayDataService = rociGatewayDataService;
             _auditDataService = auditDataService;
             _ipAddressProvider = ipAddressProvider;
+            _tokenAcquisition = tokenAcquisition;
+            _loggingAdSettings = loggingServiceOption.Value;
+            _auditAdSettings = auditServiceOption.Value;
         }
 
         public IActionResult Index()
@@ -468,6 +482,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         private async Task<bool> LogAuditRecordModel(HttpRequest request, PatientCareRecordRequestDomainModel model, Guid correlationId, string section)
         {
+            var loggingAppToken = await _tokenAcquisition.GetAccessTokenForAppAsync(_loggingAdSettings.SystemToSystemScope);
+
+            var auditAppToken = await _tokenAcquisition.GetAccessTokenForAppAsync(_auditAdSettings.SystemToSystemScope);
+
             var auditLog = new AuditLogRequestModel
             {
                 ClientIpAddress = _ipAddressProvider.GetClientIpAddress(),
@@ -480,13 +498,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 NhsNumber = model.NhsNumber,
                 DeviceId = Guid.NewGuid().ToString(),
                 UserToken = correlationId.ToString(),
-                UserName = "Todo: Added username", 
+                UserName = "Todo: Added username",
                 PractitionerRoleId = Guid.NewGuid().ToString()
             };
 
             try
             {
-                await _auditDataService.LogAuditRecordAsync(auditLog);
+                await _auditDataService.LogAuditRecordAsync(auditLog, auditAppToken, loggingAppToken);
             }
             catch
             {

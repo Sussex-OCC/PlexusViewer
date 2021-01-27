@@ -1,13 +1,17 @@
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 using Sussex.Lhcra.Common.ClientServices.Audit;
 using Sussex.Lhcra.Common.ClientServices.Logging;
 using Sussex.Lhcra.Common.Domain.Audit.Services;
 using Sussex.Lhcra.Common.Domain.Logging.Services;
 using Sussex.Lhcra.Roci.Viewer.DataServices;
+using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using System;
@@ -26,21 +30,31 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var config = new ViewerAppSettingsConfiguration();
-            Configuration.Bind("ViewerAppSettings", config);
-            
-            var auditDataServiceConfig = new AuditDataServiceConfig();
-            Configuration.Bind("AuditDataServiceConfig", auditDataServiceConfig);
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAD"))
+                    .EnableTokenAcquisitionToCallDownstreamApi()
+                    .AddInMemoryTokenCaches();
 
-            var loggingDataServiceConfig = new LoggingDataServiceConfig();
-            Configuration.Bind("LoggingDataServiceConfig", loggingDataServiceConfig);
 
-            services.AddSingleton(config);
+            services.Configure<ViewerAppSettingsConfiguration>(Configuration.GetSection("ViewerAppSettings"));
 
-            services.AddScoped<ILoggingDataService>(x => new LoggingDataService(loggingDataServiceConfig));
-            services.AddScoped<IAuditDataService>(x => new AuditDataService(auditDataServiceConfig, x.GetService<ILoggingDataService>()));
+            services.Configure<AuditDataServiceConfig>(Configuration.GetSection(nameof(AuditDataServiceConfig)));
+
+            services.Configure<LoggingDataServiceConfig>(Configuration.GetSection(nameof(LoggingDataServiceConfig)));
+
+            services.Configure<LoggingServiceADSetting>(Configuration.GetSection(nameof(LoggingServiceADSetting)));
+
+            services.Configure<AuditServiceADSetting>(Configuration.GetSection(nameof(AuditServiceADSetting)));
+
+            services.Configure<RociGatewayADSetting>(Configuration.GetSection(nameof(RociGatewayADSetting)));
+
+            services.AddHttpClient<ILoggingDataService, LoggingDataService>();
+            services.AddHttpClient<IAuditDataService, AuditDataService>();
             services.AddScoped<IRociGatewayDataService, RociGatewayDataService>();
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
+            services.AddScoped<ITokenService, TokenService>();
+
+            var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
 
             services.AddHttpClient<ISmspProxyDataService, SmspProxyDataService>(client =>
             {
@@ -57,6 +71,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             });
 
             services.AddControllersWithViews();
+
+            services.AddRazorPages()
+             .AddMicrosoftIdentityUI();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -77,8 +94,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
-            
+
             app.UseSession();
 
             app.UseEndpoints(endpoints =>

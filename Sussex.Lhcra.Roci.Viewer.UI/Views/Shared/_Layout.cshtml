@@ -180,6 +180,26 @@
 
             </div>
 
+            @if (User.Identity.IsAuthenticated)
+            {
+                var userClaims = User.Identity as System.Security.Claims.ClaimsIdentity;
+                <div class="pull-right">
+                    <div class="text-info ">@userClaims?.FindFirst("name")?.Value</div>
+
+                    <div>
+                        <a class="navbar-brand header-text text-danger " asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+                    </div>
+                </div>
+
+            }
+            else
+            {
+
+                <a class="navbar-brand header-text  text-info pull-right" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+            }
+
+
+
             <div class="navbar-default sidebar" role="navigation">
 
                 <div class="sidebar-nav navbar-collapse">
