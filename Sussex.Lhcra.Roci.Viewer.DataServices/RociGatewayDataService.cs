@@ -15,15 +15,15 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 {
     public class RociGatewayDataService : IRociGatewayDataService
     {
-        private readonly ILoggingDataService _loggingDataService;
         private readonly ITokenService _tokenService;
         private readonly RociGatewayADSetting _rociGatewayADSetting;
         private readonly LoggingServiceADSetting _loggingServiceADSetting;
 
-        public RociGatewayDataService(ILoggingDataService loggingDataService, ITokenService tokenService,
-            IOptions<RociGatewayADSetting> rociGatewayOptions, IOptions<LoggingServiceADSetting> loggingServiceOption)
+        public RociGatewayDataService(
+            ITokenService tokenService,
+            IOptions<RociGatewayADSetting> rociGatewayOptions, 
+            IOptions<LoggingServiceADSetting> loggingServiceOption)
         {
-            _loggingDataService = loggingDataService;
             _tokenService = tokenService;
             _rociGatewayADSetting = rociGatewayOptions.Value;
             _loggingServiceADSetting = loggingServiceOption.Value;
@@ -60,14 +60,15 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                             result = JsonConvert.DeserializeObject<PatientCareRecordBundleDomainModel>(responseContent);
                         }
 
-                        await LogResponse(
-                            model.OrganisationAsId,
-                            responseContent,
-                            new Guid(model.CorrelationId),
-                            "Roci Proxy API",
-                            fullEndPoint,
-                            response,
-                            (int)response.StatusCode);
+                        // TODO: Custom logging feature to be added for Roci Viewer/Gateway service. 
+                        //await LogResponse(
+                        //    model.OrganisationAsId,
+                        //    responseContent,
+                        //    new Guid(model.CorrelationId),
+                        //    "Roci Proxy API",
+                        //    fullEndPoint,
+                        //    response,
+                        //    (int)response.StatusCode);
                     }
                 }
 
@@ -80,42 +81,45 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             }
         }
 
-        private async Task<bool> LogResponse(
-            string organisationAsId,
-            string content,
-            Guid correlationId,
-            string applicationName,
-            string endpoint,
-            HttpResponseMessage response,
-            int statusCode)
-        {
+        // TODO: Custom logging feature to be added for Roci Viewer/Gateway service. 
+        //private async Task<bool> LogResponse(
+        //    string organisationAsId,
+        //    string content,
+        //    Guid correlationId,
+        //    string applicationName,
+        //    string endpoint,
+        //    HttpResponseMessage response,
+        //    int statusCode)
+        //{
 
-            try
-            {
-                var loggingToken = await _tokenService.GetLoggingOrAuditToken(_loggingServiceADSetting.SystemToSystemScope);
-                var logRecord = new LogRecordRequestModel
-                {
-                    AppName = applicationName,
-                    CorrelationId = correlationId,
-                    OrganisationAsId = organisationAsId,
-                    RequestMethod = LogConstants.RequestType.HttpPost,
-                    MessageType = LogConstants.MessageType.Response,
-                    Endpoint = endpoint,
-                    MessageBody = content,
-                    MessageHeader = JsonConvert.SerializeObject(response.Headers),
-                    StatusCode = statusCode
-                };
-
-
-                await _loggingDataService.LogRecordAsync(logRecord, loggingToken);
-            }
-            catch
-            {
-                return false;
-            }
+        //    try
+        //    {
+        //        var loggingToken = await _tokenService.GetLoggingOrAuditToken(_loggingServiceADSetting.SystemToSystemScope);
+                
+        
+        //        var logRecord = new LogRecordRequestModel
+        //        {
+        //            AppName = applicationName,
+        //            CorrelationId = correlationId,
+        //            OrganisationAsId = organisationAsId,
+        //            RequestMethod = LogConstants.RequestType.HttpPost,
+        //            MessageType = LogConstants.MessageType.Response,
+        //            Endpoint = endpoint,
+        //            MessageBody = content,
+        //            MessageHeader = JsonConvert.SerializeObject(response.Headers),
+        //            StatusCode = statusCode
+        //        };
 
 
-            return true;
-        }
+        //        await _loggingDataService.LogRecordAsync(logRecord, loggingToken);
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+
+
+        //    return true;
+        //}
     }
 }

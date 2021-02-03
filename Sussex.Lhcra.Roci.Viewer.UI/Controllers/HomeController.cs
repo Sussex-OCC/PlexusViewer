@@ -21,6 +21,7 @@ using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
+using Sussex.Lhcra.Common.Domain.Constants;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
@@ -35,7 +36,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly ISmspProxyDataService _smspProxyDataService;
         private readonly IRociGatewayDataService _rociGatewayDataService;
         private readonly IAuditDataService _auditDataService;
-        private readonly ILoggingDataService _loggingDataService;
         private readonly IIpAddressProvider _ipAddressProvider;
         private readonly ITokenAcquisition _tokenAcquisition;
         private readonly LoggingServiceADSetting _loggingAdSettings;
@@ -47,7 +47,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ISmspProxyDataService smspProxyDataService,
             IRociGatewayDataService rociGatewayDataService,
             IAuditDataService auditDataService,
-            ILoggingDataService loggingDataService,
             IIpAddressProvider ipAddressProvider,
              ITokenAcquisition tokenAcquisition,
              IOptions<LoggingServiceADSetting> loggingServiceOption,
@@ -56,7 +55,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _logger = logger;
             _configuration = configurationOption.Value;
             _smspProxyDataService = smspProxyDataService;
-            _loggingDataService = loggingDataService;
             _rociGatewayDataService = rociGatewayDataService;
             _auditDataService = auditDataService;
             _ipAddressProvider = ipAddressProvider;
@@ -491,6 +489,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 ClientIpAddress = _ipAddressProvider.GetClientIpAddress(),
                 ServerIpAddress = _ipAddressProvider.GetHostIpAddress(),
                 AppName = _configuration.ApplicationName + $" --SECTION--(" + section + ")",
+                AppDomainType = AppDomainType.Plexus,
+                SystemIdentifier = "ROCI VIewer System Identifier",
                 CorrelationId = correlationId,
                 OrganisationAsId = model.OrganisationAsId,
                 RequestorId = model.PractitionerId,
