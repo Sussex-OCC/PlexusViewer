@@ -40,7 +40,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             services.Configure<AuditDataServiceConfig>(Configuration.GetSection(nameof(AuditDataServiceConfig)));
 
-            services.Configure<LoggingDataServiceConfig>(Configuration.GetSection(nameof(LoggingDataServiceConfig)));
+            services.Configure<LoggingDataServiceConfig>(Configuration.GetSection("AppLogDataServiceConfig"));
 
             services.Configure<LoggingServiceADSetting>(Configuration.GetSection(nameof(LoggingServiceADSetting)));
 
@@ -48,8 +48,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             services.Configure<RociGatewayADSetting>(Configuration.GetSection(nameof(RociGatewayADSetting)));
 
-            services.AddHttpClient<ILoggingDataService, LoggingDataService>();
             services.AddHttpClient<IAuditDataService, AuditDataService>();
+            services.AddHttpClient<IAppLogDataService, AppLogDataService>();
             services.AddScoped<IRociGatewayDataService, RociGatewayDataService>();
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
             services.AddScoped<ITokenService, TokenService>();
