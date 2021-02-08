@@ -35,7 +35,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
             try
             {
-                string appToken = await _tokenService.GetToken(_rociGatewayADSetting);
+                string appToken = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_rociGatewayADSetting);
 
                 var strBody = JsonConvert.SerializeObject(model);
                 var fullEndPoint = endPoint + controllerName;

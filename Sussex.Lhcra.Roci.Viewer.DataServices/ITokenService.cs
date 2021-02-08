@@ -5,8 +5,14 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 {
     public interface ITokenService
     {
-        Task<string> GetToken(IAzureADSettings azureADSettings);
+        Task<string> GetTokenOnBehalfOfUserOrSystem(IAzureADSettings azureADSettings);
 
         Task<string> GetLoggingOrAuditToken(string scope);
+
+        string GetUsername();
+
+        string GetRoleAsSystemIdentifier();
+
+        string GetTokenString();
     }
 }

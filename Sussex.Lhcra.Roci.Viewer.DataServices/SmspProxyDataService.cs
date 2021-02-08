@@ -35,7 +35,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
         public async Task<string> GetDataContent(string url, Guid correlationId)
         {
-            string token = await _tokenService.GetToken(_rociGatewayADSetting);
+            string token = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_rociGatewayADSetting);
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 

@@ -37,7 +37,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly IRociGatewayDataService _rociGatewayDataService;
         private readonly IAuditDataService _auditDataService;
         private readonly IIpAddressProvider _ipAddressProvider;
-        private readonly ITokenAcquisition _tokenAcquisition;
+        private readonly ITokenService _tokenService;
         private readonly LoggingServiceADSetting _loggingAdSettings;
         private readonly AuditServiceADSetting _auditAdSettings;
 
@@ -48,7 +48,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             IRociGatewayDataService rociGatewayDataService,
             IAuditDataService auditDataService,
             IIpAddressProvider ipAddressProvider,
-             ITokenAcquisition tokenAcquisition,
+             ITokenService tokenService,
              IOptions<LoggingServiceADSetting> loggingServiceOption,
              IOptions<AuditServiceADSetting> auditServiceOption)
         {
@@ -58,7 +58,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _rociGatewayDataService = rociGatewayDataService;
             _auditDataService = auditDataService;
             _ipAddressProvider = ipAddressProvider;
-            _tokenAcquisition = tokenAcquisition;
+            _tokenService = tokenService;
             _loggingAdSettings = loggingServiceOption.Value;
             _auditAdSettings = auditServiceOption.Value;
         }
@@ -480,28 +480,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         private async Task<bool> LogAuditRecordModel(HttpRequest request, PatientCareRecordRequestDomainModel model, Guid correlationId, string section)
         {
-            var loggingAppToken = await _tokenAcquisition.GetAccessTokenForAppAsync(_loggingAdSettings.SystemToSystemScope);
+            var loggingAppToken = await _tokenService.GetLoggingOrAuditToken(_loggingAdSettings.SystemToSystemScope);
 
-            var auditAppToken = await _tokenAcquisition.GetAccessTokenForAppAsync(_auditAdSettings.SystemToSystemScope);
+            var auditAppToken = await _tokenService.GetLoggingOrAuditToken(_auditAdSettings.SystemToSystemScope);
 
-            var auditLog = new AuditLogRequestModel
-            {
-                ClientIpAddress = _ipAddressProvider.GetClientIpAddress(),
-                ServerIpAddress = _ipAddressProvider.GetHostIpAddress(),
-                AppName = _configuration.ApplicationName + $" --SECTION--(" + section + ")",
-                AppDomainType = AppDomainType.Plexus,
-                SystemIdentifier = "ROCI VIewer System Identifier",
-                CorrelationId = correlationId,
-                OrganisationAsId = model.OrganisationAsId,
-                RequestorId = model.PractitionerId,
-                Resource = GetAbsolutePath(Request),
-                NhsNumber = model.NhsNumber,
-                DeviceId = Guid.NewGuid().ToString(),
-                UserToken = correlationId.ToString(),
-                UserName = "Todo: Added username",
-                PractitionerRoleId = Guid.NewGuid().ToString()
-            };
-
+            var auditLog = new AuditLogRequestModel(AppDomainType.Plexus, _ipAddressProvider.GetClientIpAddress(), _ipAddressProvider.GetHostIpAddress(), "ROCI VIewer System Identifier", _configuration.ApplicationName + $" --SECTION--(" + section + ")"
+                                                    , GetAbsolutePath(Request), model.OrganisationAsId, model.PractitionerId, model.NhsNumber, _tokenService.GetUsername(), _tokenService.GetTokenString(), Guid.NewGuid().ToString()
+                                                    , Guid.NewGuid().ToString(), correlationId, RoleIdType.Clinical);
             try
             {
                 await _auditDataService.LogAuditRecordAsync(auditLog, auditAppToken, loggingAppToken);
