@@ -7,6 +7,7 @@ using Sussex.Lhcra.Common.Domain.Logging.Services;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
 using Sussex.Lhcra.Roci.Viewer.Domain.Models;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -29,6 +30,59 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             _loggingServiceADSetting = loggingServiceOption.Value;
         }
 
+        public async Task<IEnumerable<PatientCarePlanRecord>> GetCarePlanDataContentAsync(string endPoint, string controllerName, PatientCareRecordRequestDomainModel model)
+        {
+            IList<PatientCarePlanRecord> result = null;
+
+            try
+            {
+                string appToken = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_rociGatewayADSetting);
+
+                var strBody = JsonConvert.SerializeObject(model);
+                var fullEndPoint = endPoint + controllerName + "/"+ model.NhsNumber;
+                using (var client = new HttpClient())
+                using (var request = new HttpRequestMessage(HttpMethod.Get, fullEndPoint))
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
+
+                    using (var stringContent = new StringContent(strBody))
+                    {
+                        request.Content = stringContent;
+
+                        request.Content.Headers.ContentType.MediaType = "application/json";
+
+                        var response = await client.SendAsync(request);
+
+                        var responseContent = "";
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            responseContent = await response.Content.ReadAsStringAsync();
+                            result = JsonConvert.DeserializeObject<List<PatientCarePlanRecord>>(responseContent);
+                        }
+
+                        // TODO: Custom logging feature to be added for Roci Viewer/Gateway service. 
+                        //await LogResponse(
+                        //    model.OrganisationAsId,
+                        //    responseContent,
+                        //    new Guid(model.CorrelationId),
+                        //    "Roci Proxy API",
+                        //    fullEndPoint,
+                        //    response,
+                        //    (int)response.StatusCode);
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+
+                return null;
+            }
+        }
+
+
         public async Task<PatientCareRecordBundleDomainModel> GetDataContentAsync(string endPoint, string controllerName, PatientCareRecordRequestDomainModel model)
         {
             PatientCareRecordBundleDomainModel result = null;
@@ -40,7 +94,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                 var strBody = JsonConvert.SerializeObject(model);
                 var fullEndPoint = endPoint + controllerName;
                 using (var client = new HttpClient())
-                using (var request = new HttpRequestMessage(HttpMethod.Post, fullEndPoint))
+                using (var request = new HttpRequestMessage(HttpMethod.Get, fullEndPoint))
                 {
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
 

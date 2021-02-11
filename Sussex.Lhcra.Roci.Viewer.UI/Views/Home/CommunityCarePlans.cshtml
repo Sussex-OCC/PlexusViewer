@@ -1,0 +1,145 @@
+﻿@model IEnumerable<Sussex.Lhcra.Roci.Viewer.Domain.Models.PatientCarePlanRecord>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<style>
+    @@import url('https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css');
+
+    .accordion-toggle:after {
+        font-family: 'FontAwesome';
+        content: "\f078";
+        float: right;
+    }
+
+    .accordion-opened .accordion-toggle:after {
+        content: "\f054";
+    }
+
+    #floating_box {
+        position: absolute;
+        top: 80px;
+        right: 23px;
+        z-index: 10;
+        background: #d9edf7;
+        padding: 5px;
+        border: 1px solid #CCCCCC;
+        text-align: center;
+        font-weight: bold;
+        width: 76%;
+    }
+</style>
+
+<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+
+<script>
+    $(window).scroll(function () {
+        $("#floating_box").animate({ top: $(window).scrollTop() + "px" }, { queue: false, duration: 350 });
+    });
+
+    $(document).on('show', '.accordion', function (e) {
+        //$('.accordion-heading i').toggleClass(' ');
+        $(e.target).prev('.accordion-heading').addClass('accordion-opened');
+    });
+
+    $(document).on('hide', '.accordion', function (e) {
+        $(this).find('.accordion-heading').not($(e.target)).removeClass('accordion-opened');
+        //$('.accordion-heading i').toggleClass('fa-chevron-right fa-chevron-down');
+    });
+</script>
+
+
+
+
+<div class="row">
+
+    @*<div id="floating_box">
+            <partial name="Partials/_NavBanner" model="Model" />
+        </div>*@
+
+
+    <div class="col-md-12">
+
+        <div class="panel panel-default">
+
+            <div class="panel-heading">
+
+            </div>
+
+            <div class="panel-body">
+
+                <ul class="nav nav-tabs">
+
+                    <li class="active">
+                        <a href="#detail" data-toggle="tab">PLEXUS VIEWER</a>
+                    </li>
+
+                </ul>
+
+                <div class="tab-content">
+
+                    <div class="tab-pane fade in active" id="detail">
+
+                        <div class="row">
+
+                            <div class="col-md-12">
+
+                                <div>
+
+                                    <h1>Community Care Plans</h1><div>
+                                        <h2>Care Plans</h2>
+
+                                        <table id="enc-tab">
+                                            <thead>
+                                                <tr>
+                                                    <th>NHS Number</th>
+                                                    <th>Plan Type</th>
+                                                    <th>Category</th>
+                                                    <th>Name</th>
+                                                    <th>Aim</th>
+                                                    <th>Start Date</th>
+                                                    <th>End Date</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+
+                                                @foreach (var m in Model)
+                                                {
+                                                   <tr>
+                                                    <td>@m.NHSNumber</td>
+                                                    <td>@m.PlanType</td>
+                                                    <td>@m.Category</td>
+                                                    <td>@m.Name</td>
+                                                    <td>@m.Aim</td>
+                                                    <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
+                                                    <td class="date-column">@(m.DateEnd.HasValue ? m.DateEnd.Value.ToShortDateString() : "UNKNOWN") </td>
+
+                                                </tr>
+                                                }
+
+                                                  
+                                             </tbody>
+                                        </table>
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
