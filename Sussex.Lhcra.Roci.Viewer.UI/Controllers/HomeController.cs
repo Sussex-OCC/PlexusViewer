@@ -510,7 +510,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, spineModel);
 
-            return View(Constants.CommunityCarePlans, patientCarePlanRecords);
+            return View(Constants.MentalHealthCrisisPlans, patientCarePlanRecords);
         }
 
 
@@ -537,7 +537,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.CommunityCarePlans, spineModel);
 
-            return View(Constants.MentalHealthCrisisPlans, patientCarePlanRecords);
+            return View(Constants.CommunityCarePlans, patientCarePlanRecords);
         }
 
         public async Task<IActionResult> Admin(string dob, string nhsNumber)
