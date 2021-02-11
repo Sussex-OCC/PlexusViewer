@@ -91,18 +91,15 @@
 
                                     @foreach (var mg in Model.GroupBy(x => x.ProviderName))
                                     {
-                                        <h1>Community Care Plans</h1><div> <h2>@mg.Key Care Plans</h2>
+                                        <h1>Metal Health Crisis Plans</h1><div> <h2>@mg.Key Crisis Plans</h2>
 
                                             <table id="enc-tab">
                                                 <thead>
                                                     <tr>
-                                                        <th>NHS Number</th>
-                                                        <th>Plan Type</th>
-                                                        <th>Category</th>
-                                                        <th>Name</th>
-                                                        <th>Aim</th>
-                                                        <th>Start Date</th>
-                                                        <th>End Date</th>
+                                                        <th width="10%">NHS Number</th>
+                                                        <th width="10%">Plan Date</th>
+                                                        <th width="80%">Aim</th>
+
                                                     </tr>
                                                 </thead>
 
@@ -110,16 +107,11 @@
 
                                                     @foreach (var m in mg.ToList())
                                                     {
-                                                        <tr>
-                                                            <td>@m.NHSNumber</td>
-                                                            <td>@m.PlanType</td>
-                                                            <td>@m.Category</td>
-                                                            <td>@m.Name</td>
-                                                            <td>@m.Aim</td>
-                                                            <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
-                                                            <td class="date-column">@(m.DateEnd.HasValue ? m.DateEnd.Value.ToShortDateString() : "UNKNOWN") </td>
-
-                                                        </tr>
+                                                    <tr>
+                                                        <td>@m.NHSNumber</td>
+                                                        <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
+                                                        <td>@m.Aim</td>
+                                                    </tr>
                                                     }
 
 
