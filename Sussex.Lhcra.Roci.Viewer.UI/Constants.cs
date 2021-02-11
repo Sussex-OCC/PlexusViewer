@@ -12,6 +12,10 @@
         public const string Referrals = "Referrals";
         public const string Clinical = "Clinical";
         public const string Admin = "Admin";
+        public const string CommunityCarePlans = "CommunityCarePlans";
+        public const string MentalHealthCrisisPlans = "MentalHealthCrisisPlans";
+
+
         public const string All = "All";
         public const string Investigations = "Investigations";
         public const string Immunisations = "Immunisations";

@@ -433,6 +433,58 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             return View(Constants.All, vm);
         }
 
+        public async Task<IActionResult> MentalHealthCrisisPlans(string dob, string nhsNumber)
+        {
+            var correlationId = Guid.NewGuid().ToString();
+
+            ViewBag.Dob = dob;
+            ViewBag.NhsNumber = nhsNumber;
+
+            var spineModel = GetPatientModelSession();
+
+            if (spineModel == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            spineModel.CorrelationId = correlationId;
+
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.MentalHealthCrisisPlans);
+
+            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, spineModel);
+
+            return View(Constants.CommunityCarePlans, patientCarePlanRecords);
+        }
+
+
+        public async Task<IActionResult> CommunityCarePlans(string dob, string nhsNumber)
+        {
+            var correlationId = Guid.NewGuid().ToString();
+
+            ViewBag.Dob = dob;
+
+            ViewBag.NhsNumber = nhsNumber;
+
+            var spineModel = GetPatientModelSession();
+
+            if (spineModel == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            spineModel.CorrelationId = correlationId;
+
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.CommunityCarePlans);
+
+            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.CommunityCarePlans, spineModel);
+
+            return View(Constants.CommunityCarePlans, patientCarePlanRecords);
+        }
+
         public async Task<IActionResult> Admin(string dob, string nhsNumber)
         {
             var correlationId = Guid.NewGuid().ToString();
