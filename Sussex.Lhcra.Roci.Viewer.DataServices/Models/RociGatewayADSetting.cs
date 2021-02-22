@@ -1,4 +1,5 @@
-﻿using Sussex.Lhcra.Roci.Viewer.Domain;
+﻿using Sussex.Lhcra.Common.AzureADServices.Interfaces;
+using Sussex.Lhcra.Roci.Viewer.Domain;
 
 namespace Sussex.Lhcra.Roci.Viewer.DataServices.Models
 {

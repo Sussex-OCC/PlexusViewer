@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
-using Microsoft.Identity.Web;
 using Newtonsoft.Json;
-using Sussex.Lhcra.Common.Domain.Constants;
-using Sussex.Lhcra.Common.Domain.Logging.Models;
-using Sussex.Lhcra.Common.Domain.Logging.Services;
+using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
 using Sussex.Lhcra.Roci.Viewer.Domain.Models;
 using System;

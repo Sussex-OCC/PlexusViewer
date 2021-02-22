@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using Sussex.Lhcra.Common.AzureADServices;
 using Sussex.Lhcra.Common.ClientServices.Audit;
 using Sussex.Lhcra.Common.ClientServices.Logging;
 using Sussex.Lhcra.Common.Domain.Audit.Services;
@@ -53,7 +54,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             services.AddHttpClient<IAppLogDataService, AppLogDataService>();
             services.AddScoped<IRociGatewayDataService, RociGatewayDataService>();
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
-            services.AddScoped<ITokenService, TokenService>();
+            services.AddAzureADServices();
 
             var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
 
