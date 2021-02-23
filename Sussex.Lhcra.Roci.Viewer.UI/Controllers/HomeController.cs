@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.Domain.Audit.Models;
-using Sussex.Lhcra.Common.Domain.Audit.Services;
 using Sussex.Lhcra.Common.Domain.Constants;
 using Sussex.Lhcra.Roci.Viewer.DataServices;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
