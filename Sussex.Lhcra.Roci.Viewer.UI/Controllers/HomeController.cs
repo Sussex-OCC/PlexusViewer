@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
+using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.Domain.Audit.Models;
-using Sussex.Lhcra.Common.Domain.Audit.Services;
 using Sussex.Lhcra.Common.Domain.Constants;
 using Sussex.Lhcra.Roci.Viewer.DataServices;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
@@ -33,18 +33,18 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         private readonly ISmspProxyDataService _smspProxyDataService;
         private readonly IRociGatewayDataService _rociGatewayDataService;
-        private readonly IAuditDataService _auditDataService;
         private readonly IIpAddressProvider _ipAddressProvider;
         private readonly ITokenService _tokenService;
         private readonly LoggingServiceADSetting _loggingAdSettings;
         private readonly AuditServiceADSetting _auditAdSettings;
+        private readonly IAuditLogTopicPublisher _auditLogTopicPublisher;
 
         public HomeController(
             ILogger<HomeController> logger,
             IOptions<ViewerAppSettingsConfiguration> configurationOption,
             ISmspProxyDataService smspProxyDataService,
             IRociGatewayDataService rociGatewayDataService,
-            IAuditDataService auditDataService,
+            IAuditLogTopicPublisher auditLogTopicPublisher,
             IIpAddressProvider ipAddressProvider,
              ITokenService tokenService,
              IOptions<LoggingServiceADSetting> loggingServiceOption,
@@ -54,7 +54,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _configuration = configurationOption.Value;
             _smspProxyDataService = smspProxyDataService;
             _rociGatewayDataService = rociGatewayDataService;
-            _auditDataService = auditDataService;
+            _auditLogTopicPublisher = auditLogTopicPublisher;
             _ipAddressProvider = ipAddressProvider;
             _tokenService = tokenService;
             _loggingAdSettings = loggingServiceOption.Value;
@@ -590,16 +590,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         private async Task<bool> LogAuditRecordModel(HttpRequest request, PatientCareRecordRequestDomainModel model, Guid correlationId, string section)
         {
-            var loggingAppToken = await _tokenService.GetLoggingOrAuditToken(_loggingAdSettings.SystemToSystemScope);
-
-            var auditAppToken = await _tokenService.GetLoggingOrAuditToken(_auditAdSettings.SystemToSystemScope);
-
             var auditLog = new AuditLogRequestModel(AppDomainType.Plexus, _ipAddressProvider.GetClientIpAddress(), _ipAddressProvider.GetHostIpAddress(), "PLEXUS VIewer System Identifier", _configuration.ApplicationName + $" --SECTION--(" + section + ")"
                                                     , GetAbsolutePath(Request), model.OrganisationAsId, model.PractitionerId, model.NhsNumber, _tokenService.GetUsername(), _tokenService.GetTokenString(), Guid.NewGuid().ToString()
                                                     , Guid.NewGuid().ToString(), correlationId, RoleIdType.Clinical);
             try
             {
-                await _auditDataService.LogAuditRecordAsync(auditLog, auditAppToken, loggingAppToken);
+                await _auditLogTopicPublisher.PublishAsync(auditLog);
             }
             catch
             {

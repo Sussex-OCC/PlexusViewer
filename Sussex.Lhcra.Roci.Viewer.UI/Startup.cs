@@ -16,6 +16,10 @@ using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using System;
+using Sussex.Lchra.AzureServiceBusMessageBroker.Publisher.PublisherTypes;
+using Sussex.Lchra.MessageBroker.Common;
+using Sussex.Lchra.MessageBroker.Common.Configurations;
+using Sussex.Lhcra.Common.ClientServices.Interfaces;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -39,22 +43,24 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
 
             services.Configure<ViewerAppSettingsConfiguration>(Configuration.GetSection("ViewerAppSettings"));
-
             services.Configure<AuditDataServiceConfig>(Configuration.GetSection(nameof(AuditDataServiceConfig)));
-
             services.Configure<LoggingDataServiceConfig>(Configuration.GetSection("AppLogDataServiceConfig"));
-
             services.Configure<LoggingServiceADSetting>(Configuration.GetSection(nameof(LoggingServiceADSetting)));
-
             services.Configure<AuditServiceADSetting>(Configuration.GetSection(nameof(AuditServiceADSetting)));
-
             services.Configure<RociGatewayADSetting>(Configuration.GetSection(nameof(RociGatewayADSetting)));
 
+            var auditTopicServicebusConfig = new MessageBrokerTopicConfig();
+            Configuration.Bind("AuditLogTopicServiceBusConfig", auditTopicServicebusConfig);
+            var auditMessageBrokerTopicPublisher = new TopicPublisher(auditTopicServicebusConfig);
+            
             services.AddHttpClient<IAuditDataService, AuditDataService>();
             services.AddHttpClient<IAppLogDataService, AppLogDataService>();
+            
             services.AddScoped<IRociGatewayDataService, RociGatewayDataService>();
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
             services.AddAzureADServices();
+
+            services.AddScoped<IAuditLogTopicPublisher>(x => new AuditLogTopicPublisher(auditMessageBrokerTopicPublisher));
 
             var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
 
