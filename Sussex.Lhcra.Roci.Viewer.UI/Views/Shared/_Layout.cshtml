@@ -186,6 +186,11 @@
                 <div class="pull-right">
                     <div class="text-info ">@userClaims?.FindFirst("name")?.Value</div>
 
+                    @if (userClaims?.HasClaim(claim => claim.Value == "clinical") == true)
+                    {
+                        <div class="text-info ">Role: Clinical</div>
+                    }
+
                     <div>
                         <a class="navbar-brand header-text text-danger " asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
                     </div>
@@ -303,7 +308,6 @@
     <script src="../vendor/datatables-plugins/dataTables.bootstrap.min.js"></script>
     <script src="../vendor/datatables-responsive/dataTables.responsive.js"></script>
     <script src="../dist/js/sb-admin-2.js"></script>
-
 
 </body>
 

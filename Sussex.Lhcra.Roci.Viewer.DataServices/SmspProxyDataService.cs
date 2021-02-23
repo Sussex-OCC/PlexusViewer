@@ -9,6 +9,7 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 
 namespace Sussex.Lhcra.Roci.Viewer.DataServices
 {
