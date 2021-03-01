@@ -5,6 +5,6 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 {
     public interface ISmspProxyDataService
     {
-        Task<string> GetDataContent(string url, Guid correlationId);
+        Task<string> GetDataContent(string url, string correlationId, string organisationAsId);
     }
 }

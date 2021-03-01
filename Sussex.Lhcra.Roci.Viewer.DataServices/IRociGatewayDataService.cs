@@ -6,7 +6,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 {
     public interface IRociGatewayDataService
     {
-        Task<IEnumerable<PatientCarePlanRecord>> GetCarePlanDataContentAsync(string endPoint, string controllerName, PatientCareRecordRequestDomainModel model);
-        Task<PatientCareRecordBundleDomainModel> GetDataContentAsync(string endPoint, string controllerName, PatientCareRecordRequestDomainModel model);
+        Task<IEnumerable<PatientCarePlanRecord>> GetCarePlanDataContentAsync(string endPoint, string controllerName, string correlationId, string organisationAsId, PatientCareRecordRequestDomainModel model);
+        Task<PatientCareRecordBundleDomainModel> GetDataContentAsync(string endPoint, string controllerName, string correlationId, string organisationAsId, PatientCareRecordRequestDomainModel model);
     }
 }

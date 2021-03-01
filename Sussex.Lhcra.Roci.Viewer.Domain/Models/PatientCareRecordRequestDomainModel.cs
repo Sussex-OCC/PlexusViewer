@@ -51,9 +51,6 @@ namespace Sussex.Lhcra.Roci.Viewer.Domain.Models
         [JsonProperty("organisationOdsCode")]
         public string OrganisationOdsCode { get; set; }
 
-        [JsonProperty("correlationId")]
-        public string CorrelationId { get; set; }
-
         [JsonProperty("practitionerId")]
         public string PractitionerId { get; set; }
 

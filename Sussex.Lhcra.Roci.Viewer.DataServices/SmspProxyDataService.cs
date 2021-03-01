@@ -34,11 +34,14 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             _loggingServiceADSetting = loggingServiceOption.Value;
         }
 
-        public async Task<string> GetDataContent(string url, Guid correlationId)
+        public async Task<string> GetDataContent(string url, string correlationId, string organisationAsId)
         {
             string token = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_rociGatewayADSetting);
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            HeaderHelper.AddCorrelation(correlationId, _httpClient);
+            HeaderHelper.AddOrganisationAsId(organisationAsId, _httpClient);
 
             var loggingToken = await _tokenService.GetLoggingOrAuditToken(_loggingServiceADSetting.SystemToSystemScope);
 

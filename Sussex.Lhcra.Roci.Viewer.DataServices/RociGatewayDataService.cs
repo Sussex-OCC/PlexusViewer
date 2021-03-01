@@ -19,7 +19,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
         public RociGatewayDataService(
             ITokenService tokenService,
-            IOptions<RociGatewayADSetting> rociGatewayOptions, 
+            IOptions<RociGatewayADSetting> rociGatewayOptions,
             IOptions<LoggingServiceADSetting> loggingServiceOption)
         {
             _tokenService = tokenService;
@@ -27,7 +27,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             _loggingServiceADSetting = loggingServiceOption.Value;
         }
 
-        public async Task<IEnumerable<PatientCarePlanRecord>> GetCarePlanDataContentAsync(string endPoint, string controllerName, PatientCareRecordRequestDomainModel model)
+        public async Task<IEnumerable<PatientCarePlanRecord>> GetCarePlanDataContentAsync(string endPoint, string controllerName, string correlationId, string organisationAsId, PatientCareRecordRequestDomainModel model)
         {
             IList<PatientCarePlanRecord> result = null;
 
@@ -36,11 +36,14 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                 string appToken = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_rociGatewayADSetting);
 
                 var strBody = JsonConvert.SerializeObject(model);
-                var fullEndPoint = endPoint + controllerName + "/"+ model.NhsNumber;
+                var fullEndPoint = endPoint + controllerName + "/" + model.NhsNumber;
                 using (var client = new HttpClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, fullEndPoint))
                 {
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
+
+                    HeaderHelper.AddCorrelation(correlationId, client);
+                    HeaderHelper.AddOrganisationAsId(organisationAsId, client);
 
                     using (var stringContent = new StringContent(strBody))
                     {
@@ -80,7 +83,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
         }
 
 
-        public async Task<PatientCareRecordBundleDomainModel> GetDataContentAsync(string endPoint, string controllerName, PatientCareRecordRequestDomainModel model)
+        public async Task<PatientCareRecordBundleDomainModel> GetDataContentAsync(string endPoint, string controllerName, string correlationId, string organisationAsId, PatientCareRecordRequestDomainModel model)
         {
             PatientCareRecordBundleDomainModel result = null;
 
@@ -94,6 +97,8 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                 using (var request = new HttpRequestMessage(HttpMethod.Get, fullEndPoint))
                 {
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
+                    HeaderHelper.AddCorrelation(correlationId, client);
+                    HeaderHelper.AddOrganisationAsId(organisationAsId, client);
 
                     using (var stringContent = new StringContent(strBody))
                     {
@@ -146,8 +151,8 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
         //    try
         //    {
         //        var loggingToken = await _tokenService.GetLoggingOrAuditToken(_loggingServiceADSetting.SystemToSystemScope);
-                
-        
+
+
         //        var logRecord = new LogRecordRequestModel
         //        {
         //            AppName = applicationName,

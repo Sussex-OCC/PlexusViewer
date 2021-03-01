@@ -93,10 +93,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = strDod;
             ViewBag.NhsNumber = nhsNumber;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}/{correlationId}/{organisationAsid}", guid);
+            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsid);
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            spineModel.CorrelationId = correlationId;
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
             spineModel.PractitionerId = correlationId;
@@ -106,9 +105,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, guid, Constants.Summary);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, organisationAsid, spineModel);
 
-            if(null == pBundle)
+            if (null == pBundle)
             {
                 return View("Error");
             }
@@ -137,15 +136,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
 
-            if(null == pBundle)
+            if (null == pBundle)
             {
                 return View("Error");
             }
@@ -174,13 +171,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.ProblemsAndIssues);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.ProblemsAndIssues, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.ProblemsAndIssues, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -210,13 +205,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Immunisations);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Immunisations, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Immunisations, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -246,13 +239,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Investigations);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Investigations, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Investigations, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -283,13 +274,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Medication);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Medication, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Medication, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -319,14 +308,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Allergies);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Allergies, spineModel);
-            
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Allergies, correlationId, spineModel.OrganisationAsId, spineModel);
+
             if (null == pBundle)
             {
                 return View("Error");
@@ -355,13 +342,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Encounters);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Encounters, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Encounters, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -391,13 +376,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Observations);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Observations, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Observations, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -427,13 +410,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Referrals);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Referrals, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Referrals, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -463,13 +444,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Clinical);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Clinical, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Clinical, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -500,13 +479,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.MentalHealthCrisisPlans);
 
-            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, spineModel);
+            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, correlationId, spineModel.OrganisationAsId, spineModel);
 
             return View(Constants.MentalHealthCrisisPlans, patientCarePlanRecords);
         }
@@ -527,13 +504,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.CommunityCarePlans);
 
-            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.CommunityCarePlans, spineModel);
+            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.CommunityCarePlans, correlationId, spineModel.OrganisationAsId, spineModel);
 
             return View(Constants.CommunityCarePlans, patientCarePlanRecords);
         }
@@ -552,14 +527,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.CorrelationId = correlationId;
-
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Admin);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Admin, spineModel);
-           
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Admin, correlationId, spineModel.OrganisationAsId, spineModel);
+
             if (null == pBundle)
             {
                 return View("Error");
