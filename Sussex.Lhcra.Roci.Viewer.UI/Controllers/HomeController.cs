@@ -446,16 +446,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Clinical);
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), _tokenService.GetUserRole().ToString());
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Clinical, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, _tokenService.GetUserRole().ToString(), correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Clinical);
+            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, _tokenService.GetUserRole().ToString());
 
             if (null == vm)
             {
@@ -563,9 +563,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         private async Task<bool> LogAuditRecordModel(HttpRequest request, PatientCareRecordRequestDomainModel model, Guid correlationId, string section)
         {
-            var auditLog = new AuditLogRequestModel(AppDomainType.Plexus, _ipAddressProvider.GetClientIpAddress(), _ipAddressProvider.GetHostIpAddress(), "PLEXUS VIewer System Identifier", _configuration.ApplicationName + $" --SECTION--(" + section + ")"
+            var auditLog = new AuditLogRequestModel(AppDomainType.Plexus, _ipAddressProvider.GetClientIpAddress(), _ipAddressProvider.GetHostIpAddress(), _tokenService.GetSystemIdentifier(), _configuration.ApplicationName + $" --SECTION--(" + section + ")"
                                                     , GetAbsolutePath(Request), model.OrganisationAsId, model.PractitionerId, model.NhsNumber, _tokenService.GetUsername(), _tokenService.GetTokenString(), Guid.NewGuid().ToString()
-                                                    , Guid.NewGuid().ToString(), correlationId, RoleIdType.Clinical);
+                                                    , Guid.NewGuid().ToString(), correlationId, _tokenService.GetUserRole());
             try
             {
                 await _auditLogTopicPublisher.PublishAsync(auditLog);
