@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -180,27 +183,30 @@
 
             </div>
 
-            @if (User.Identity.IsAuthenticated)
+            @if (Configuration.GetValue<bool>("EmbeddedMode") == false)
             {
-                var userClaims = User.Identity as System.Security.Claims.ClaimsIdentity;
-                <div class="pull-right">
-                    <div class="text-info ">@userClaims?.FindFirst("name")?.Value</div>
+                if (User.Identity.IsAuthenticated)
+                {
+                    var userClaims = User.Identity as System.Security.Claims.ClaimsIdentity;
+                    <div class="pull-right">
+                        <div class="text-info ">@userClaims?.FindFirst("name")?.Value</div>
 
-                    @if (userClaims?.HasClaim(claim => claim.Value == "clinical") == true)
-                    {
-                        <div class="text-info ">Role: Clinical</div>
-                    }
+                        @if (userClaims?.HasClaim(claim => claim.Value == "clinical") == true)
+                        {
+                            <div class="text-info ">Role: Clinical</div>
+                        }
 
-                    <div>
-                        <a class="navbar-brand header-text text-danger " asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+                        <div>
+                            <a class="navbar-brand header-text text-danger " asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+                        </div>
                     </div>
-                </div>
 
-            }
-            else
-            {
+                }
+                else
+                {
 
-                <a class="navbar-brand header-text  text-info pull-right" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+                    <a class="navbar-brand header-text  text-info pull-right" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+                }
             }
 
 

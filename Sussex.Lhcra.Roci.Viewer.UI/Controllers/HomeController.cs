@@ -24,7 +24,6 @@ using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
-    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

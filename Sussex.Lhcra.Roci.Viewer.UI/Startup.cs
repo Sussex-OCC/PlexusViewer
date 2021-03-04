@@ -20,6 +20,9 @@ using Sussex.Lchra.AzureServiceBusMessageBroker.Publisher.PublisherTypes;
 using Sussex.Lchra.MessageBroker.Common;
 using Sussex.Lchra.MessageBroker.Common.Configurations;
 using Sussex.Lhcra.Common.ClientServices.Interfaces;
+using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
+using Sussex.Lhcra.Common.AzureADServices.Interfaces;
+using Sussex.Lhcra.Common.ClientServices;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -35,11 +38,22 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
-            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+
+            if (Configuration.GetValue<bool>("EmbeddedMode") == false)
+            {
+                services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                     .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAD"))
                     .EnableTokenAcquisitionToCallDownstreamApi()
                     .AddInMemoryTokenCaches();
+
+                services.AddAzureADServices();
+            }
+            else
+            {
+                services.AddScoped<ITokenService, EmbeddedTokenService>();
+
+                services.AddHttpClient<IDownStreamAuthorisation, ADDownStreamAuthorisation>();
+            }
 
 
             services.Configure<ViewerAppSettingsConfiguration>(Configuration.GetSection("ViewerAppSettings"));
@@ -52,13 +66,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             var auditTopicServicebusConfig = new MessageBrokerTopicConfig();
             Configuration.Bind("AuditLogTopicServiceBusConfig", auditTopicServicebusConfig);
             var auditMessageBrokerTopicPublisher = new TopicPublisher(auditTopicServicebusConfig);
-            
+
             services.AddHttpClient<IAuditDataService, AuditDataService>();
             services.AddHttpClient<IAppLogDataService, AppLogDataService>();
-            
+
             services.AddScoped<IRociGatewayDataService, RociGatewayDataService>();
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
-            services.AddAzureADServices();
+
 
             services.AddScoped<IAuditLogTopicPublisher>(x => new AuditLogTopicPublisher(auditMessageBrokerTopicPublisher));
 
@@ -117,9 +131,14 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                var mappController = endpoints.MapControllerRoute(
+                     name: "default",
+                     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                if (Configuration.GetValue<bool>("EmbeddedMode") == false)
+                {
+                    mappController.RequireAuthorization();
+                }
             });
         }
     }
