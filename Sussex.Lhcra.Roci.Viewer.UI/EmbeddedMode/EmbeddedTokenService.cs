@@ -1,6 +1,8 @@
-﻿using Sussex.Lhcra.Common.AzureADServices.Interfaces;
+﻿using Microsoft.Extensions.Options;
+using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.Domain.Constants;
+using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
 using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode
@@ -8,10 +10,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode
     public class EmbeddedTokenService : ITokenService
     {
         private readonly IDownStreamAuthorisation _downStreamAuthorisation;
+        private readonly EmbeddedTokenConfig _embeddedTokenConfig;
 
-        public EmbeddedTokenService(IDownStreamAuthorisation downStreamAuthorisation)
+        public EmbeddedTokenService(IDownStreamAuthorisation downStreamAuthorisation, IOptions<EmbeddedTokenConfig> embeddedTokenOption)
         {
             _downStreamAuthorisation = downStreamAuthorisation;
+            _embeddedTokenConfig = embeddedTokenOption.Value;
         }
 
         public Task<string> GetLoggingOrAuditToken(string scope)
@@ -31,7 +35,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode
 
         public async Task<string> GetTokenOnBehalfOfUserOrSystem(IAzureADSettings azureADSettings)
         {
-            return await _downStreamAuthorisation.GetAccessToken("326d473f-ae9b-4f69-86bc-bc0b0195bc36", "c18276df-d6a4-4f9c-9d46-1e84068bc7a3", "~5tk5L07tCoJqc~f2Do_ud-YcEV1f1-Q6L", "20d55975-9334-41b4-8b89-526c2d20ab6d");
+            return await _downStreamAuthorisation.GetAccessToken(_embeddedTokenConfig.TenantId, _embeddedTokenConfig.ClientId, _embeddedTokenConfig.Secret, azureADSettings.SystemToSystemScope);
         }
 
         public string GetTokenString()

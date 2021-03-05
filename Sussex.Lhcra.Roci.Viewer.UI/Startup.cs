@@ -62,6 +62,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             services.Configure<LoggingServiceADSetting>(Configuration.GetSection(nameof(LoggingServiceADSetting)));
             services.Configure<AuditServiceADSetting>(Configuration.GetSection(nameof(AuditServiceADSetting)));
             services.Configure<RociGatewayADSetting>(Configuration.GetSection(nameof(RociGatewayADSetting)));
+            services.Configure<EmbeddedTokenConfig>(Configuration.GetSection(nameof(EmbeddedTokenConfig)));
 
             var auditTopicServicebusConfig = new MessageBrokerTopicConfig();
             Configuration.Bind("AuditLogTopicServiceBusConfig", auditTopicServicebusConfig);
