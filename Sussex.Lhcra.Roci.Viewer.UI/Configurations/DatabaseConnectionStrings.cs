@@ -5,6 +5,8 @@
         public string LogDb { get; set; }
 
         public string AuditDb { get; set; }
+        public string RedisCacheConnectionString { get; set; }
+
 
         public string EshtconnectionString { get; set; }
 
