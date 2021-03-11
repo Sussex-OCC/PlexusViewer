@@ -23,7 +23,6 @@ using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices;
-using Microsoft.AspNetCore.Http;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -85,29 +84,14 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 client.BaseAddress = new Uri(config.ProxyEndpoints.SpineMiniServicesEndpoint);
             });
 
-           
             services.AddDistributedMemoryCache();
 
-            services.Configure<CookiePolicyOptions>(options =>
+            services.AddSession(options =>
             {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => false;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
+                options.Cookie.Name = ".Sussex.LHCRA.Roci.Session";
+                options.IdleTimeout = TimeSpan.FromSeconds(config.SessionTimeout);
+                options.Cookie.IsEssential = true;
             });
-
-            services.AddDistributedRedisCache(options =>
-            {
-                options.Configuration = config.DatabaseConnectionStrings.RedisCacheConnectionString;
-            });
-
-            services.AddSession();
-
-            //services.AddSession(options =>
-            //{
-            //    options.Cookie.Name = ".Sussex.LHCRA.Roci.Session";
-            //    options.IdleTimeout = TimeSpan.FromSeconds(config.SessionTimeout);
-            //    options.Cookie.IsEssential = true;
-            //});
 
             services.AddControllersWithViews();
 
@@ -145,8 +129,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             app.UseAuthorization();
 
             app.UseSession();
-
-            app.UseCookiePolicy();
 
             app.UseEndpoints(endpoints =>
             {
