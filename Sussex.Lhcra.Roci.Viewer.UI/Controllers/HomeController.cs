@@ -21,14 +21,16 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IConfiguration _configuration;
 
-        private readonly ViewerAppSettingsConfiguration _configuration;
+        private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
 
         private readonly ISmspProxyDataService _smspProxyDataService;
         private readonly IRociGatewayDataService _rociGatewayDataService;
@@ -47,10 +49,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             IIpAddressProvider ipAddressProvider,
              ITokenService tokenService,
              IOptions<LoggingServiceADSetting> loggingServiceOption,
-             IOptions<AuditServiceADSetting> auditServiceOption)
+             IOptions<AuditServiceADSetting> auditServiceOption,
+            IConfiguration configuration)
         {
             _logger = logger;
-            _configuration = configurationOption.Value;
+            _viewerConfiguration = configurationOption.Value;
             _smspProxyDataService = smspProxyDataService;
             _rociGatewayDataService = rociGatewayDataService;
             _auditLogTopicPublisher = auditLogTopicPublisher;
@@ -58,7 +61,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _tokenService = tokenService;
             _loggingAdSettings = loggingServiceOption.Value;
             _auditAdSettings = auditServiceOption.Value;
+
+            _configuration = configuration;
         }
+
+        protected bool IsProd => _configuration.GetValue<bool>("IsProd");
+
+        protected string SmspIntEnvAsid => _configuration.GetValue<string>("SmspIntEnvAsid");
 
         public IActionResult Index()
         {
@@ -85,7 +94,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         [HttpPost]
         public async Task<IActionResult> Summary(DateTime dateOfBirth, string nhsNumber)
         {
-            var organisationAsid = _configuration.OrganisationAsId;
+            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
             var guid = Guid.NewGuid();
             var correlationId = guid.ToString();
             var strDod = dateOfBirth.ToString("dd-MM-yyyy");
@@ -104,7 +113,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, guid, Constants.Summary);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, organisationAsid, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, organisationAsid, spineModel);
 
             if (null == pBundle)
             {
@@ -139,7 +148,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -174,7 +183,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.ProblemsAndIssues);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.ProblemsAndIssues, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.ProblemsAndIssues, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -208,7 +217,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Immunisations);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Immunisations, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Immunisations, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -242,7 +251,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Investigations);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Investigations, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Investigations, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -277,7 +286,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Medication);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Medication, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Medication, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -311,7 +320,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Allergies);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Allergies, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Allergies, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -345,7 +354,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Encounters);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Encounters, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Encounters, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -379,7 +388,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Observations);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Observations, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Observations, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -413,7 +422,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Referrals);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Referrals, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Referrals, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -447,7 +456,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), _tokenService.GetUserRole().ToString());
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, _tokenService.GetUserRole().ToString(), correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, _tokenService.GetUserRole().ToString(), correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -482,7 +491,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.MentalHealthCrisisPlans);
 
-            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, correlationId, spineModel.OrganisationAsId, spineModel);
+            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, correlationId, spineModel.OrganisationAsId, spineModel);
 
             return View(Constants.MentalHealthCrisisPlans, patientCarePlanRecords);
         }
@@ -507,7 +516,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.CommunityCarePlans);
 
-            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.CommunityCarePlans, correlationId, spineModel.OrganisationAsId, spineModel);
+            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.CommunityCarePlans, correlationId, spineModel.OrganisationAsId, spineModel);
 
             return View(Constants.CommunityCarePlans, patientCarePlanRecords);
         }
@@ -530,7 +539,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Admin);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_configuration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Admin, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Admin, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
@@ -562,7 +571,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         private async Task<bool> LogAuditRecordModel(HttpRequest request, PatientCareRecordRequestDomainModel model, Guid correlationId, string section)
         {
-            var auditLog = new AuditLogRequestModel(AppDomainType.Plexus, _ipAddressProvider.GetClientIpAddress(), _ipAddressProvider.GetHostIpAddress(), _tokenService.GetSystemIdentifier(), _configuration.ApplicationName + $" --SECTION--(" + section + ")"
+            var auditLog = new AuditLogRequestModel(AppDomainType.Plexus, _ipAddressProvider.GetClientIpAddress(), _ipAddressProvider.GetHostIpAddress(), _tokenService.GetSystemIdentifier(), _viewerConfiguration.ApplicationName + $" --SECTION--(" + section + ")"
                                                     , GetAbsolutePath(Request), model.OrganisationAsId, model.PractitionerId, model.NhsNumber, _tokenService.GetUsername(), _tokenService.GetTokenString(), Guid.NewGuid().ToString()
                                                     , Guid.NewGuid().ToString(), correlationId, _tokenService.GetUserRole());
             try
