@@ -42,6 +42,9 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
             HeaderHelper.AddCorrelation(correlationId, _httpClient);
             HeaderHelper.AddOrganisationAsId(organisationAsId, _httpClient);
+            HeaderHelper.AddAppDomainTypeId("Plexus", _httpClient);
+            HeaderHelper.AddSystemIdentifier("TODO: Add System Identifier", _httpClient);
+            HeaderHelper.AddUserRoleId(RoleIdType.Clinician.ToString(), _httpClient);
 
             var loggingToken = await _tokenService.GetLoggingOrAuditToken(_loggingServiceADSetting.SystemToSystemScope);
 
