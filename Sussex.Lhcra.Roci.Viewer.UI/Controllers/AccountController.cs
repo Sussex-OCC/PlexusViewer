@@ -46,7 +46,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 if (!string.IsNullOrEmpty(userId))
                     _redisCache.SetValue(userId, "");
 
-                return View();
+                return View("UserAlreadyLoggedIn");
             }
         }
 
