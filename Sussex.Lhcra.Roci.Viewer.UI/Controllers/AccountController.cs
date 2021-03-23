@@ -27,7 +27,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [PlexusAuthorize("UserLoggedIn")]
         [HttpGet]
-        public IActionResult SessionLogin(string page)
+        public IActionResult SessionLogin()
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
@@ -49,6 +49,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View();
             }
         }
+
+        [HttpGet]
+        public IActionResult UserAlreadyLoggedIn()
+        {
+            return View();
+        }
+
         [HttpGet]
         public IActionResult SignOut(string page)
         {
