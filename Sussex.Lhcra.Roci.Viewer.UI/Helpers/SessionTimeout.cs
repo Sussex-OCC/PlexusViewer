@@ -15,49 +15,6 @@ using System.Security.Claims;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
 {
-    public class PlexusAuthorizeAttribute : TypeFilterAttribute
-    {
-        public PlexusAuthorizeAttribute(string permission)
-            : base(typeof(PlexusAuthorizeActionFilter))
-        {
-            Arguments = new object[] { permission };
-        }
-    }
-    public class PlexusAuthorizeActionFilter : IAuthorizationFilter
-    {
-        private readonly string _permission;
-
-        public PlexusAuthorizeActionFilter(string permission)
-        {
-            _permission = permission;
-        }
-
-        public PlexusAuthorizeActionFilter()
-        {
-            
-        }
-
-        public void OnAuthorization(AuthorizationFilterContext context)
-        {
-            bool isAuthorized = CheckUserPermission(_permission);
-
-            if (!isAuthorized)
-            {
-                context.Result = new UnauthorizedResult();
-            }
-        }
-
-        private bool CheckUserPermission(string permission)
-        {
-            // Logic for checking the user permission goes here. 
-
-            var loggedInUser = !string.IsNullOrEmpty(permission);
-
-            // Let's assume this user has only read permission.
-            return loggedInUser;
-        }
-    }
-
     public class SessionTimeout : ActionFilterAttribute
     {
 
@@ -74,30 +31,29 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
         public async override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             await _userSession.LoadAsync();
+            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var userCacheSessionId = _redisCache.GetValueOrTimeOut<string>(userId);
+            var userSessionLoggedInId = _userSession.Get<string>(Constants.ViewerSessionLoggedIn);
 
-            var userSessionLoggedIn = _userSession.Get<string>(Constants.ViewerSessionLoggedIn);
-
-            if (userSessionLoggedIn == null)
+            if (string.IsNullOrEmpty(userSessionLoggedInId) && string.IsNullOrEmpty(userCacheSessionId)) // User has no session and is not logged in else where 
             {
-                filterContext.Result = new RedirectResult("~/Account/SessionLogin");
+                var newSessionId = Guid.NewGuid().ToString();
+                _httpContextAccessor.HttpContext.Session.Set<string>(Constants.ViewerSessionLoggedIn, newSessionId);
+                _redisCache.SetValue(userId, newSessionId);
+            }
+            else if(string.IsNullOrEmpty(userSessionLoggedInId) && !string.IsNullOrEmpty(userCacheSessionId))
+            {
+                filterContext.Result = new RedirectResult("~/Account/SessionExpired");
                 return;
             }
-            else
+            else if(userSessionLoggedInId != userCacheSessionId)
             {
-                var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                var userLoggedinSessionDetails = _redisCache.GetValueOrTimeOut<string>(userId);
-                if(userLoggedinSessionDetails != userSessionLoggedIn)
-                {
-                    filterContext.Result = new RedirectResult("~/Account/UserAlreadyLoggedIn");
-                    return;
-                }
+                filterContext.Result = new RedirectResult("~/Account/UserAlreadyLoggedIn");
+                return;
             }
-
 
             base.OnActionExecuting(filterContext);
         }
-
-       
     }
 }
 

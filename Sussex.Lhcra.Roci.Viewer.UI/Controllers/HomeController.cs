@@ -132,6 +132,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             return View(Constants.All, vm);
         }
 
+       
         [HttpGet]
         public async Task<IActionResult> Summary(string dob, string nhsNumber)
         {

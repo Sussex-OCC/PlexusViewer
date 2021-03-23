@@ -23,43 +23,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        [PlexusAuthorize("UserLoggedIn")]
+    
         [HttpGet]
-        public IActionResult SessionLogin()
+        public IActionResult SessionExpired()
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            var userLoggedinDetails = _redisCache.GetValueOrTimeOut<string>(userId);
+            if (!string.IsNullOrEmpty(userId))
+                _redisCache.SetValue(userId, "");
 
-            if(string.IsNullOrEmpty(userLoggedinDetails))
-            {
-                var userLoggedInGuid = Guid.NewGuid().ToString();
-
-                HttpContext.Session.Set<string>(Constants.ViewerSessionLoggedIn, userLoggedInGuid);
-
-                _redisCache.SetValue(userId, userLoggedInGuid);
-
-                return RedirectToAction("Index", "Home");
-            }
-            else
-            {
-                var userSessionLoggedIn = _userSession.Get<string>(Constants.ViewerSessionLoggedIn);
-
-                if(string.IsNullOrEmpty(userSessionLoggedIn))
-                {
-                    if (!string.IsNullOrEmpty(userId))
-                        _redisCache.SetValue(userId, "");
-
-                    return View();
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(userId))
-                        _redisCache.SetValue(userId, "");
-
-                    return View("UserAlreadyLoggedIn");
-                }
-            }
+            return View();
         }
 
         [HttpGet]
@@ -67,10 +40,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            if(!string.IsNullOrEmpty(userId))
-              _redisCache.SetValue(userId, "");
+            if (!string.IsNullOrEmpty(userId))
+                _redisCache.SetValue(userId, "");
 
             return View();
+
         }
 
         [HttpGet]
