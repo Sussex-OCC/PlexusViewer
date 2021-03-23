@@ -29,10 +29,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            if (!string.IsNullOrEmpty(userId))
-                _redisCache.SetValue(userId, "");
+            try
+            {
+                if (!string.IsNullOrEmpty(userId))
+                    _redisCache.SetValue(userId, "");
+            }
+            catch
+            {
+            }
 
             return View();
+
         }
 
         [HttpGet]
@@ -40,11 +47,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-            if (!string.IsNullOrEmpty(userId))
-                _redisCache.SetValue(userId, "");
+            try
+            {
+                if (!string.IsNullOrEmpty(userId))
+                    _redisCache.SetValue(userId, "");
+            }
+            catch
+            {
+            }
 
             return View();
-
         }
 
         [HttpGet]

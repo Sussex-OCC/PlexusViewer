@@ -17,7 +17,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
 {
     public class SessionTimeout : ActionFilterAttribute
     {
-
         private readonly IHttpContextAccessor _httpContextAccessor;
         private ICacheService _redisCache;
         private ISession _userSession => _httpContextAccessor.HttpContext.Session;
@@ -30,29 +29,37 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
 
         public async override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            await _userSession.LoadAsync();
-            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var userCacheSessionId = _redisCache.GetValueOrTimeOut<string>(userId);
-            var userSessionLoggedInId = _userSession.Get<string>(Constants.ViewerSessionLoggedIn);
+            try
+            {
+                await _userSession.LoadAsync();
+                var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                var userCacheSessionId = _redisCache.GetValueOrTimeOut<string>(userId);
+                var userSessionLoggedInId = _userSession.Get<string>(Constants.ViewerSessionLoggedIn);
 
-            if (string.IsNullOrEmpty(userSessionLoggedInId) && string.IsNullOrEmpty(userCacheSessionId)) // User has no session and is not logged in else where 
-            {
-                var newSessionId = Guid.NewGuid().ToString();
-                _httpContextAccessor.HttpContext.Session.Set<string>(Constants.ViewerSessionLoggedIn, newSessionId);
-                _redisCache.SetValue(userId, newSessionId);
+                if (string.IsNullOrEmpty(userSessionLoggedInId) && string.IsNullOrEmpty(userCacheSessionId)) // User has no session and is not logged in else where 
+                {
+                    var newSessionId = Guid.NewGuid().ToString();
+                    _httpContextAccessor.HttpContext.Session.Set<string>(Constants.ViewerSessionLoggedIn, newSessionId);
+                    _redisCache.SetValue(userId, newSessionId);
+                }
+                else if (string.IsNullOrEmpty(userSessionLoggedInId) && !string.IsNullOrEmpty(userCacheSessionId))
+                {
+                    filterContext.Result = new RedirectResult("~/Account/SessionExpired");
+                    return;
+                }
+                else if (userSessionLoggedInId != userCacheSessionId)
+                {
+                    filterContext.Result = new RedirectResult("~/Account/UserAlreadyLoggedIn");
+                    return;
+                }
             }
-            else if(string.IsNullOrEmpty(userSessionLoggedInId) && !string.IsNullOrEmpty(userCacheSessionId))
+            catch
             {
-                filterContext.Result = new RedirectResult("~/Account/SessionExpired");
-                return;
-            }
-            else if(userSessionLoggedInId != userCacheSessionId)
-            {
-                filterContext.Result = new RedirectResult("~/Account/UserAlreadyLoggedIn");
-                return;
-            }
 
+            }
+           
             base.OnActionExecuting(filterContext);
+
         }
     }
 }
