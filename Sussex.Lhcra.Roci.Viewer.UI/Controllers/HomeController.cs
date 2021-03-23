@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -106,6 +107,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsid);
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
             spineModel.PractitionerId = correlationId;
@@ -140,7 +142,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -175,7 +177,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -209,7 +211,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -243,7 +245,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -278,7 +280,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -312,7 +314,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -346,7 +348,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -380,7 +382,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -414,7 +416,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -448,7 +450,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -483,7 +485,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -508,7 +510,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -531,7 +533,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = await GetPatientModelSession();
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -559,20 +561,18 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             return View(Constants.All, vm);
         }
 
-        public async void SetPatientModelSession(PatientCareRecordRequestDomainModel model)
+        public void SetPatientModelSession(PatientCareRecordRequestDomainModel model)
         {
-            await HttpContext.Session.LoadAsync();
 
             if (HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName) == null)
             {
                 HttpContext.Session.Set<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName, model);
-                await HttpContext.Session.CommitAsync();
+              
             }
         }
 
-        public async Task<PatientCareRecordRequestDomainModel> GetPatientModelSession()
+        public PatientCareRecordRequestDomainModel GetPatientModelSession()
         {
-            await HttpContext.Session.LoadAsync();
             return HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName);
         }
 
@@ -607,16 +607,20 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         }
 
-        private static ResourceViewModel GetViewModel(string bundle, string dateOfBirth, string nhsNumber, string heading)
+        private ResourceViewModel GetViewModel(string bundle, string dateOfBirth, string nhsNumber, string heading)
         {
             try
             {
+                
                 var fjp = new FhirJsonParser();
                 var gpBundle = fjp.Parse<Hl7.Fhir.Model.Bundle>(bundle);
                 var vm = new ResourceViewModel();
 
                 var compositions = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Composition).Cast<Composition>().ToList();
+               
                 var patient = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Patient).Cast<Patient>().FirstOrDefault();
+
+               
 
                 var title = "";
                 title = patient.Name.Any() ? patient.Name.FirstOrDefault().PrefixElement.FirstOrDefault().ToString() : "";
@@ -628,6 +632,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 var age = dob.CalculateAge();
 
                 vm.Div = div;
+
+                var demographicsDiff = GetDemographicsDiff(patient);
+
+                vm.DemographicsDiffDiv = demographicsDiff;
+
                 vm.Patient = patient;
                 vm.Detail = "PLEXUS Summary";
                 vm.Heading = heading;
@@ -642,6 +651,235 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return null;
             }
+        }
+
+        private async Task<string> GetDemographicsDiff(Patient patient)
+        {
+            var spineModel = GetPatientModelSession();
+
+            if (spineModel == null || patient == null)
+            {
+                return "";
+            }
+
+            DemographicsViewModel model = new DemographicsViewModel();
+
+            var differencesFound = false;
+
+            var givenNames = patient.Name.SelectMany(x => x.Given);
+            var familyNames = patient.Name.SelectMany(x => x.Family);
+            var otherNames = patient.Name.SelectMany(x => x.Suffix);
+            var fullnames = patient.Name.Select(x => x.Text);
+            var prefixes = patient.Name.SelectMany(x => x.Prefix);
+
+            givenNames = givenNames.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
+            familyNames = familyNames.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
+            fullnames = fullnames.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
+            prefixes = prefixes.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
+
+            var spinePrefix = spineModel.Person.Prefix;
+            var spinefamilyName = spineModel.Person.FamilyName;
+
+            var spineGivenName1 = spineModel.Person.GivenName1;
+            var spineGivenName2 = spineModel.Person.GivenName2;
+
+            var spineGivennames = new List<string>();
+
+            if(!string.IsNullOrEmpty(spineModel.Person.Prefix) && prefixes.Any())
+            {
+                if(!prefixes.Contains(spineModel.Person.Prefix.Trim().ToUpper()))
+                {
+                    model.Prefixes = spineModel.Person.Prefix.Trim().ToUpper();
+                    differencesFound = true;
+                }
+            }
+            else
+            {
+                if(string.IsNullOrEmpty(spineModel.Person.Prefix))
+                {
+                    model.Prefixes = String.Join(",", prefixes.ToList());
+                    differencesFound = true;
+                }
+                else if(!prefixes.Any())
+                {
+                    model.Prefixes = spineModel.Person.Prefix;
+                    differencesFound = true;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(spineGivenName1))
+            {
+                spineGivennames.Add(spineGivenName1);
+            }
+
+            if (!string.IsNullOrEmpty(spineGivenName2))
+            {
+                spineGivennames.Add(spineGivenName2);
+            }
+
+            if (spineGivennames.Any() || givenNames.Any())
+            {
+                if (!spineGivennames.Any())
+                {
+                    model.GivenNames = String.Join(", ", givenNames.ToList());
+                    differencesFound = true;
+                }
+                else if (!givenNames.Any())
+                {
+                    model.GivenNames = String.Join(", ", spineGivennames.ToList());
+                    differencesFound = true;
+                }
+                else
+                {
+                    var givennamesDiff = givenNames.Except(spineGivennames, StringComparer.OrdinalIgnoreCase);
+
+                    if (givennamesDiff.Any())
+                    {
+                        model.GivenNames = String.Join(", ", givennamesDiff.ToList());
+                        differencesFound = true;
+                    }
+                }
+            }
+
+            if(familyNames.Any() && !string.IsNullOrEmpty(spineModel.Person.FamilyName))
+            {
+                var familyNameExists = familyNames.Contains(spineModel.Person.FamilyName.Trim().ToUpper());
+
+                if(familyNameExists)
+                {
+                    model.FamilyNames = spineModel.Person.FamilyName;
+                    differencesFound = true;
+                }
+            }
+            else
+            {
+                if(!familyNames.Any())
+                {
+                    model.FamilyNames = spineModel.Person.FamilyName;
+                    differencesFound = true;
+                }
+                else if(string.IsNullOrEmpty(spineModel.Person.FamilyName))
+                {
+                    model.FamilyNames = spineModel.Person.FamilyName;
+                    differencesFound = true;
+                }
+            }
+
+            if (patient.Address != null && spineModel.Person.Address != null)
+            {
+                var postcodes = patient.Address.Where(x => !string.IsNullOrEmpty(x.PostalCode)).Select(x => x.PostalCode.Trim().ToUpper());
+                var gpConnectAddresses = patient.Address.SelectMany(x => x.Line);
+                
+                var spinePostcode = spineModel.Person.Address.PostalCode;
+                var address1 = spineModel.Person.Address.AddressLine1;
+                var address2 = spineModel.Person.Address.AddressLine2;
+                var address3 = spineModel.Person.Address.AddressLine3;
+                var address4 = spineModel.Person.Address.AddressLine4;
+                var address5 = spineModel.Person.Address.AddressLine5;
+
+                var spineAddressList = new List<string>();
+
+                if(!string.IsNullOrEmpty(address1))
+                {
+                    spineAddressList.Add(address1);
+                }
+                if (!string.IsNullOrEmpty(address2))
+                {
+                    spineAddressList.Add(address2);
+                }
+                if (!string.IsNullOrEmpty(address3))
+                {
+                    spineAddressList.Add(address3);
+                }
+                if (!string.IsNullOrEmpty(address4))
+                {
+                    spineAddressList.Add(address4);
+                }
+                if (!string.IsNullOrEmpty(address5))
+                {
+                    spineAddressList.Add(address5);
+                }
+
+                if (postcodes != null  && postcodes.Any() && string.IsNullOrEmpty(spinePostcode))
+                {
+                    var postCodeExist = postcodes.Contains(spinePostcode.Trim().ToUpper());
+                    if(!postCodeExist)
+                    {
+                        model.Postcode = spinePostcode;
+                        differencesFound = true;
+                    }
+                }
+
+                if(spineAddressList.Any() || gpConnectAddresses.Any())
+                {
+                    if(!spineAddressList.Any())
+                    {
+                        model.Addreses = String.Join(", ", gpConnectAddresses.ToList());
+                        differencesFound = true;
+                    }
+                    else if(!gpConnectAddresses.Any())
+                    {
+                        model.Addreses = String.Join(", ", spineAddressList.ToList());
+                        differencesFound = true;
+                    }
+                    else
+                    {
+                        var addressDiff = gpConnectAddresses.Except(spineAddressList, StringComparer.OrdinalIgnoreCase);
+
+                        if(addressDiff.Any())
+                        {
+                            model.Addreses = String.Join(", ", addressDiff.ToList());
+                            differencesFound = true;
+                        }
+                    }
+                }
+            }
+
+            if(string.IsNullOrEmpty(patient.BirthDate))
+            {
+                model.DateOfBirth = spineModel.Person.DateOfBirth.ToShortDateString();
+                differencesFound = true;
+            }
+            else
+            {
+                var spineDob = spineModel.Person.DateOfBirth.ToShortDateString();
+
+                if (!patient.BirthDate.Equals(spineDob))
+                {
+                    model.DateOfBirth = spineModel.Person.DateOfBirth.ToShortDateString();
+                    differencesFound = true;
+                }
+            }
+
+            if(patient.Gender.HasValue || !string.IsNullOrEmpty(spineModel.Person.Gender.ToString()))
+            {
+                var sameGender = patient.Gender.Value.ToString().ToUpper().Contains(spineModel.Person.Gender);
+
+                if (!sameGender)
+                {
+                    model.Gender = spineModel.Person.Gender.ToString();
+                    differencesFound = true;
+                }
+            }
+            else
+            {
+                if(string.IsNullOrEmpty(spineModel.Person.Gender.ToString()))
+                {
+                    model.Gender = spineModel.Person.Gender.ToString();
+                    differencesFound = true;
+                }
+                   
+            }
+
+            var s = "";
+
+            if(differencesFound)
+            {
+                s= await this.RenderViewAsync("~/Views/Shared/_DemographicsDisplay.cshtml", model);
+            }
+
+            return s;
+
         }
     }
 }

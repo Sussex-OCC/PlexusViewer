@@ -31,7 +31,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
         {
             try
             {
-                await _userSession.LoadAsync();
+               
                 var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
                 var userCacheSessionId = _redisCache.GetValueOrTimeOut<string>(userId);
                 var userSessionLoggedInId = _userSession.Get<string>(Constants.ViewerSessionLoggedIn);

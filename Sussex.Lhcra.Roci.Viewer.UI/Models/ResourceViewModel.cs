@@ -1,6 +1,7 @@
 ﻿using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Models
 {
@@ -20,5 +21,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
         public int Age { get; set; }
         public string StrAge { get; set; }
         public string Title { get; set; }
+        public Task<string> DemographicsDiffDiv { get; set; }
     }
 }

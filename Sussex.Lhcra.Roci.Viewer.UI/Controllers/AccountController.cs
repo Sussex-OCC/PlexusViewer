@@ -45,17 +45,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         [HttpGet]
         public IActionResult UserAlreadyLoggedIn()
         {
-            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-
-            try
-            {
-                if (!string.IsNullOrEmpty(userId))
-                    _redisCache.SetValue(userId, "");
-            }
-            catch
-            {
-            }
-
             return View();
         }
 
