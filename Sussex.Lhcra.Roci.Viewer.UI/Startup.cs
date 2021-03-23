@@ -23,6 +23,9 @@ using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Redis;
+using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -74,17 +77,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             services.AddScoped<IRociGatewayDataService, RociGatewayDataService>();
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
 
+            var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
+
+            services.AddSingleton<ICacheService>(provider => new CacheService(config.DatabaseConnectionStrings.RedisCacheConnectionString));
+
 
             services.AddScoped<IAuditLogTopicPublisher>(x => new AuditLogTopicPublisher(auditMessageBrokerTopicPublisher));
-
-            var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
 
             services.AddHttpClient<ISmspProxyDataService, SmspProxyDataService>(client =>
             {
                 client.BaseAddress = new Uri(config.ProxyEndpoints.SpineMiniServicesEndpoint);
             });
 
+            services.AddScoped<SessionTimeout>();
+
             services.AddDistributedMemoryCache();
+
+            var to = config.SessionTimeout;
 
             services.AddSession(options =>
             {
@@ -92,6 +101,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 options.IdleTimeout = TimeSpan.FromSeconds(config.SessionTimeout);
                 options.Cookie.IsEssential = true;
             });
+
+          
+
+            //services.AddDistributedRedisCache(o =>
+            //{
+            //    o.Configuration = Configuration.GetConnectionString(redisConn);
+            //});
 
             services.AddControllersWithViews();
 

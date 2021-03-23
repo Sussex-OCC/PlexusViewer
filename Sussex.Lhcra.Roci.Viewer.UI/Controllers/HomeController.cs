@@ -25,6 +25,8 @@ using Microsoft.Extensions.Configuration;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
+    
+    [ServiceFilter(typeof(SessionTimeout))]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -61,7 +63,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _tokenService = tokenService;
             _loggingAdSettings = loggingServiceOption.Value;
             _auditAdSettings = auditServiceOption.Value;
-
             _configuration = configuration;
         }
 
@@ -69,6 +70,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         protected string SmspIntEnvAsid => _configuration.GetValue<string>("SmspIntEnvAsid");
 
+      
         public IActionResult Index()
         {
             var vm = new ResourceViewModel
@@ -137,7 +139,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -172,7 +174,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -206,7 +208,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -240,7 +242,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -275,7 +277,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -309,7 +311,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -343,7 +345,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -377,7 +379,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -411,7 +413,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -445,7 +447,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -480,7 +482,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -505,7 +507,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -528,7 +530,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = await GetPatientModelSession();
 
             if (spineModel == null)
             {
@@ -556,16 +558,20 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             return View(Constants.All, vm);
         }
 
-        public void SetPatientModelSession(PatientCareRecordRequestDomainModel model)
+        public async void SetPatientModelSession(PatientCareRecordRequestDomainModel model)
         {
+            await HttpContext.Session.LoadAsync();
+
             if (HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName) == null)
             {
                 HttpContext.Session.Set<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName, model);
+                await HttpContext.Session.CommitAsync();
             }
         }
 
-        public PatientCareRecordRequestDomainModel GetPatientModelSession()
+        public async Task<PatientCareRecordRequestDomainModel> GetPatientModelSession()
         {
+            await HttpContext.Session.LoadAsync();
             return HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName);
         }
 

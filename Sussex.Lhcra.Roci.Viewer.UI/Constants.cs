@@ -3,6 +3,8 @@
     public static class Constants
     {
         public const string ViewerSessionKeyName = "Pexus.Viewer.Session";
+        public const string ViewerSessionLoggedIn = "Pexus.Viewer.Session.LoggedIn";
+
         public const string Summary = "Summary";
         public const string ProblemsAndIssues = "ProblemsAndIssues";
         public const string Medication = "Medication";
