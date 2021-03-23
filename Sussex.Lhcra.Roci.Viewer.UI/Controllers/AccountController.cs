@@ -43,10 +43,22 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
             else
             {
-                if (!string.IsNullOrEmpty(userId))
-                    _redisCache.SetValue(userId, "");
+                var userSessionLoggedIn = _userSession.Get<string>(Constants.ViewerSessionLoggedIn);
 
-                return View("UserAlreadyLoggedIn");
+                if(string.IsNullOrEmpty(userSessionLoggedIn))
+                {
+                    if (!string.IsNullOrEmpty(userId))
+                        _redisCache.SetValue(userId, "");
+
+                    return View();
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(userId))
+                        _redisCache.SetValue(userId, "");
+
+                    return View("UserAlreadyLoggedIn");
+                }
             }
         }
 
