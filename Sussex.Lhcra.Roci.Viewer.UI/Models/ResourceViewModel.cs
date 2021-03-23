@@ -21,6 +21,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
         public int Age { get; set; }
         public string StrAge { get; set; }
         public string Title { get; set; }
-        public Task<string> DemographicsDiffDiv { get; set; }
+        public string DemographicsDiffDiv { get; set; }
     }
 }

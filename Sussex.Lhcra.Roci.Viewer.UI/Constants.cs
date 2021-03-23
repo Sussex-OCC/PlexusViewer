@@ -4,6 +4,8 @@
     {
         public const string ViewerSessionKeyName = "Pexus.Viewer.Session";
         public const string ViewerSessionLoggedIn = "Pexus.Viewer.Session.LoggedIn";
+        public const string ViewerSessionDemographicDiv = "Pexus.Viewer.Session.Demographics";
+
 
         public const string Summary = "Summary";
         public const string ProblemsAndIssues = "ProblemsAndIssues";

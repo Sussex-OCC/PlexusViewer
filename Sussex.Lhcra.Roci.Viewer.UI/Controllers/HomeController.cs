@@ -124,7 +124,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dateOfBirth.ToString("dd-MMM-yyyy"), nhsNumber, Constants.Summary);
+            var vm = await GetViewModel(pBundle.StrBundle, dateOfBirth.ToString("dd-MMM-yyyy"), nhsNumber, Constants.Summary);
 
             if (null == vm)
             {
@@ -160,7 +160,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary);
 
             if (null == vm)
             {
@@ -195,7 +195,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.ProblemsAndIssues);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.ProblemsAndIssues);
 
             if (null == vm)
             {
@@ -229,7 +229,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Immunisations);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Immunisations);
 
             if (null == vm)
             {
@@ -263,7 +263,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Investigations);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Investigations);
 
             if (null == vm)
             {
@@ -298,7 +298,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Medication);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Medication);
 
             if (null == vm)
             {
@@ -332,7 +332,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Allergies);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Allergies);
 
             if (null == vm)
             {
@@ -366,7 +366,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Encounters);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Encounters);
 
             if (null == vm)
             {
@@ -400,7 +400,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Observations);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Observations);
 
             if (null == vm)
             {
@@ -434,7 +434,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Referrals);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Referrals);
 
             if (null == vm)
             {
@@ -468,7 +468,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, _tokenService.GetUserRole().ToString());
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, _tokenService.GetUserRole().ToString());
 
             if (null == vm)
             {
@@ -551,7 +551,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Admin);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Admin);
 
             if (null == vm)
             {
@@ -607,7 +607,14 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         }
 
-        private ResourceViewModel GetViewModel(string bundle, string dateOfBirth, string nhsNumber, string heading)
+        
+        public async Task<JsonResult> getdemographicdiv()
+        {
+            var s = HttpContext.Session.Get<string>(Constants.ViewerSessionDemographicDiv);
+            return Json(new { content = s });
+        }
+
+        private async Task<ResourceViewModel> GetViewModel(string bundle, string dateOfBirth, string nhsNumber, string heading)
         {
             try
             {
@@ -620,8 +627,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                
                 var patient = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Patient).Cast<Patient>().FirstOrDefault();
 
-               
-
                 var title = "";
                 title = patient.Name.Any() ? patient.Name.FirstOrDefault().PrefixElement.FirstOrDefault().ToString() : "";
                 var sectionsDivs = compositions.SelectMany(x => x.Section.Select(y => y.Text.Div)).ToList();
@@ -632,13 +637,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 var age = dob.CalculateAge();
 
                 vm.Div = div;
-
-                var demographicsDiff = GetDemographicsDiff(patient);
+                var demographicsDiff = await GetDemographicsDiff(patient);
 
                 vm.DemographicsDiffDiv = demographicsDiff;
-
                 vm.Patient = patient;
-                vm.Detail = "PLEXUS Summary";
+                vm.Detail = "PLEXUS SUMMARY";
                 vm.Heading = heading;
                 vm.FormattedDateOfBirth = dateOfBirth;
                 vm.NhsNumber = nhsNumber;
@@ -875,7 +878,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             if(differencesFound)
             {
-                s= await this.RenderViewAsync("~/Views/Shared/_DemographicsDisplay.cshtml", model);
+                s = await this.RenderViewAsync("~/Views/Shared/_DemographicsDisplay.cshtml", model);
+                HttpContext.Session.Set<string>(Constants.ViewerSessionDemographicDiv, s);
+
             }
 
             return s;
