@@ -10,6 +10,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
+using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
+using System.Security.Claims;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
 {
@@ -60,11 +62,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
     {
 
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private ICacheService _redisCache;
         private ISession _userSession => _httpContextAccessor.HttpContext.Session;
 
-        public SessionTimeout(IHttpContextAccessor httpContextAccessor)
+        public SessionTimeout(ICacheService redisCache,IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
+            _redisCache = redisCache;
         }
 
         public async override void OnActionExecuting(ActionExecutingContext filterContext)
@@ -78,6 +82,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
                 filterContext.Result = new RedirectResult("~/Account/SessionLogin");
                 return;
             }
+            else
+            {
+                var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                var userLoggedinSessionDetails = _redisCache.GetValueOrTimeOut<string>(userId);
+                if(userLoggedinSessionDetails != userSessionLoggedIn)
+                {
+                    filterContext.Result = new RedirectResult("~/Account/UserAlreadyLoggedIn");
+                    return;
+                }
+            }
+
 
             base.OnActionExecuting(filterContext);
         }

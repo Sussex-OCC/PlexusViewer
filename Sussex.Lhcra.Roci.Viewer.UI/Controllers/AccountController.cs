@@ -17,8 +17,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private ISession _userSession => _httpContextAccessor.HttpContext.Session;
 
-      
-
         public AccountController(ICacheService redisCache, IHttpContextAccessor httpContextAccessor)
         {
             _redisCache = redisCache;
@@ -45,7 +43,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
             else
             {
-                _redisCache.SetValue(userId, "");
+                if (!string.IsNullOrEmpty(userId))
+                    _redisCache.SetValue(userId, "");
+
                 return View();
             }
         }
@@ -53,6 +53,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         [HttpGet]
         public IActionResult UserAlreadyLoggedIn()
         {
+            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+            if(!string.IsNullOrEmpty(userId))
+              _redisCache.SetValue(userId, "");
+
             return View();
         }
 
