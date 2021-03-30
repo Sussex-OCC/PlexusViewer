@@ -608,7 +608,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         }
 
         
-        public async Task<JsonResult> getdemographicdiv()
+        public async Task<JsonResult> GetDemographicDiv()
         {
             var s = HttpContext.Session.Get<string>(Constants.ViewerSessionDemographicDiv);
             return Json(new { content = s });
@@ -720,6 +720,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 spineGivennames.Add(spineGivenName2);
             }
 
+            //spineGivennames.Add("Andrew");
+
             if (spineGivennames.Any() || givenNames.Any())
             {
                 if (!spineGivennames.Any())
@@ -734,7 +736,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 }
                 else
                 {
-                    var givennamesDiff = givenNames.Except(spineGivennames, StringComparer.OrdinalIgnoreCase);
+
+                    var givennamesDiff = spineGivennames.Except(givenNames, StringComparer.OrdinalIgnoreCase);
 
                     if (givennamesDiff.Any())
                     {
@@ -854,7 +857,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 }
             }
 
-            if(patient.Gender.HasValue || !string.IsNullOrEmpty(spineModel.Person.Gender.ToString()))
+            spineModel.Person.Gender = 'F';
+
+            if (patient.Gender.HasValue || !string.IsNullOrEmpty(spineModel.Person.Gender.ToString()))
             {
                 var sameGender = patient.Gender.Value.ToString().ToUpper().Contains(spineModel.Person.Gender);
 
@@ -873,6 +878,21 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 }
                    
             }
+
+            if(patient.ManagingOrganization != null && spineModel.GpPractice != null)
+            {
+                //Do Compare 
+            }
+            else
+            {
+                if(patient.ManagingOrganization == null)
+                {
+                    model.GPPracticeAddress = spineModel.GpPractice.Address;
+                    model.GPPracticeODSCode = spineModel.GpPractice.OdsCode;
+                    differencesFound = true;
+                }
+            }
+
 
             var s = "";
 

@@ -70,7 +70,7 @@
 
                     @if (!string.IsNullOrEmpty(Model.Prefixes))
                     {
-                       <th>Prefixes</th>
+                        <th>Prefixes</th>
                     }
 
                     @if (!string.IsNullOrEmpty(Model.FamilyNames))
@@ -102,6 +102,10 @@
                     @if (!string.IsNullOrEmpty(Model.Gender))
                     {
                         <th>Gender</th>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.GPPracticeODSCode))
+                    {
+                        <th>GPPractice Code</th>
                     }
 
 
@@ -135,6 +139,10 @@
                     @if (!string.IsNullOrEmpty(Model.Gender))
                     {
                         <td>@Model.Gender</td>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.GPPracticeODSCode))
+                    {
+                        <td>@Model.GPPracticeODSCode</td>
                     }
 
                 </tr>

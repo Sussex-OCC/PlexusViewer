@@ -53,9 +53,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
                     return;
                 }
             }
-            catch
+            catch(Exception ex)
             {
-
+                int p = 90;
             }
            
             base.OnActionExecuting(filterContext);

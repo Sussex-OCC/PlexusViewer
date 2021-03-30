@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sussex.Lhcra.Smsp.Domain.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,5 +16,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
         public string GivenNames { get; set; }
         public string FamilyNames { get; set; }
         public string Prefixes { get; set; }
+        public AddressModel GPPracticeAddress { get; set; }
+        public string GPPracticeODSCode { get; set; }
     }
 }

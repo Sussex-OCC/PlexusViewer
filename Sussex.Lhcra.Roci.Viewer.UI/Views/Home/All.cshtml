@@ -51,8 +51,6 @@
         $(this).find('.accordion-heading').not($(e.target)).removeClass('accordion-opened');
     });
 
-    
-
     $(function ()
     {
         var diffDiv = "@Model.DemographicsDiffDiv";
@@ -60,9 +58,7 @@
         if (diffDiv != "")
         {
 
-            //var url = "/home/getproductatanoqtyjson/?id=" + code;
-            var url = "/home/getdemographicdiv"
-
+            var url = "/home/GetDemographicDiv";
 
             $.ajax({
                 url: url,
@@ -77,6 +73,8 @@
                         title: 'There are patient demographics differences',
                         content: data.content,
                         type: 'red',
+                        boxWidth: '100%',
+                        useBootstrap: true,
                         buttons:
                         {
                             cancelUser:
