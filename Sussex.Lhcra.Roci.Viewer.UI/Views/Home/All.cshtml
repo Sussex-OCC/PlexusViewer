@@ -31,13 +31,6 @@
     }
 </style>
 
-
-
-@*<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
-<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>*@
-
-
-
 <script>
     $(window).scroll(function () {
         $("#floating_box").animate({ top: $(window).scrollTop() + "px" }, { queue: false, duration: 350 });
@@ -57,7 +50,6 @@
 
         if (diffDiv != "")
         {
-
             var url = "/home/GetDemographicDiv";
 
             $.ajax({
@@ -70,7 +62,7 @@
                 },
                 success: function (data) {
                     $.confirm({
-                        title: 'There are patient demographics differences',
+                        title: 'SMSP/GPConnect demographics differences found!',
                         content: data.content,
                         type: 'red',
                         boxWidth: '100%',
@@ -101,9 +93,7 @@
 
 </script>
 
-
 <div id="demoGraphicsDiv" class="row">
-
 </div>
 
 <div class="row">

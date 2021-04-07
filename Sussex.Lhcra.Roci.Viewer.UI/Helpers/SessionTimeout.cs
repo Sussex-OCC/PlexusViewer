@@ -27,7 +27,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
             _redisCache = redisCache;
         }
 
-        public async override void OnActionExecuting(ActionExecutingContext filterContext)
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             try
             {
@@ -44,18 +44,18 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
                 }
                 else if (string.IsNullOrEmpty(userSessionLoggedInId) && !string.IsNullOrEmpty(userCacheSessionId))
                 {
-                    filterContext.Result = new RedirectResult("~/Account/SessionExpired");
+                    filterContext.Result = new RedirectResult("~/Account/SignOut");
                     return;
                 }
                 else if (userSessionLoggedInId != userCacheSessionId)
                 {
-                    filterContext.Result = new RedirectResult("~/Account/UserAlreadyLoggedIn");
+                    filterContext.Result = new RedirectResult("~/Account/SignOut");
                     return;
                 }
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                int p = 90;
+               
             }
            
             base.OnActionExecuting(filterContext);

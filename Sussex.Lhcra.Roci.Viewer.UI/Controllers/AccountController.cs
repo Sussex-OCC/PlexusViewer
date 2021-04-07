@@ -23,34 +23,21 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
-    
         [HttpGet]
-        public IActionResult SessionExpired()
+        public IActionResult SignOut(string page)
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
             try
             {
                 if (!string.IsNullOrEmpty(userId))
-                    _redisCache.SetValue(userId, "");
+                    _redisCache.SetValue(userId, "");//Only reason for the try/catch is if redis instance cant be accesed it throws an error that needs catching
             }
             catch
             {
             }
 
-            return View();
-
-        }
-
-        [HttpGet]
-        public IActionResult UserAlreadyLoggedIn()
-        {
-            return View();
-        }
-
-        [HttpGet]
-        public IActionResult SignOut(string page)
-        {
+            //TODO: Sign out user on azure
             return View();
         }
     }
