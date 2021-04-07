@@ -30,10 +30,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         [HttpGet]
         public async Task<IActionResult> SignOut(string page)
         {
-            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-
+            
             try
             {
+                var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
                 var userCacheSessionId = _redisCache.GetValueOrTimeOut<string>(userId);
 
                 if (!string.IsNullOrEmpty(userCacheSessionId))
