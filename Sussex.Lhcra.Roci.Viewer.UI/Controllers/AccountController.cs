@@ -34,17 +34,21 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             try
             {
-                if (!string.IsNullOrEmpty(userId))
+                var userCacheSessionId = _redisCache.GetValueOrTimeOut<string>(userId);
+
+                if (!string.IsNullOrEmpty(userCacheSessionId))
                     _redisCache.SetValue(userId, "");//Only reason for the try/catch is if redis instance cant be accesed it throws an error that needs catching
 
-                await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                _httpContextAccessor.HttpContext.Session.Set<string>(Constants.ViewerSessionLoggedIn, null);
+
             }
             catch
             {
             }
 
             //TODO: Sign out user on azure
+            await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return View();
         }
     }

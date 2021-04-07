@@ -55,11 +55,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
             }
             catch(Exception)
             {
-               
             }
            
             base.OnActionExecuting(filterContext);
-
         }
     }
 }
