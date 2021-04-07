@@ -6,6 +6,10 @@ using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -24,7 +28,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         }
 
         [HttpGet]
-        public IActionResult SignOut(string page)
+        public async Task<IActionResult> SignOut(string page)
         {
             var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
@@ -32,6 +36,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 if (!string.IsNullOrEmpty(userId))
                     _redisCache.SetValue(userId, "");//Only reason for the try/catch is if redis instance cant be accesed it throws an error that needs catching
+
+                await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             }
             catch
             {
