@@ -51,6 +51,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return View();
+
+
         }
     }
 }
