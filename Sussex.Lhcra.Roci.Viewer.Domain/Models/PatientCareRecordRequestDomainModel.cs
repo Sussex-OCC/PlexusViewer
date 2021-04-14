@@ -20,6 +20,7 @@ namespace Sussex.Lhcra.Roci.Viewer.Domain.Models
                     AddressLine4 = model.Person.Address.AddressLine4,
                     AddressLine5 = model.Person.Address.AddressLine5
                 },
+
                 DateOfBirth = model.Person.DateOfBirth,
                 FamilyName = model.Person.FamilyName,
                 Gender = model.Person.Gender,
