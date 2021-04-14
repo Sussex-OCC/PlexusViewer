@@ -23,6 +23,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using Sussex.Lhcra.Roci.Viewer.Services.Core;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -32,9 +33,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IConfiguration _configuration;
-
+        private readonly IAppSecretsProvider _appSecretsProvider;
         private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
-
         private readonly ISmspProxyDataService _smspProxyDataService;
         private readonly IRociGatewayDataService _rociGatewayDataService;
         private readonly IIpAddressProvider _ipAddressProvider;
@@ -53,7 +53,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
              ITokenService tokenService,
              IOptions<LoggingServiceADSetting> loggingServiceOption,
              IOptions<AuditServiceADSetting> auditServiceOption,
-            IConfiguration configuration)
+            IConfiguration configuration, IAppSecretsProvider appSecretsProvider)
         {
             _logger = logger;
             _viewerConfiguration = configurationOption.Value;
@@ -65,10 +65,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _loggingAdSettings = loggingServiceOption.Value;
             _auditAdSettings = auditServiceOption.Value;
             _configuration = configuration;
+            _appSecretsProvider = appSecretsProvider;
         }
 
         protected bool IsProd => _configuration.GetValue<bool>("IsProd");
-
         protected string SmspIntEnvAsid => _configuration.GetValue<string>("SmspIntEnvAsid");
 
       
@@ -81,6 +81,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             };
 
             return View(vm);
+
         }
 
        
@@ -123,6 +124,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             return View(Constants.All, vm);
+
         }
 
        

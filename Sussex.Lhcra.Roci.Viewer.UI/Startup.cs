@@ -26,6 +26,8 @@ using Sussex.Lhcra.Common.ClientServices;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Redis;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
+using Sussex.Lhcra.Roci.Viewer.Services.Core;
+using Sussex.Lhcra.Roci.Viewer.Services;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -72,15 +74,20 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             var auditMessageBrokerTopicPublisher = new TopicPublisher(auditTopicServicebusConfig);
 
             services.AddHttpClient<IAuditDataService, AuditDataService>();
+
             services.AddHttpClient<IAppLogDataService, AppLogDataService>();
 
             services.AddScoped<IRociGatewayDataService, RociGatewayDataService>();
+
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
 
             var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
 
-            services.AddSingleton<ICacheService>(provider => new CacheService(config.DatabaseConnectionStrings.RedisCacheConnectionString));
+            services.AddSingleton<IAppSecretsProvider>(provider => 
+            new AppSecretsProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId,
+            config.KeyVault.KeyVaultclientSecret));
 
+            //services.AddSingleton<ICacheService>(provider => new CacheService(config.DatabaseConnectionStrings.RedisCacheConnectionString));
 
             services.AddScoped<IAuditLogTopicPublisher>(x => new AuditLogTopicPublisher(auditMessageBrokerTopicPublisher));
 
@@ -101,8 +108,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 options.IdleTimeout = TimeSpan.FromSeconds(config.SessionTimeout);
                 options.Cookie.IsEssential = true;
             });
-
-          
 
             //services.AddDistributedRedisCache(o =>
             //{

@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Sussex.Lhcra.Roci.Viewer.Services.Core;
+using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
+using Microsoft.Extensions.Options;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -17,13 +20,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
     public class AccountController : Controller
     {
         private ICacheService _redisCache;
-
         private readonly IHttpContextAccessor _httpContextAccessor;
         private ISession _userSession => _httpContextAccessor.HttpContext.Session;
+        private readonly IAppSecretsProvider _appSecretsProvider;
+        private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
 
-        public AccountController(ICacheService redisCache, IHttpContextAccessor httpContextAccessor)
+        public AccountController(IAppSecretsProvider appSecretsProvider, 
+            IHttpContextAccessor httpContextAccessor, IOptions<ViewerAppSettingsConfiguration> configurationOption)
         {
-            _redisCache = redisCache;
+            _viewerConfiguration = configurationOption.Value;
+            _appSecretsProvider = appSecretsProvider;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -33,6 +39,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             
             try
             {
+                var redisConn = await _appSecretsProvider.GetSecretAsync(_viewerConfiguration.DatabaseConnectionStrings.RedisCacheConnectionString);
+                _redisCache = new CacheService(redisConn);
+
                 var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
                 var userCacheSessionId = _redisCache.GetValueOrTimeOut<string>(userId);
