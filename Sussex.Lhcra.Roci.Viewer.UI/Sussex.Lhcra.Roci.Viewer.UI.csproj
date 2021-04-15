@@ -17,10 +17,10 @@
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.6.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.9" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.5" />
-    <PackageReference Include="Sussex.Lchra.AzureServiceBusMessageBroker.Publisher" Version="1.0.0" />
-    <PackageReference Include="Sussex.Lchra.MessageBroker.Common" Version="1.0.0" />
-    <PackageReference Include="Sussex.Lhcra.Common.ClientServices" Version="1.3.34" />
-    <PackageReference Include="Sussex.Lhcra.Common.Domain" Version="1.3.34" />
+    <PackageReference Include="Sussex.Lchra.AzureServiceBusMessageBroker.Publisher" Version="1.0.1" />
+    <PackageReference Include="Sussex.Lchra.MessageBroker.Common" Version="1.0.1" />
+    <PackageReference Include="Sussex.Lhcra.Common.ClientServices" Version="1.3.43" />
+    <PackageReference Include="Sussex.Lhcra.Common.Domain" Version="1.3.43" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,32 +1,28 @@
 ﻿using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
-using Sussex.Lhcra.Common.ClientServices.Interfaces;
-using Sussex.Lhcra.Common.Domain.Audit.Models;
-using Sussex.Lhcra.Common.Domain.Constants;
 using Sussex.Lhcra.Roci.Viewer.DataServices;
-using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
+using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.Domain.Models;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
 using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using Sussex.Lhcra.Roci.Viewer.UI.Models;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
-    
+
     //[ServiceFilter(typeof(SessionTimeout))]
     public class HomeController : Controller
     {
@@ -39,31 +35,22 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly IRociGatewayDataService _rociGatewayDataService;
         private readonly IIpAddressProvider _ipAddressProvider;
         private readonly ITokenService _tokenService;
-        private readonly LoggingServiceADSetting _loggingAdSettings;
-        private readonly AuditServiceADSetting _auditAdSettings;
-        private readonly IAuditLogTopicPublisher _auditLogTopicPublisher;
 
         public HomeController(
             ILogger<HomeController> logger,
             IOptions<ViewerAppSettingsConfiguration> configurationOption,
             ISmspProxyDataService smspProxyDataService,
             IRociGatewayDataService rociGatewayDataService,
-            IAuditLogTopicPublisher auditLogTopicPublisher,
             IIpAddressProvider ipAddressProvider,
              ITokenService tokenService,
-             IOptions<LoggingServiceADSetting> loggingServiceOption,
-             IOptions<AuditServiceADSetting> auditServiceOption,
             IConfiguration configuration)
         {
             _logger = logger;
             _viewerConfiguration = configurationOption.Value;
             _smspProxyDataService = smspProxyDataService;
             _rociGatewayDataService = rociGatewayDataService;
-            _auditLogTopicPublisher = auditLogTopicPublisher;
             _ipAddressProvider = ipAddressProvider;
             _tokenService = tokenService;
-            _loggingAdSettings = loggingServiceOption.Value;
-            _auditAdSettings = auditServiceOption.Value;
             _configuration = configuration;
         }
 
@@ -71,7 +58,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         protected string SmspIntEnvAsid => _configuration.GetValue<string>("SmspIntEnvAsid");
 
-      
+
         public IActionResult Index()
         {
             var vm = new ResourceViewModel
@@ -83,7 +70,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             return View(vm);
         }
 
-       
+
 
         [HttpPost]
         public async Task<IActionResult> Summary(DateTime dateOfBirth, string nhsNumber)
@@ -106,8 +93,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
 
-            await LogAuditRecordModel(Request, spineModel, guid, Constants.Summary);
-
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, organisationAsid, spineModel);
 
             if (null == pBundle)
@@ -125,7 +110,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             return View(Constants.All, vm);
         }
 
-       
+
         [HttpGet]
         public async Task<IActionResult> Summary(string dob, string nhsNumber)
         {
@@ -141,8 +126,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -177,8 +160,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.ProblemsAndIssues);
-
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.ProblemsAndIssues, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
@@ -211,8 +192,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Immunisations);
-
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Immunisations, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
@@ -243,9 +222,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Investigations);
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;          
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Investigations, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -280,7 +257,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Medication);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Medication, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -314,8 +290,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Allergies);
-
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Allergies, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
@@ -347,8 +321,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Encounters);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Encounters, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -382,8 +354,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Observations);
-
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Observations, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
@@ -416,8 +386,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Referrals);
-
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Referrals, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
@@ -449,8 +417,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), _tokenService.GetUserRole().ToString());
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, _tokenService.GetUserRole().ToString(), correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -485,8 +451,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.MentalHealthCrisisPlans);
-
             var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, correlationId, spineModel.OrganisationAsId, spineModel);
 
             return View(Constants.MentalHealthCrisisPlans, patientCarePlanRecords);
@@ -510,8 +474,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.CommunityCarePlans);
-
             var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.CommunityCarePlans, correlationId, spineModel.OrganisationAsId, spineModel);
 
             return View(Constants.CommunityCarePlans, patientCarePlanRecords);
@@ -532,8 +494,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Admin);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Admin, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -558,7 +518,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             if (HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName) == null)
             {
                 HttpContext.Session.Set<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName, model);
-              
+
             }
         }
 
@@ -567,22 +527,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             return HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName);
         }
 
-        private async Task<bool> LogAuditRecordModel(HttpRequest request, PatientCareRecordRequestDomainModel model, Guid correlationId, string section)
-        {
-            var auditLog = new AuditLogRequestModel(AppDomainType.Plexus, _ipAddressProvider.GetClientIpAddress(), _ipAddressProvider.GetHostIpAddress(), _tokenService.GetSystemIdentifier(), _viewerConfiguration.ApplicationName + $" --SECTION--(" + section + ")"
-                                                    , GetAbsolutePath(Request), model.OrganisationAsId, model.PractitionerId, model.NhsNumber, _tokenService.GetUsername(), _tokenService.GetTokenString(), Guid.NewGuid().ToString()
-                                                    , Guid.NewGuid().ToString(), correlationId, _tokenService.GetUserRole());
-            try
-            {
-                await _auditLogTopicPublisher.PublishAsync(auditLog);
-            }
-            catch
-            {
-                return false;
-            }
-
-            return true;
-        }
 
         private string GetAbsolutePath(HttpRequest request)
         {
@@ -598,7 +542,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         }
 
-        
+
         public async Task<JsonResult> GetDemographicDiv()
         {
             var s = HttpContext.Session.Get<string>(Constants.ViewerSessionDemographicDiv);
@@ -609,13 +553,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             try
             {
-                
+
                 var fjp = new FhirJsonParser();
                 var gpBundle = fjp.Parse<Hl7.Fhir.Model.Bundle>(bundle);
                 var vm = new ResourceViewModel();
 
                 var compositions = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Composition).Cast<Composition>().ToList();
-               
+
                 var patient = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Patient).Cast<Patient>().FirstOrDefault();
 
                 var title = "";
@@ -679,9 +623,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             var spineGivennames = new List<string>();
 
-            if(!string.IsNullOrEmpty(spineModel.Person.Prefix) && prefixes.Any())
+            if (!string.IsNullOrEmpty(spineModel.Person.Prefix) && prefixes.Any())
             {
-                if(!prefixes.Contains(spineModel.Person.Prefix.Trim().ToUpper()))
+                if (!prefixes.Contains(spineModel.Person.Prefix.Trim().ToUpper()))
                 {
                     model.Prefixes = spineModel.Person.Prefix.Trim().ToUpper();
                     differencesFound = true;
@@ -689,12 +633,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
             else
             {
-                if(string.IsNullOrEmpty(spineModel.Person.Prefix))
+                if (string.IsNullOrEmpty(spineModel.Person.Prefix))
                 {
                     model.Prefixes = String.Join(",", prefixes.ToList());
                     differencesFound = true;
                 }
-                else if(!prefixes.Any())
+                else if (!prefixes.Any())
                 {
                     model.Prefixes = spineModel.Person.Prefix;
                     differencesFound = true;
@@ -738,11 +682,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 }
             }
 
-            if(familyNames.Any() && !string.IsNullOrEmpty(spineModel.Person.FamilyName))
+            if (familyNames.Any() && !string.IsNullOrEmpty(spineModel.Person.FamilyName))
             {
                 var familyNameExists = familyNames.Contains(spineModel.Person.FamilyName.Trim().ToUpper());
 
-                if(familyNameExists)
+                if (familyNameExists)
                 {
                     model.FamilyNames = spineModel.Person.FamilyName;
                     differencesFound = true;
@@ -750,12 +694,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
             else
             {
-                if(!familyNames.Any())
+                if (!familyNames.Any())
                 {
                     model.FamilyNames = spineModel.Person.FamilyName;
                     differencesFound = true;
                 }
-                else if(string.IsNullOrEmpty(spineModel.Person.FamilyName))
+                else if (string.IsNullOrEmpty(spineModel.Person.FamilyName))
                 {
                     model.FamilyNames = spineModel.Person.FamilyName;
                     differencesFound = true;
@@ -766,7 +710,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 var postcodes = patient.Address.Where(x => !string.IsNullOrEmpty(x.PostalCode)).Select(x => x.PostalCode.Trim().ToUpper());
                 var gpConnectAddresses = patient.Address.SelectMany(x => x.Line);
-                
+
                 var spinePostcode = spineModel.Person.Address.PostalCode;
                 var address1 = spineModel.Person.Address.AddressLine1;
                 var address2 = spineModel.Person.Address.AddressLine2;
@@ -776,7 +720,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
                 var spineAddressList = new List<string>();
 
-                if(!string.IsNullOrEmpty(address1))
+                if (!string.IsNullOrEmpty(address1))
                 {
                     spineAddressList.Add(address1);
                 }
@@ -797,24 +741,24 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     spineAddressList.Add(address5);
                 }
 
-                if (postcodes != null  && postcodes.Any() && string.IsNullOrEmpty(spinePostcode))
+                if (postcodes != null && postcodes.Any() && string.IsNullOrEmpty(spinePostcode))
                 {
                     var postCodeExist = postcodes.Contains(spinePostcode.Trim().ToUpper());
-                    if(!postCodeExist)
+                    if (!postCodeExist)
                     {
                         model.Postcode = spinePostcode;
                         differencesFound = true;
                     }
                 }
 
-                if(spineAddressList.Any() || gpConnectAddresses.Any())
+                if (spineAddressList.Any() || gpConnectAddresses.Any())
                 {
-                    if(!spineAddressList.Any())
+                    if (!spineAddressList.Any())
                     {
                         model.Addreses = String.Join(", ", gpConnectAddresses.ToList());
                         differencesFound = true;
                     }
-                    else if(!gpConnectAddresses.Any())
+                    else if (!gpConnectAddresses.Any())
                     {
                         model.Addreses = String.Join(", ", spineAddressList.ToList());
                         differencesFound = true;
@@ -823,7 +767,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     {
                         var addressDiff = gpConnectAddresses.Except(spineAddressList, StringComparer.OrdinalIgnoreCase);
 
-                        if(addressDiff.Any())
+                        if (addressDiff.Any())
                         {
                             model.Addreses = String.Join(", ", addressDiff.ToList());
                             differencesFound = true;
@@ -832,7 +776,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 }
             }
 
-            if(string.IsNullOrEmpty(patient.BirthDate))
+            if (string.IsNullOrEmpty(patient.BirthDate))
             {
                 model.DateOfBirth = spineModel.Person.DateOfBirth.ToShortDateString();
                 differencesFound = true;
@@ -862,21 +806,21 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
             else
             {
-                if(string.IsNullOrEmpty(spineModel.Person.Gender.ToString()))
+                if (string.IsNullOrEmpty(spineModel.Person.Gender.ToString()))
                 {
                     model.Gender = spineModel.Person.Gender.ToString();
                     differencesFound = true;
                 }
-                   
+
             }
 
-            if(patient.ManagingOrganization != null && spineModel.GpPractice != null)
+            if (patient.ManagingOrganization != null && spineModel.GpPractice != null)
             {
                 //Do Compare 
             }
             else
             {
-                if(patient.ManagingOrganization == null)
+                if (patient.ManagingOrganization == null)
                 {
                     model.GPPracticeAddress = spineModel.GpPractice.Address;
                     model.GPPracticeODSCode = spineModel.GpPractice.OdsCode;
@@ -887,7 +831,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             var s = "";
 
-            if(differencesFound)
+            if (differencesFound)
             {
                 s = await this.RenderViewAsync("~/Views/Shared/_DemographicsDisplay.cshtml", model);
                 HttpContext.Session.Set<string>(Constants.ViewerSessionDemographicDiv, s);

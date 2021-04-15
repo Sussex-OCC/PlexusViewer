@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Sussex.Lhcra.Smsp.Domain" Version="1.1.8" />
+    <PackageReference Include="Sussex.Lhcra.Smsp.Domain" Version="1.1.12" />
   </ItemGroup>
 
 </Project>

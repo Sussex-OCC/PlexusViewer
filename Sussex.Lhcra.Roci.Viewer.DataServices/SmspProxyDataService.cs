@@ -10,6 +10,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
+using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
+using Sussex.Lhcra.Common.ClientServices.Interfaces;
 
 namespace Sussex.Lhcra.Roci.Viewer.DataServices
 {
@@ -19,19 +21,22 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
         private readonly HttpClient _httpClient;
         private readonly ITokenService _tokenService;
+        private readonly IIpAddressProvider _ipAddressProvider;
+        private readonly ILoggingTopicPublisher _loggingTopicPublisher;
         private readonly RociGatewayADSetting _rociGatewayADSetting;
-        private readonly LoggingServiceADSetting _loggingServiceADSetting;
 
         public SmspProxyDataService(
-            HttpClient httpClient, 
+            HttpClient httpClient,
             ITokenService tokenService,
-            IOptions<RociGatewayADSetting> rociGatewayOptions, 
-            IOptions<LoggingServiceADSetting> loggingServiceOption)
+            IIpAddressProvider ipAddressProvider,
+            IOptions<RociGatewayADSetting> rociGatewayOptions,
+            ILoggingTopicPublisher loggingTopicPublisher)
         {
             _httpClient = httpClient;
             _tokenService = tokenService;
+            _ipAddressProvider = ipAddressProvider;
+            _loggingTopicPublisher = loggingTopicPublisher;
             _rociGatewayADSetting = rociGatewayOptions.Value;
-            _loggingServiceADSetting = loggingServiceOption.Value;
         }
 
         public async Task<string> GetDataContent(string url, string correlationId, string organisationAsId)
@@ -46,100 +51,50 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             HeaderHelper.AddSystemIdentifier("TODO: Add System Identifier", _httpClient);
             HeaderHelper.AddUserRoleId(RoleIdType.Clinician.ToString(), _httpClient);
 
-            var loggingToken = await _tokenService.GetLoggingOrAuditToken(_loggingServiceADSetting.SystemToSystemScope);
-
-            // TODO: Custom logging feature to be added for Roci Viewer/Gateway service. 
-            // await LogRequest(new HttpRequestMessage(), url, url, correlationId, ServiceName, _httpClient.BaseAddress.ToString(), loggingToken);
+            await Log(organisationAsId, string.Empty, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(_httpClient.DefaultRequestHeaders), "Request");
 
             var httpResponse = await _httpClient.GetAsync(url);
             var returnData = await httpResponse.Content.ReadAsStringAsync();
 
-            // TODO: Custom logging feature to be added for Roci Viewer/Gateway service. 
-            //await LogResponse(
-            //    url,
-            //    returnData,
-            //    correlationId,
-            //    ServiceName,
-            //    _httpClient.BaseAddress.ToString(),
-            //    httpResponse,
-            //    (int)httpResponse.StatusCode,
-            //    loggingToken);
+            await Log(organisationAsId, returnData, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(httpResponse.Headers), "Response");       
 
             return returnData;
         }
 
-        // TODO: Custom logging feature to be added for Roci Viewer/Gateway service. 
-        //private async Task<bool> LogRequest(
-        //    HttpRequestMessage request,
-        //    string organisationAsId,
-        //    string content,
-        //    Guid correlationId,
-        //    string applicationName,
-        //    string endpoint, 
-        //    string loggingToken)
-        //{
-        //    var logRecord = new LogRecordRequestModel
-        //    {
-        //        AppName = applicationName,
-        //        CorrelationId = correlationId,
-        //        OrganisationAsId = organisationAsId,
-        //        RequestMethod = LogConstants.RequestType.HttpPost,
-        //        MessageType = LogConstants.MessageType.Request,
-        //        Endpoint = endpoint,
-        //        MessageBody = content,
-        //        Exception = string.Empty,
-        //        MessageHeader = JsonConvert.SerializeObject(request.Headers)
-        //    };
+        private async Task<bool> Log(string organisationAsId, string content,
+                                    Guid correlationId, string applicationName,
+                                    string endpoint, string headerjson,
+                                    string requestType)
+        {
 
-        //    try
-        //    {
-        //        await _loggingDataService.LogRecordAsync(logRecord, loggingToken);
-        //    }
-        //    catch
-        //    {
-        //        return false;
-        //    }
+            try
+            {
+                var plexusLog = new PlexusLogRequestModel
+                {
+                    AppDomainType = AppDomainType.Plexus,
+                    AppName = applicationName,
+                    CorrelationId = correlationId,
+                    ClientIpAddress = _ipAddressProvider.GetClientIpAddress(),
+                    ServerIpAddress = _ipAddressProvider.GetHostIpAddress(),
+                    OrganisationAsId = organisationAsId,
+                    Username = _tokenService.GetUsername(),
+                    UserRoleId = (int)_tokenService.GetUserRole(),
+                    SystemIdentifier = _tokenService.GetSystemIdentifier(),
+                    ServiceEvent = "Read",
+                    RequestType = requestType,
+                    Resource = endpoint,
+                    RequestBody = content,
+                    RequestHeader = headerjson
+                };
 
-        //    return true;
-        //}
+                await _loggingTopicPublisher.PublishAsync(plexusLog, correlationId, Lchra.MessageBroker.Common.Messages.MessageType.LogMessage.PlexusLog);
+            }
+            catch
+            {
+                return false;
+            }
 
-        // TODO: Custom logging feature to be added for Roci Viewer/Gateway service. 
-        //private async Task<bool> LogResponse(
-        //    string organisationAsId,
-        //    string content,
-        //    Guid correlationId,
-        //    string applicationName,
-        //    string endpoint,
-        //    HttpResponseMessage response,
-        //    int statusCode,
-        //    string loggingToken)
-        //{
-
-        //    try
-        //    {
-        //        var logRecord = new LogRecordRequestModel
-        //        {
-        //            AppName = applicationName,
-        //            CorrelationId = correlationId,
-        //            OrganisationAsId = organisationAsId,
-        //            RequestMethod = LogConstants.RequestType.HttpPost,
-        //            MessageType = LogConstants.MessageType.Response,
-        //            Endpoint = endpoint,
-        //            MessageBody = content,
-        //            MessageHeader = JsonConvert.SerializeObject(response.Headers),
-        //            StatusCode = statusCode
-        //        };
-
-
-        //        await _loggingDataService.LogRecordAsync(logRecord, loggingToken);
-        //    }
-        //    catch
-        //    {
-        //        return false;
-        //    }
-
-
-        //    return true;
-        //}
+            return true;
+        }
     }
 }

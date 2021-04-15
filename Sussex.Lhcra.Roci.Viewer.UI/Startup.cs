@@ -6,26 +6,24 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using Sussex.Lchra.AzureServiceBusMessageBroker.Publisher.PublisherTypes;
+using Sussex.Lchra.MessageBroker.Common.Configurations;
 using Sussex.Lhcra.Common.AzureADServices;
+using Sussex.Lhcra.Common.AzureADServices.Interfaces;
+using Sussex.Lhcra.Common.ClientServices;
 using Sussex.Lhcra.Common.ClientServices.Audit;
+using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices.Logging;
 using Sussex.Lhcra.Common.Domain.Audit.Services;
 using Sussex.Lhcra.Common.Domain.Logging.Services;
 using Sussex.Lhcra.Roci.Viewer.DataServices;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
+using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
-using System;
-using Sussex.Lchra.AzureServiceBusMessageBroker.Publisher.PublisherTypes;
-using Sussex.Lchra.MessageBroker.Common;
-using Sussex.Lchra.MessageBroker.Common.Configurations;
-using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
-using Sussex.Lhcra.Common.AzureADServices.Interfaces;
-using Sussex.Lhcra.Common.ClientServices;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Redis;
+using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
+using System;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -60,16 +58,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
 
             services.Configure<ViewerAppSettingsConfiguration>(Configuration.GetSection("ViewerAppSettings"));
-            services.Configure<AuditDataServiceConfig>(Configuration.GetSection(nameof(AuditDataServiceConfig)));
-            services.Configure<LoggingDataServiceConfig>(Configuration.GetSection("AppLogDataServiceConfig"));
-            services.Configure<LoggingServiceADSetting>(Configuration.GetSection(nameof(LoggingServiceADSetting)));
-            services.Configure<AuditServiceADSetting>(Configuration.GetSection(nameof(AuditServiceADSetting)));
+            services.Configure<LoggingDataServiceConfig>(Configuration.GetSection("AppLogDataServiceConfig"));          
             services.Configure<RociGatewayADSetting>(Configuration.GetSection(nameof(RociGatewayADSetting)));
             services.Configure<EmbeddedTokenConfig>(Configuration.GetSection(nameof(EmbeddedTokenConfig)));
 
-            var auditTopicServicebusConfig = new MessageBrokerTopicConfig();
-            Configuration.Bind("AuditLogTopicServiceBusConfig", auditTopicServicebusConfig);
-            var auditMessageBrokerTopicPublisher = new TopicPublisher(auditTopicServicebusConfig);
+            
 
             services.AddHttpClient<IAuditDataService, AuditDataService>();
             services.AddHttpClient<IAppLogDataService, AppLogDataService>();
@@ -79,10 +72,14 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
 
+
+            var loggingConfig = new MessageBrokerTopicConfig();
+            var loggingSection = Configuration.GetSection("LogRecordTopicServiceBusConfig");
+            loggingSection.Bind(loggingConfig);
+            var logMessageBrokerTopicPublisher = new TopicPublisher(loggingConfig);
+            services.AddScoped<ILoggingTopicPublisher>(x => new LoggingTopicPublisher(logMessageBrokerTopicPublisher));
+
             services.AddSingleton<ICacheService>(provider => new CacheService(config.DatabaseConnectionStrings.RedisCacheConnectionString));
-
-
-            services.AddScoped<IAuditLogTopicPublisher>(x => new AuditLogTopicPublisher(auditMessageBrokerTopicPublisher));
 
             services.AddHttpClient<ISmspProxyDataService, SmspProxyDataService>(client =>
             {

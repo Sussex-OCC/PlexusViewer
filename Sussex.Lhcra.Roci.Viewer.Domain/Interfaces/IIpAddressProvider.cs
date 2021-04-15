@@ -1,4 +1,4 @@
-﻿namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
+﻿namespace Sussex.Lhcra.Roci.Viewer.Domain.Interfaces
 {
     public interface IIpAddressProvider
     {

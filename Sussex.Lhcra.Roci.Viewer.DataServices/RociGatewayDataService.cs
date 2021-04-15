@@ -1,7 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
+using Sussex.Lhcra.Common.ClientServices.Interfaces;
+using Sussex.Lhcra.Common.Domain.Constants;
+using Sussex.Lhcra.Common.Domain.Logging.Models;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
+using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -14,17 +18,20 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
     public class RociGatewayDataService : IRociGatewayDataService
     {
         private readonly ITokenService _tokenService;
+        private readonly IIpAddressProvider _ipAddressProvider;
+        private readonly ILoggingTopicPublisher _loggingTopicPublisher;
         private readonly RociGatewayADSetting _rociGatewayADSetting;
-        private readonly LoggingServiceADSetting _loggingServiceADSetting;
 
         public RociGatewayDataService(
             ITokenService tokenService,
             IOptions<RociGatewayADSetting> rociGatewayOptions,
-            IOptions<LoggingServiceADSetting> loggingServiceOption)
+            IIpAddressProvider ipAddressProvider,
+            ILoggingTopicPublisher loggingTopicPublisher)
         {
             _tokenService = tokenService;
+            _ipAddressProvider = ipAddressProvider;
+            _loggingTopicPublisher = loggingTopicPublisher;
             _rociGatewayADSetting = rociGatewayOptions.Value;
-            _loggingServiceADSetting = loggingServiceOption.Value;
         }
 
         public async Task<IEnumerable<PatientCarePlanRecord>> GetCarePlanDataContentAsync(string endPoint, string controllerName, string correlationId, string organisationAsId, PatientCareRecordRequestDomainModel model)
@@ -45,6 +52,16 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                     HeaderHelper.AddCorrelation(correlationId, client);
                     HeaderHelper.AddOrganisationAsId(organisationAsId, client);
 
+                    await Log(
+                         model.OrganisationAsId,
+                         strBody,
+                         new Guid(correlationId),
+                          "Plexus Viewer",
+                         fullEndPoint,
+                         model,
+                         JsonConvert.SerializeObject(client.DefaultRequestHeaders),
+                         "Request");
+
                     using (var stringContent = new StringContent(strBody))
                     {
                         request.Content = stringContent;
@@ -61,15 +78,15 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                             result = JsonConvert.DeserializeObject<List<PatientCarePlanRecord>>(responseContent);
                         }
 
-                        // TODO: Custom logging feature to be added for Roci Viewer/Gateway service. 
-                        //await LogResponse(
-                        //    model.OrganisationAsId,
-                        //    responseContent,
-                        //    new Guid(model.CorrelationId),
-                        //    "Roci Proxy API",
-                        //    fullEndPoint,
-                        //    response,
-                        //    (int)response.StatusCode);
+                        await Log(
+                            model.OrganisationAsId,
+                            responseContent,
+                            new Guid(correlationId),
+                             "Plexus Viewer",
+                            fullEndPoint,
+                            model,
+                            JsonConvert.SerializeObject(response.Headers),
+                            "Response");
                     }
                 }
 
@@ -89,7 +106,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             try
             {
                 string appToken = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_rociGatewayADSetting);
-              
+
                 var strBody = JsonConvert.SerializeObject(model);
                 var fullEndPoint = endPoint + controllerName;
                 using (var client = new HttpClient())
@@ -98,6 +115,16 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
                     HeaderHelper.AddCorrelation(correlationId, client);
                     HeaderHelper.AddOrganisationAsId(organisationAsId, client);
+
+                    await Log(
+                        model.OrganisationAsId,
+                        strBody,
+                        new Guid(correlationId),
+                        "Plexus Viewer",
+                        fullEndPoint,
+                        model,
+                        JsonConvert.SerializeObject(client.DefaultRequestHeaders),
+                        "Request");
 
                     using (var stringContent = new StringContent(strBody))
                     {
@@ -115,15 +142,15 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                             result = JsonConvert.DeserializeObject<PatientCareRecordBundleDomainModel>(responseContent);
                         }
 
-                        // TODO: Custom logging feature to be added for Roci Viewer/Gateway service. 
-                        //await LogResponse(
-                        //    model.OrganisationAsId,
-                        //    responseContent,
-                        //    new Guid(model.CorrelationId),
-                        //    "Roci Proxy API",
-                        //    fullEndPoint,
-                        //    response,
-                        //    (int)response.StatusCode);
+                        await Log(
+                            model.OrganisationAsId,
+                            responseContent,
+                            new Guid(correlationId),
+                            "Plexus Viewer",
+                            fullEndPoint,
+                            model,
+                            JsonConvert.SerializeObject(response.Headers),
+                            "Response");
                     }
                 }
 
@@ -135,45 +162,53 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             }
         }
 
-        // TODO: Custom logging feature to be added for Roci Viewer/Gateway service. 
-        //private async Task<bool> LogResponse(
-        //    string organisationAsId,
-        //    string content,
-        //    Guid correlationId,
-        //    string applicationName,
-        //    string endpoint,
-        //    HttpResponseMessage response,
-        //    int statusCode)
-        //{
 
-        //    try
-        //    {
-        //        var loggingToken = await _tokenService.GetLoggingOrAuditToken(_loggingServiceADSetting.SystemToSystemScope);
+        private async Task<bool> Log(
+            string organisationAsId,
+            string content,
+            Guid correlationId,
+            string applicationName,
+            string endpoint,
+            PatientCareRecordRequestDomainModel patientCareRecordRequest,
+            string headerjson,
+            string requestType)
+        {
+
+            try
+            {
+                var plexusLog = new PlexusLogRequestModel
+                {
+                    AppDomainType = AppDomainType.Plexus,
+                    AppName = applicationName,
+                    CorrelationId = correlationId,
+                    NhsNumber = patientCareRecordRequest.NhsNumber,
+                    ClientIpAddress = _ipAddressProvider.GetClientIpAddress(),
+                    ServerIpAddress = _ipAddressProvider.GetHostIpAddress(),
+                    OrganisationAsId = organisationAsId,
+                    OrganisationOdsCode = patientCareRecordRequest.OrganisationOdsCode,
+                    Username = _tokenService.GetUsername(),
+                    UserRoleId = (int)_tokenService.GetUserRole(),
+                    SystemIdentifier = _tokenService.GetSystemIdentifier(),
+                    ServiceEvent = "Read",
+                    RequestType = requestType,
+                    Resource = endpoint,
+                    RequestBody = content,
+                    PracticeOdsCode = patientCareRecordRequest.GpPractice.OdsCode,
+                    RequestHeader = headerjson
+                };
+
+                await _loggingTopicPublisher.PublishAsync(
+                      plexusLog,
+                      correlationId,
+                      Lchra.MessageBroker.Common.Messages.MessageType.LogMessage.PlexusLog);
+            }
+            catch
+            {
+                return false;
+            }
 
 
-        //        var logRecord = new LogRecordRequestModel
-        //        {
-        //            AppName = applicationName,
-        //            CorrelationId = correlationId,
-        //            OrganisationAsId = organisationAsId,
-        //            RequestMethod = LogConstants.RequestType.HttpPost,
-        //            MessageType = LogConstants.MessageType.Response,
-        //            Endpoint = endpoint,
-        //            MessageBody = content,
-        //            MessageHeader = JsonConvert.SerializeObject(response.Headers),
-        //            StatusCode = statusCode
-        //        };
-
-
-        //        await _loggingDataService.LogRecordAsync(logRecord, loggingToken);
-        //    }
-        //    catch
-        //    {
-        //        return false;
-        //    }
-
-
-        //    return true;
-        //}
+            return true;
+        }
     }
 }
