@@ -1,27 +1,30 @@
 ﻿using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
+using Sussex.Lhcra.Common.ClientServices.Interfaces;
+using Sussex.Lhcra.Common.Domain.Audit.Models;
+using Sussex.Lhcra.Common.Domain.Constants;
 using Sussex.Lhcra.Roci.Viewer.DataServices;
-using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
+using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
 using Sussex.Lhcra.Roci.Viewer.Domain.Models;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
 using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using Sussex.Lhcra.Roci.Viewer.UI.Models;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
+using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -44,9 +47,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ISmspProxyDataService smspProxyDataService,
             IRociGatewayDataService rociGatewayDataService,
             IIpAddressProvider ipAddressProvider,
-             ITokenService tokenService,
-             IOptions<LoggingServiceADSetting> loggingServiceOption,
-             IOptions<AuditServiceADSetting> auditServiceOption,
+            ITokenService tokenService,
             IConfiguration configuration, IAppSecretsProvider appSecretsProvider)
         {
             _logger = logger;
@@ -82,7 +83,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.Username = "PLEXUSVIEWER";
 
             SetPatientModelSession(spineModel);
-
+          
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, organisationAsid, spineModel);
 
             if (null == pBundle)
@@ -101,10 +102,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         }
 
-       
+
         [HttpGet]
         public async Task<IActionResult> Index(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId, 
+            string organisationASID, string organisationODScode, string userId,
             string userName, string userRole, string sessionId, string correlationId,
             string patientGivenName, string patientFamilyName, string patientPostCode,
             string patientGender, string patientPracticeOdsCode, string patientAddress)
@@ -117,7 +118,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
                 .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
 
-            if(!urlModel.IsValid())
+            if (!urlModel.IsValid())
             {
                 return View("InvalidModelErrorPage");
             }
@@ -126,7 +127,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             ViewBag.NhsNumber = nhsNumber;
 
-            if(string.IsNullOrEmpty(correlationId))
+            if (string.IsNullOrEmpty(correlationId))
             {
                 correlationId = Guid.NewGuid().ToString();
             }
@@ -169,6 +170,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         }
 
 
+
         [HttpGet]
         public async Task<IActionResult> Summary(string dob, string nhsNumber)
         {
@@ -183,7 +185,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;           
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -215,7 +217,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;           
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.ProblemsAndIssues, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -248,7 +250,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-
+            
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Immunisations, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
@@ -279,8 +281,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;          
-
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+          
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Investigations, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
@@ -312,8 +314,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;           
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Medication, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -345,7 +346,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;         
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Allergies, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -592,8 +593,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         public PatientCareRecordRequestDomainModel GetPatientModelSession()
         {
             return HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName);
-        }
-
+        }       
 
         private string GetAbsolutePath(HttpRequest request)
         {

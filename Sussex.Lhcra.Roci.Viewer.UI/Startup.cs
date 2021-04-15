@@ -19,23 +19,13 @@ using Sussex.Lhcra.Common.Domain.Logging.Services;
 using Sussex.Lhcra.Roci.Viewer.DataServices;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
 using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
+using Sussex.Lhcra.Roci.Viewer.Services;
+using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
 using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
 using System;
-using Sussex.Lchra.AzureServiceBusMessageBroker.Publisher.PublisherTypes;
-using Sussex.Lchra.MessageBroker.Common;
-using Sussex.Lchra.MessageBroker.Common.Configurations;
-using Sussex.Lhcra.Common.ClientServices.Interfaces;
-using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
-using Sussex.Lhcra.Common.AzureADServices.Interfaces;
-using Sussex.Lhcra.Common.ClientServices;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Redis;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
-using Sussex.Lhcra.Roci.Viewer.Services.Core;
-using Sussex.Lhcra.Roci.Viewer.Services;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -96,8 +86,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             loggingSection.Bind(loggingConfig);
             var logMessageBrokerTopicPublisher = new TopicPublisher(loggingConfig);
             services.AddScoped<ILoggingTopicPublisher>(x => new LoggingTopicPublisher(logMessageBrokerTopicPublisher));
-
-            services.AddSingleton<ICacheService>(provider => new CacheService(config.DatabaseConnectionStrings.RedisCacheConnectionString));
+           
 
             services.AddHttpClient<ISmspProxyDataService, SmspProxyDataService>(client =>
             {
