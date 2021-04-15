@@ -71,21 +71,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         protected bool IsProd => _configuration.GetValue<bool>("IsProd");
         protected string SmspIntEnvAsid => _configuration.GetValue<string>("SmspIntEnvAsid");
 
-      
-        public IActionResult Index()
-        {
-            var vm = new ResourceViewModel
-            {
-                DateOfBirth = new DateTime(1927, 6, 19),
-                NhsNumber = "9658218873"
-            };
-
-            return View(vm);
-
-        }
-
-       
-
         [HttpPost]
         public async Task<IActionResult> Summary(DateTime dateOfBirth, string nhsNumber)
         {
@@ -129,6 +114,74 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
        
         [HttpGet]
+        public async Task<IActionResult> Index(string nhsNumber, string dob,
+            string organisationASID, string organisationODScode, string userId, 
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress)
+        {
+
+            UrlParemetersModel urlModel = new UrlParemetersModel();
+
+            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
+                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
+                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+
+            if(!urlModel.IsValid())
+            {
+                return View("InvalidModelErrorPage");
+            }
+
+            ViewBag.Dob = dob;
+
+            ViewBag.NhsNumber = nhsNumber;
+
+            if(string.IsNullOrEmpty(correlationId))
+            {
+                correlationId = Guid.NewGuid().ToString();
+            }
+
+            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
+
+            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+
+            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+            spineModel.OrganisationAsId = organisationAsid;
+            spineModel.PractitionerId = correlationId;
+            spineModel.Username = "PLEXUSVIEWER";
+
+            SetPatientModelSession(spineModel);
+
+            SetUrlParametersModelSession(urlModel);
+
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+
+            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
+
+            if (null == pBundle)
+            {
+                return View("Error");
+            }
+
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary);
+
+            if (null == vm)
+            {
+                return View("Error", pBundle);
+            }
+
+            return View(Constants.All, vm);
+
+        }
+
+
+
+        [HttpGet]
         public async Task<IActionResult> Summary(string dob, string nhsNumber)
         {
             var correlationId = Guid.NewGuid().ToString();
@@ -162,7 +215,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             return View(Constants.All, vm);
         }
-
         public async Task<IActionResult> ProblemsAndIssues(string dob, string nhsNumber)
         {
             var correlationId = Guid.NewGuid().ToString();
@@ -561,6 +613,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 HttpContext.Session.Set<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName, model);
               
+            }
+        }
+
+        public void SetUrlParametersModelSession(UrlParemetersModel model)
+        {
+
+            if (HttpContext.Session.Get<UrlParemetersModel>(Constants.ViewerSessionUrlParametersKeyName) == null)
+            {
+                HttpContext.Session.Set<UrlParemetersModel>(Constants.ViewerSessionUrlParametersKeyName, model);
+
             }
         }
 
