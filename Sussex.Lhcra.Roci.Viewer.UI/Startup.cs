@@ -24,6 +24,18 @@ using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
 using System;
+using Sussex.Lchra.AzureServiceBusMessageBroker.Publisher.PublisherTypes;
+using Sussex.Lchra.MessageBroker.Common;
+using Sussex.Lchra.MessageBroker.Common.Configurations;
+using Sussex.Lhcra.Common.ClientServices.Interfaces;
+using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
+using Sussex.Lhcra.Common.AzureADServices.Interfaces;
+using Sussex.Lhcra.Common.ClientServices;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Redis;
+using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
+using Sussex.Lhcra.Roci.Viewer.Services.Core;
+using Sussex.Lhcra.Roci.Viewer.Services;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -65,14 +77,20 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             
 
             services.AddHttpClient<IAuditDataService, AuditDataService>();
+
             services.AddHttpClient<IAppLogDataService, AppLogDataService>();
 
             services.AddScoped<IRociGatewayDataService, RociGatewayDataService>();
+
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
 
             var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
 
+            services.AddSingleton<IAppSecretsProvider>(provider => 
+            new AppSecretsProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId,
+            config.KeyVault.KeyVaultclientSecret));
 
+            //services.AddSingleton<ICacheService>(provider => new CacheService(config.DatabaseConnectionStrings.RedisCacheConnectionString));
             var loggingConfig = new MessageBrokerTopicConfig();
             var loggingSection = Configuration.GetSection("LogRecordTopicServiceBusConfig");
             loggingSection.Bind(loggingConfig);
@@ -98,8 +116,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 options.IdleTimeout = TimeSpan.FromSeconds(config.SessionTimeout);
                 options.Cookie.IsEssential = true;
             });
-
-          
 
             //services.AddDistributedRedisCache(o =>
             //{

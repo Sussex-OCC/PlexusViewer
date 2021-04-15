@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
 using System.Security.Claims;
+using Sussex.Lhcra.Roci.Viewer.Services.Core;
+using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
+using Microsoft.Extensions.Options;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
 {
@@ -20,18 +23,24 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private ICacheService _redisCache;
         private ISession _userSession => _httpContextAccessor.HttpContext.Session;
+        private readonly IAppSecretsProvider _appSecretsProvider;
+        private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
 
-        public SessionTimeout(ICacheService redisCache,IHttpContextAccessor httpContextAccessor)
+        public SessionTimeout(IAppSecretsProvider appSecretsProvider,
+            IHttpContextAccessor httpContextAccessor, IOptions<ViewerAppSettingsConfiguration> configurationOption)
         {
             _httpContextAccessor = httpContextAccessor;
-            _redisCache = redisCache;
+            _appSecretsProvider = appSecretsProvider;
+            _viewerConfiguration = configurationOption.Value;
         }
 
-        public override void OnActionExecuting(ActionExecutingContext filterContext)
+        public async override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             try
             {
-               
+                var redisConn = await _appSecretsProvider.GetSecretAsync(_viewerConfiguration.DatabaseConnectionStrings.RedisCacheConnectionString);
+                _redisCache = new CacheService(redisConn);
+
                 var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
                 var userCacheSessionId = _redisCache.GetValueOrTimeOut<string>(userId);
                 var userSessionLoggedInId = _userSession.Get<string>(Constants.ViewerSessionLoggedIn);
@@ -55,6 +64,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
             }
             catch(Exception)
             {
+
             }
            
             base.OnActionExecuting(filterContext);

@@ -1,36 +1,14 @@
-﻿@using Microsoft.Extensions.Configuration
-@inject IConfiguration Configuration
+﻿<!DOCTYPE html>
 
-<!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>Our Care Connected</title>
-
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
     <link rel="shortcut icon" href="~/images/favicon.ico">
-
     <link href="../vendor/bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="../dist/css/sb-admin-2.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-    <link href="~/css/CoolTable.css" rel="stylesheet" />
-    <link href="~/confirm/css/jquery-confirm.css" rel="stylesheet" />
-    
-
-    <script src="~/lib/jquery/dist/jquery.js"></script>
-    <script src="~/confirm/js/jquery-confirm.js"></script>
-
-
 </head>
-
 <body>
-
     <div id="wrapper">
         <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0; color:red;">
 
@@ -48,35 +26,6 @@
                 </a>
 
             </div>
-
-            @if (Configuration.GetValue<bool>("EmbeddedMode") == false)
-            {
-                if (User.Identity.IsAuthenticated)
-                {
-                    var userClaims = User.Identity as System.Security.Claims.ClaimsIdentity;
-                    <div class="pull-right">
-                        <div class="text-info ">@userClaims?.FindFirst("name")?.Value</div>
-
-                        @if (userClaims?.HasClaim(claim => claim.Value == "clinical") == true)
-                        {
-                            <div class="text-info ">Role: Clinical</div>
-                        }
-
-                    <div>
-                        <a class="navbar-brand header-text text-danger"  asp-controller="Account" asp-action="SignOut">Sign out</a>
-                        @*<a class="navbar-brand header-text text-danger " asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>*@
-                    </div>
-                    </div>
-
-                }
-                else
-                {
-
-                    <a class="navbar-brand header-text  text-info pull-right" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
-                }
-            }
-
-
 
             <div class="navbar-default sidebar" role="navigation">
 
@@ -169,7 +118,5 @@
             @RenderBody()
         </div>
     </div>
-
 </body>
-
 </html>

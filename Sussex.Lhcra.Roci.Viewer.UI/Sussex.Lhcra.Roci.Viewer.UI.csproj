@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Sussex.Lhcra.Roci.Viewer.DataServices\Sussex.Lhcra.Roci.Viewer.DataServices.csproj" />
     <ProjectReference Include="..\Sussex.Lhcra.Roci.Viewer.Domain\Sussex.Lhcra.Roci.Viewer.Domain.csproj" />
+    <ProjectReference Include="..\Sussex.Lhcra.Roci.Viewer.Services\Sussex.Lhcra.Roci.Viewer.Services.csproj" />
   </ItemGroup>
 
 </Project>
