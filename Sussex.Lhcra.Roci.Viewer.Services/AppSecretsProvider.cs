@@ -26,6 +26,7 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
             var certificateSecret = await GetSecretAsync(certificateName);
             var privateKeyBytes = Convert.FromBase64String(certificateSecret);
             var certificate = new X509Certificate2(privateKeyBytes, (string)null);
+            //Certificate pull down to be tested..
             return certificate;
         }
 
