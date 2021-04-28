@@ -20,17 +20,20 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
         private readonly ITokenService _tokenService;
         private readonly IIpAddressProvider _ipAddressProvider;
         private readonly ILoggingTopicPublisher _loggingTopicPublisher;
+        private readonly HttpClient _httpClient;
         private readonly RociGatewayADSetting _rociGatewayADSetting;
 
         public RociGatewayDataService(
             ITokenService tokenService,
             IOptions<RociGatewayADSetting> rociGatewayOptions,
             IIpAddressProvider ipAddressProvider,
-            ILoggingTopicPublisher loggingTopicPublisher)
+            ILoggingTopicPublisher loggingTopicPublisher,
+            HttpClient httpClient)
         {
             _tokenService = tokenService;
             _ipAddressProvider = ipAddressProvider;
             _loggingTopicPublisher = loggingTopicPublisher;
+            _httpClient = httpClient;
             _rociGatewayADSetting = rociGatewayOptions.Value;
         }
 
@@ -44,13 +47,13 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
                 var strBody = JsonConvert.SerializeObject(model);
                 var fullEndPoint = endPoint + controllerName + "/" + model.NhsNumber;
-                using (var client = new HttpClient())
+             
                 using (var request = new HttpRequestMessage(HttpMethod.Get, fullEndPoint))
                 {
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
 
-                    HeaderHelper.AddCorrelation(correlationId, client);
-                    HeaderHelper.AddOrganisationAsId(organisationAsId, client);
+                    HeaderHelper.AddCorrelation(correlationId, _httpClient);
+                    HeaderHelper.AddOrganisationAsId(organisationAsId, _httpClient);
 
                     await Log(
                          model.OrganisationAsId,
@@ -59,7 +62,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                           "Plexus Viewer",
                          fullEndPoint,
                          model,
-                         JsonConvert.SerializeObject(client.DefaultRequestHeaders),
+                         JsonConvert.SerializeObject(_httpClient.DefaultRequestHeaders),
                          "Request");
 
                     using (var stringContent = new StringContent(strBody))
@@ -68,7 +71,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
                         request.Content.Headers.ContentType.MediaType = "application/json";
 
-                        var response = await client.SendAsync(request);
+                        var response = await _httpClient.SendAsync(request);
 
                         var responseContent = "";
 

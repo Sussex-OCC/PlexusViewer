@@ -26,6 +26,7 @@ using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
 using System;
+using System.Net.Http;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -60,23 +61,26 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
 
             services.Configure<ViewerAppSettingsConfiguration>(Configuration.GetSection("ViewerAppSettings"));
-            services.Configure<LoggingDataServiceConfig>(Configuration.GetSection("AppLogDataServiceConfig"));          
+            services.Configure<LoggingDataServiceConfig>(Configuration.GetSection("AppLogDataServiceConfig"));
             services.Configure<RociGatewayADSetting>(Configuration.GetSection(nameof(RociGatewayADSetting)));
             services.Configure<EmbeddedTokenConfig>(Configuration.GetSection(nameof(EmbeddedTokenConfig)));
 
-            
+
 
             services.AddHttpClient<IAuditDataService, AuditDataService>();
 
             services.AddHttpClient<IAppLogDataService, AppLogDataService>();
 
-            services.AddScoped<IRociGatewayDataService, RociGatewayDataService>();
+            services.AddHttpClient<IRociGatewayDataService, RociGatewayDataService>()
+                     .ConfigurePrimaryHttpMessageHandler<CertificateHttpClientHandler>(); 
 
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
 
+            services.AddTransient<CertificateHttpClientHandler>();
+
             var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
 
-            services.AddSingleton<IAppSecretsProvider>(provider => 
+            services.AddSingleton<IAppSecretsProvider>(provider =>
             new AppSecretsProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId,
             config.KeyVault.KeyVaultclientSecret));
 
@@ -86,12 +90,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             loggingSection.Bind(loggingConfig);
             var logMessageBrokerTopicPublisher = new TopicPublisher(loggingConfig);
             services.AddScoped<ILoggingTopicPublisher>(x => new LoggingTopicPublisher(logMessageBrokerTopicPublisher));
-           
+
+
 
             services.AddHttpClient<ISmspProxyDataService, SmspProxyDataService>(client =>
             {
                 client.BaseAddress = new Uri(config.ProxyEndpoints.SpineMiniServicesEndpoint);
-            });
+            }).ConfigurePrimaryHttpMessageHandler<CertificateHttpClientHandler>();
 
             services.AddScoped<SessionTimeout>();
 
