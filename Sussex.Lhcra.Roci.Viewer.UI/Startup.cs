@@ -59,6 +59,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 services.AddHttpClient<IDownStreamAuthorisation, ADDownStreamAuthorisation>();
             }
 
+            services.AddTransient<CertificateHttpClientHandler>();
 
             services.Configure<ViewerAppSettingsConfiguration>(Configuration.GetSection("ViewerAppSettings"));
             services.Configure<LoggingDataServiceConfig>(Configuration.GetSection("AppLogDataServiceConfig"));
@@ -72,11 +73,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             services.AddHttpClient<IAppLogDataService, AppLogDataService>();
 
             services.AddHttpClient<IRociGatewayDataService, RociGatewayDataService>()
-                     .ConfigurePrimaryHttpMessageHandler<CertificateHttpClientHandler>(); 
+                     .AddHttpMessageHandler<CertificateHttpClientHandler>(); 
 
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
 
-            services.AddTransient<CertificateHttpClientHandler>();
+           
 
             var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
 
@@ -96,7 +97,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             services.AddHttpClient<ISmspProxyDataService, SmspProxyDataService>(client =>
             {
                 client.BaseAddress = new Uri(config.ProxyEndpoints.SpineMiniServicesEndpoint);
-            }).ConfigurePrimaryHttpMessageHandler<CertificateHttpClientHandler>();
+            }).AddHttpMessageHandler<CertificateHttpClientHandler>();
 
             services.AddScoped<SessionTimeout>();
 
