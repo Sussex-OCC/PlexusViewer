@@ -20,6 +20,7 @@ using Sussex.Lhcra.Roci.Viewer.DataServices;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
 using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.Services;
+using Sussex.Lhcra.Roci.Viewer.Services.Configurations;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
 using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
@@ -81,9 +82,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
 
-            services.AddSingleton<IAppSecretsProvider>(provider =>
-            new AppSecretsProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId,
-            config.KeyVault.KeyVaultclientSecret));
+            //services.AddSingleton<ICertificateProvider>(provider =>
+            //new AzureCertificateProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId,
+            //config.KeyVault.KeyVaultclientSecret));
+
+            services.AddSingleton<ICertificateProvider, LocalCertificateProvider>();
+
+            services.Configure<ClientCertificateConfig>(Configuration.GetSection(nameof(ClientCertificateConfig)));
 
             //services.AddSingleton<ICacheService>(provider => new CacheService(config.DatabaseConnectionStrings.RedisCacheConnectionString));
             var loggingConfig = new MessageBrokerTopicConfig();

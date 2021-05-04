@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.Services.Core
 {
-    public interface IAppSecretsProvider
+    public interface ICertificateProvider
     { 
         Task<X509Certificate2> GetCertificate(string certificateName);
         Task<string> GetSecretAsync(string vaultKey);

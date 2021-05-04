@@ -34,7 +34,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IConfiguration _configuration;
-        private readonly IAppSecretsProvider _appSecretsProvider;
+        private readonly ICertificateProvider _appSecretsProvider;
         private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
         private readonly ISmspProxyDataService _smspProxyDataService;
         private readonly IRociGatewayDataService _rociGatewayDataService;
@@ -48,7 +48,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             IRociGatewayDataService rociGatewayDataService,
             IIpAddressProvider ipAddressProvider,
             ITokenService tokenService,
-            IConfiguration configuration, IAppSecretsProvider appSecretsProvider)
+            IConfiguration configuration, ICertificateProvider appSecretsProvider)
         {
             _logger = logger;
             _viewerConfiguration = configurationOption.Value;

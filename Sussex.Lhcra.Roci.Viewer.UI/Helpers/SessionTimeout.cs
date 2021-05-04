@@ -23,10 +23,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
         private readonly IHttpContextAccessor _httpContextAccessor;
         private ICacheService _redisCache;
         private ISession _userSession => _httpContextAccessor.HttpContext.Session;
-        private readonly IAppSecretsProvider _appSecretsProvider;
+        private readonly ICertificateProvider _appSecretsProvider;
         private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
 
-        public SessionTimeout(IAppSecretsProvider appSecretsProvider,
+        public SessionTimeout(ICertificateProvider appSecretsProvider,
             IHttpContextAccessor httpContextAccessor, IOptions<ViewerAppSettingsConfiguration> configurationOption)
         {
             _httpContextAccessor = httpContextAccessor;

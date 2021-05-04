@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.Services
 {
-    public class AppSecretsProvider : IAppSecretsProvider
+    public class AzureCertificateProvider : ICertificateProvider
     {
         private string _vaultUrl;
         private string _clientId;
         private string _clientSecret;
 
-        public AppSecretsProvider(string vaultUrl, string clientId, string clientSecret)
+        public AzureCertificateProvider(string vaultUrl, string clientId, string clientSecret)
         {
             _vaultUrl = vaultUrl;
             _clientId = clientId;

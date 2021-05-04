@@ -22,10 +22,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private ICacheService _redisCache;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private ISession _userSession => _httpContextAccessor.HttpContext.Session;
-        private readonly IAppSecretsProvider _appSecretsProvider;
+        private readonly ICertificateProvider _appSecretsProvider;
         private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
 
-        public AccountController(IAppSecretsProvider appSecretsProvider, 
+        public AccountController(ICertificateProvider appSecretsProvider, 
             IHttpContextAccessor httpContextAccessor, IOptions<ViewerAppSettingsConfiguration> configurationOption)
         {
             _viewerConfiguration = configurationOption.Value;
