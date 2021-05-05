@@ -12,10 +12,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{93C65B22-53CD-4918-8109-C3244CDE0444}"
 	ProjectSection(SolutionItems) = preProject
 		Sussex.Lhcra.Roci.Viewer.UI\Dockerfile = Sussex.Lhcra.Roci.Viewer.UI\Dockerfile
-		..\Sussex.Lhcra.Common.Logging\Nuget.Config = ..\Sussex.Lhcra.Common.Logging\Nuget.Config
+		Nuget.Config = Nuget.Config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sussex.Lhcra.Roci.Viewer.Services", "Sussex.Lhcra.Roci.Viewer.Services\Sussex.Lhcra.Roci.Viewer.Services.csproj", "{C7E923F1-83FA-4FE3-A720-58A80B209E93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Roci.Viewer.Services", "Sussex.Lhcra.Roci.Viewer.Services\Sussex.Lhcra.Roci.Viewer.Services.csproj", "{C7E923F1-83FA-4FE3-A720-58A80B209E93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
