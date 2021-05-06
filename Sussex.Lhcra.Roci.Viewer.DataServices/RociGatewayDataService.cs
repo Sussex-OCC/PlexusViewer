@@ -112,12 +112,12 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
                 var strBody = JsonConvert.SerializeObject(model);
                 var fullEndPoint = endPoint + controllerName;
-                using (var client = new HttpClient())
+              
                 using (var request = new HttpRequestMessage(HttpMethod.Get, fullEndPoint))
                 {
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
-                    HeaderHelper.AddCorrelation(correlationId, client);
-                    HeaderHelper.AddOrganisationAsId(organisationAsId, client);
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
+                    HeaderHelper.AddCorrelation(correlationId, _httpClient);
+                    HeaderHelper.AddOrganisationAsId(organisationAsId, _httpClient);
 
                     await Log(
                         model.OrganisationAsId,
@@ -126,7 +126,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                         "Plexus Viewer",
                         fullEndPoint,
                         model,
-                        JsonConvert.SerializeObject(client.DefaultRequestHeaders),
+                        JsonConvert.SerializeObject(_httpClient.DefaultRequestHeaders),
                         "Request");
 
                     using (var stringContent = new StringContent(strBody))
@@ -135,7 +135,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
                         request.Content.Headers.ContentType.MediaType = "application/json";
 
-                        var response = await client.SendAsync(request);
+                        var response = await _httpClient.SendAsync(request);
 
                         var responseContent = "";
 
