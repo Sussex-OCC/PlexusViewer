@@ -113,6 +113,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
+            nhsNumber = "9658218873";
+            dob = "19-06-1927";
+            correlationId = Guid.NewGuid().ToString();
+
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
@@ -120,7 +124,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             if (!urlModel.IsValid())
             {
-                return View("InvalidModelErrorPage");
+                return View("InvalidModelErrorPage", urlModel);
             }
 
             ViewBag.Dob = dob;
@@ -138,16 +142,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
             spineModel.PractitionerId = correlationId;
+            spineModel.CorrelationId = correlationId;
             spineModel.Username = "PLEXUSVIEWER";
 
             SetPatientModelSession(spineModel);
-
             SetUrlParametersModelSession(urlModel);
 
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+            //spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 
             //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
 
