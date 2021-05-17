@@ -113,9 +113,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            nhsNumber = "9658218873";
-            dob = "19-06-1927";
-            correlationId = Guid.NewGuid().ToString();
+            if(string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
+            {
+                nhsNumber = "9658218873";
+                dob = "19-06-1927";
+                correlationId = Guid.NewGuid().ToString();
+            }
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
@@ -138,9 +141,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
+            organisationAsid = organisationASID ?? organisationAsid;
+
             var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+
+            if(spineModel == null)
+            {
+                return View("InvalidSpineModelErrorPage");
+            }
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
