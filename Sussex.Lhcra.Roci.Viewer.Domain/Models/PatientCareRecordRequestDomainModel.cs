@@ -46,6 +46,9 @@ namespace Sussex.Lhcra.Roci.Viewer.Domain.Models
             NhsNumber = model.NhsNumber;
         }
 
+        [JsonProperty("correlationId")]
+        public string CorrelationId { get; set; }
+
         [JsonProperty("organisationAsId")]
         public string OrganisationAsId { get; set; }
 

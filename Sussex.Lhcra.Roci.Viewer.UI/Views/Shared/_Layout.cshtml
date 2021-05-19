@@ -109,52 +109,82 @@
 
                         </li>
 
-                        <li>
+                        @*<li>
                             <a href="@Url.Action("Index","Home")"><i style="width:30px" class="fas fa-calendar"></i>&nbsp;Dashboard</a>
-                        </li>
+                        </li>*@
 
                         @if (!string.IsNullOrEmpty(ViewBag.Dob) && !string.IsNullOrEmpty(ViewBag.NhsNumber))
                         {
                             <li>
-                                <a href="@Url.Action("Summary","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-briefcase"></i>&nbsp;Summary</a>
+                                <a href="@Url.Action("Summary","Home", new {nhsNumber = ViewBag.NhsNumber,dob = ViewBag.Dob, organisationASID = ViewBag.OrganisationASID,organisationODScode = ViewBag.OrganisationODScode, userId = ViewBag.UserId,
+                                                                            userName = ViewBag.UserName, userRole = ViewBag.UserRole,sessionId = ViewBag.SessionId,correlationId = ViewBag.CorrelationId,
+                                                                            patientGivenName = ViewBag.PatientGivenName, patientFamilyName = ViewBag.PatientFamilyName, patientPostCode = ViewBag.PatientPostCode,
+                                                                            patientGender = ViewBag.PatientGender, patientPracticeOdsCode = ViewBag.PatientPracticeOdsCode, patientAddress = ViewBag.PatientAddress })"><i style="width:30px" class="fas fa-briefcase"></i>&nbsp;Summary</a>
                             </li>
                             <li>
-                                <a href="@Url.Action("ProblemsAndIssues","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-building"></i>&nbsp;Problems And Issues</a>
+                                <a href="@Url.Action("ProblemsAndIssues","Home", new {nhsNumber = ViewBag.NhsNumber,dob = ViewBag.Dob, organisationASID = ViewBag.OrganisationASID,organisationODScode = ViewBag.OrganisationODScode, userId = ViewBag.UserId,
+                                                                            userName = ViewBag.UserName, userRole = ViewBag.UserRole,sessionId = ViewBag.SessionId,correlationId = ViewBag.CorrelationId,
+                                                                            patientGivenName = ViewBag.PatientGivenName, patientFamilyName = ViewBag.PatientFamilyName, patientPostCode = ViewBag.PatientPostCode,
+                                                                            patientGender = ViewBag.PatientGender, patientPracticeOdsCode = ViewBag.PatientPracticeOdsCode, patientAddress = ViewBag.PatientAddress })"><i style="width:30px" class="fas fa-building"></i>&nbsp;Problems And Issues</a>
                             </li>
                             <li>
-                                <a href="@Url.Action("Medication","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-medkit"></i>&nbsp;Medications</a>
+                                <a href="@Url.Action("Medication","Home", new {nhsNumber = ViewBag.NhsNumber,dob = ViewBag.Dob, organisationASID = ViewBag.OrganisationASID,organisationODScode = ViewBag.OrganisationODScode, userId = ViewBag.UserId,
+                                                                            userName = ViewBag.UserName, userRole = ViewBag.UserRole,sessionId = ViewBag.SessionId,correlationId = ViewBag.CorrelationId,
+                                                                            patientGivenName = ViewBag.PatientGivenName, patientFamilyName = ViewBag.PatientFamilyName, patientPostCode = ViewBag.PatientPostCode,
+                                                                            patientGender = ViewBag.PatientGender, patientPracticeOdsCode = ViewBag.PatientPracticeOdsCode, patientAddress = ViewBag.PatientAddress })"><i style="width:30px" class="fas fa-medkit"></i>&nbsp;Medications</a>
                             </li>
                             <li>
-                                <a href="@Url.Action("Allergies","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-bed"></i>&nbsp;Allergies</a>
-                            </li>
-
-                            <li>
-                                <a href="@Url.Action("Encounters","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-ambulance"></i>&nbsp;Encounters</a>
-                            </li>
-                            <li>
-                                <a href="@Url.Action("Observations","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-microphone"></i>&nbsp;Observations</a>
-                            </li>
-                            <li>
-                                <a href="@Url.Action("Immunisations","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-briefcase"></i>&nbsp;Immunisations</a>
-                            </li>
-
-                            <li>
-                                <a href="@Url.Action("Referrals","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-barcode"></i>&nbsp;Referrals</a>
-                            </li>
-                            <li>
-                                <a href="@Url.Action("Clinical","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-balance-scale"></i>&nbsp;Clinical Items</a>
-                            </li>
-                            <li>
-                                <a href="@Url.Action("Admin","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-briefcase"></i>&nbsp;Admin Items</a>
+                                <a href="@Url.Action("Allergies","Home", new {nhsNumber = ViewBag.NhsNumber,dob = ViewBag.Dob, organisationASID = ViewBag.OrganisationASID,organisationODScode = ViewBag.OrganisationODScode, userId = ViewBag.UserId,
+                                                                            userName = ViewBag.UserName, userRole = ViewBag.UserRole,sessionId = ViewBag.SessionId,correlationId = ViewBag.CorrelationId,
+                                                                            patientGivenName = ViewBag.PatientGivenName, patientFamilyName = ViewBag.PatientFamilyName, patientPostCode = ViewBag.PatientPostCode,
+                                                                            patientGender = ViewBag.PatientGender, patientPracticeOdsCode = ViewBag.PatientPracticeOdsCode, patientAddress = ViewBag.PatientAddress })"><i style="width:30px" class="fas fa-bed"></i>&nbsp;Allergies</a>
                             </li>
 
                             <li>
+                                <a href="@Url.Action("Encounters","Home", new {nhsNumber = ViewBag.NhsNumber,dob = ViewBag.Dob, organisationASID = ViewBag.OrganisationASID,organisationODScode = ViewBag.OrganisationODScode, userId = ViewBag.UserId,
+                                                                            userName = ViewBag.UserName, userRole = ViewBag.UserRole,sessionId = ViewBag.SessionId,correlationId = ViewBag.CorrelationId,
+                                                                            patientGivenName = ViewBag.PatientGivenName, patientFamilyName = ViewBag.PatientFamilyName, patientPostCode = ViewBag.PatientPostCode,
+                                                                            patientGender = ViewBag.PatientGender, patientPracticeOdsCode = ViewBag.PatientPracticeOdsCode, patientAddress = ViewBag.PatientAddress })"><i style="width:30px" class="fas fa-ambulance"></i>&nbsp;Encounters</a>
+                            </li>
+                            <li>
+                                <a href="@Url.Action("Observations","Home", new {nhsNumber = ViewBag.NhsNumber,dob = ViewBag.Dob, organisationASID = ViewBag.OrganisationASID,organisationODScode = ViewBag.OrganisationODScode, userId = ViewBag.UserId,
+                                                                            userName = ViewBag.UserName, userRole = ViewBag.UserRole,sessionId = ViewBag.SessionId,correlationId = ViewBag.CorrelationId,
+                                                                            patientGivenName = ViewBag.PatientGivenName, patientFamilyName = ViewBag.PatientFamilyName, patientPostCode = ViewBag.PatientPostCode,
+                                                                            patientGender = ViewBag.PatientGender, patientPracticeOdsCode = ViewBag.PatientPracticeOdsCode, patientAddress = ViewBag.PatientAddress })"><i style="width:30px" class="fas fa-microphone"></i>&nbsp;Observations</a>
+                            </li>
+                            <li>
+                                <a href="@Url.Action("Immunisations","Home", new {nhsNumber = ViewBag.NhsNumber,dob = ViewBag.Dob, organisationASID = ViewBag.OrganisationASID,organisationODScode = ViewBag.OrganisationODScode, userId = ViewBag.UserId,
+                                                                            userName = ViewBag.UserName, userRole = ViewBag.UserRole,sessionId = ViewBag.SessionId,correlationId = ViewBag.CorrelationId,
+                                                                            patientGivenName = ViewBag.PatientGivenName, patientFamilyName = ViewBag.PatientFamilyName, patientPostCode = ViewBag.PatientPostCode,
+                                                                            patientGender = ViewBag.PatientGender, patientPracticeOdsCode = ViewBag.PatientPracticeOdsCode, patientAddress = ViewBag.PatientAddress })"><i style="width:30px" class="fas fa-briefcase"></i>&nbsp;Immunisations</a>
+                            </li>
+
+                            <li>
+                                <a href="@Url.Action("Referrals","Home", new {nhsNumber = ViewBag.NhsNumber,dob = ViewBag.Dob, organisationASID = ViewBag.OrganisationASID,organisationODScode = ViewBag.OrganisationODScode, userId = ViewBag.UserId,
+                                                                            userName = ViewBag.UserName, userRole = ViewBag.UserRole,sessionId = ViewBag.SessionId,correlationId = ViewBag.CorrelationId,
+                                                                            patientGivenName = ViewBag.PatientGivenName, patientFamilyName = ViewBag.PatientFamilyName, patientPostCode = ViewBag.PatientPostCode,
+                                                                            patientGender = ViewBag.PatientGender, patientPracticeOdsCode = ViewBag.PatientPracticeOdsCode, patientAddress = ViewBag.PatientAddress })"><i style="width:30px" class="fas fa-barcode"></i>&nbsp;Referrals</a>
+                            </li>
+                            <li>
+                                <a href="@Url.Action("Clinical","Home", new {nhsNumber = ViewBag.NhsNumber,dob = ViewBag.Dob, organisationASID = ViewBag.OrganisationASID,organisationODScode = ViewBag.OrganisationODScode, userId = ViewBag.UserId,
+                                                                            userName = ViewBag.UserName, userRole = ViewBag.UserRole,sessionId = ViewBag.SessionId,correlationId = ViewBag.CorrelationId,
+                                                                            patientGivenName = ViewBag.PatientGivenName, patientFamilyName = ViewBag.PatientFamilyName, patientPostCode = ViewBag.PatientPostCode,
+                                                                            patientGender = ViewBag.PatientGender, patientPracticeOdsCode = ViewBag.PatientPracticeOdsCode, patientAddress = ViewBag.PatientAddress })"><i style="width:30px" class="fas fa-balance-scale"></i>&nbsp;Clinical Items</a>
+                            </li>
+                            <li>
+                                <a href="@Url.Action("Admin","Home", new {nhsNumber = ViewBag.NhsNumber,dob = ViewBag.Dob, organisationASID = ViewBag.OrganisationASID,organisationODScode = ViewBag.OrganisationODScode, userId = ViewBag.UserId,
+                                                                            userName = ViewBag.UserName, userRole = ViewBag.UserRole,sessionId = ViewBag.SessionId,correlationId = ViewBag.CorrelationId,
+                                                                            patientGivenName = ViewBag.PatientGivenName, patientFamilyName = ViewBag.PatientFamilyName, patientPostCode = ViewBag.PatientPostCode,
+                                                                            patientGender = ViewBag.PatientGender, patientPracticeOdsCode = ViewBag.PatientPracticeOdsCode, patientAddress = ViewBag.PatientAddress })"><i style="width:30px" class="fas fa-briefcase"></i>&nbsp;Admin Items</a>
+                            </li>
+
+                            @*<li>
                                 <a href="@Url.Action("CommunityCarePlans","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-briefcase"></i>&nbsp;Community Care Plans</a>
                             </li>
 
                             <li>
                                 <a href="@Url.Action("MentalHealthCrisisPlans","Home", new {dob = ViewBag.Dob, nhsNumber = ViewBag.NhsNumber })"><i style="width:30px" class="fas fa-briefcase"></i>&nbsp;Mental Health Crisis Plans</a>
-                            </li>
+                            </li>*@
 
                         }
 

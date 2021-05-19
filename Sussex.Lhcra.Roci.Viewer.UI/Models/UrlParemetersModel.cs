@@ -36,11 +36,20 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
             if (string.IsNullOrEmpty(NHSNumber))
                 return false;
 
+            if (string.IsNullOrEmpty(CorrelationId))
+                return false;
+
             return !HasValidationErrors;
         }
 
         public UrlParemetersModel AddDateOfBirth(string val)
         {
+            if (string.IsNullOrEmpty(val))
+            {
+                HasValidationErrors = true;
+                return this;
+            }
+
             DateTime date;
 
             if (DateTime.TryParseExact(val, "dd-MM-yyyy",
