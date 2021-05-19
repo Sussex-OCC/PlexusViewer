@@ -55,8 +55,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
                 services.AddAzureADServices();              
 
-                services.AddSingleton<ICertificateProvider>(provider =>
-                new AzureCertificateProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId, config.KeyVault.KeyVaultclientSecret));
             }
             else
             {
@@ -64,7 +62,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
                 services.AddHttpClient<IDownStreamAuthorisation, ADDownStreamAuthorisation>();
 
-                services.AddSingleton<ICertificateProvider, LocalCertificateProvider>();
+                //services.AddSingleton<ICertificateProvider, LocalCertificateProvider>();
+
+                services.AddSingleton<ICertificateProvider>(provider =>
+                new AzureCertificateProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId, config.KeyVault.KeyVaultclientSecret));
             }
 
             services.AddTransient<CertificateHttpClientHandler>();

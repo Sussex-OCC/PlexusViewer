@@ -24,8 +24,8 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
         public async Task<X509Certificate2> GetCertificate(string certificateName)
         {
             var certificateSecret = await GetSecretAsync(certificateName);
-            var privateKeyBytes = Convert.FromBase64String(certificateSecret);
-            var certificate = new X509Certificate2(privateKeyBytes, (string)null);
+            byte[] clientCertBytes = StringToByteArray(certificateSecret);            
+            var certificate = new X509Certificate2(clientCertBytes);
             //Certificate pull down to be tested..
             return certificate;
         }
@@ -60,6 +60,19 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
 
             return returnValue;
 
+        }
+
+        private static byte[] StringToByteArray(string hex)
+        {
+            int NumberChars = hex.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+
+            for (int i = 0; i < NumberChars; i += 2)
+            {
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            }
+
+            return bytes;
         }
 
     }
