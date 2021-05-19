@@ -43,6 +43,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
+
 
             if (Configuration.GetValue<bool>("EmbeddedMode") == false)
             {
@@ -51,13 +53,18 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                     .EnableTokenAcquisitionToCallDownstreamApi()
                     .AddInMemoryTokenCaches();
 
-                services.AddAzureADServices();
+                services.AddAzureADServices();              
+
+                services.AddSingleton<ICertificateProvider>(provider =>
+                new AzureCertificateProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId, config.KeyVault.KeyVaultclientSecret));
             }
             else
             {
                 services.AddScoped<ITokenService, EmbeddedTokenService>();
 
                 services.AddHttpClient<IDownStreamAuthorisation, ADDownStreamAuthorisation>();
+
+                services.AddSingleton<ICertificateProvider, LocalCertificateProvider>();
             }
 
             services.AddTransient<CertificateHttpClientHandler>();
@@ -74,19 +81,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             services.AddHttpClient<IAppLogDataService, AppLogDataService>();
 
             services.AddHttpClient<IRociGatewayDataService, RociGatewayDataService>()
-                     .AddHttpMessageHandler<CertificateHttpClientHandler>(); 
+                     .AddHttpMessageHandler<CertificateHttpClientHandler>();
 
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
 
-           
-
-            var config = Configuration.GetSection("ViewerAppSettings").Get<ViewerAppSettingsConfiguration>();
-
-            //services.AddSingleton<ICertificateProvider>(provider =>
-            //new AzureCertificateProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId,
-            //config.KeyVault.KeyVaultclientSecret));
-
-            services.AddSingleton<ICertificateProvider, LocalCertificateProvider>();
 
             services.Configure<ClientCertificateConfig>(Configuration.GetSection(nameof(ClientCertificateConfig)));
 
