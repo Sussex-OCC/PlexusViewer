@@ -53,7 +53,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                     .EnableTokenAcquisitionToCallDownstreamApi()
                     .AddInMemoryTokenCaches();
 
-                services.AddAzureADServices();              
+                services.AddAzureADServices();
 
             }
             else
@@ -61,12 +61,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 services.AddScoped<ITokenService, EmbeddedTokenService>();
 
                 services.AddHttpClient<IDownStreamAuthorisation, ADDownStreamAuthorisation>();
-
-                //services.AddSingleton<ICertificateProvider, LocalCertificateProvider>();
-
-                services.AddSingleton<ICertificateProvider>(provider =>
-                new AzureCertificateProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId, config.KeyVault.KeyVaultclientSecret));
             }
+
+            DetermineCertificateType(services, config);
 
             services.AddTransient<CertificateHttpClientHandler>();
 
@@ -131,6 +128,18 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             {
                 options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
             });
+        }
+
+        private static void DetermineCertificateType(IServiceCollection services, ViewerAppSettingsConfiguration config)
+        {
+            if (config.UseLocalCertificate)
+            {
+                services.AddSingleton<ICertificateProvider, LocalCertificateProvider>();
+            }
+            else
+            {
+                services.AddSingleton<ICertificateProvider>(provider => new AzureCertificateProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId, config.KeyVault.KeyVaultclientSecret));
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

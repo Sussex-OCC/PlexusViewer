@@ -8,6 +8,8 @@
 
         public string OrganisationAsId { get; set; }
 
+        public bool UseLocalCertificate { get; set; }
+
         public ProxyEndPointsConfiguration ProxyEndpoints { get; set; }
 
         public DatabaseConnectionStrings DatabaseConnectionStrings { get; set; } = new DatabaseConnectionStrings();
