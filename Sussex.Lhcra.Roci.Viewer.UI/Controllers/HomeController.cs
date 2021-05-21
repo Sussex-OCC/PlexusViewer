@@ -108,7 +108,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
+
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
@@ -189,7 +198,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
+
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
@@ -268,7 +286,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
+
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
@@ -348,7 +375,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
+
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
@@ -427,7 +463,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
+
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
@@ -506,7 +551,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
+
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
@@ -585,7 +639,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
+
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
@@ -664,8 +727,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
 
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
             if (spineModel == null)
@@ -743,7 +814,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
+
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
@@ -821,7 +901,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
+
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
@@ -899,7 +988,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            var strSpineModel = "";
+
+            try
+            {
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+            }
+            catch
+            {
+                return View("InvalidCertErrorPage");
+            }
 
             var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
