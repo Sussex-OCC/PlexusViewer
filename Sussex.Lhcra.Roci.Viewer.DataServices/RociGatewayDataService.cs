@@ -63,7 +63,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                          fullEndPoint,
                          model,
                          JsonConvert.SerializeObject(_httpClient.DefaultRequestHeaders),
-                         "Request");
+                         PlexusConstants.RequestType.HttpGet);
 
                     using (var stringContent = new StringContent(strBody))
                     {
@@ -89,7 +89,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                             fullEndPoint,
                             model,
                             JsonConvert.SerializeObject(response.Headers),
-                            "Response");
+                            PlexusConstants.RequestType.HttpGet);
                     }
                 }
 
@@ -127,7 +127,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                         fullEndPoint,
                         model,
                         JsonConvert.SerializeObject(_httpClient.DefaultRequestHeaders),
-                        "Request");
+                        PlexusConstants.RequestType.HttpGet);
 
                     using (var stringContent = new StringContent(strBody))
                     {
@@ -173,7 +173,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                             fullEndPoint,
                             model,
                             JsonConvert.SerializeObject(response.Headers),
-                            "Response");
+                            PlexusConstants.RequestType.HttpGet);
                     }
                 }
 

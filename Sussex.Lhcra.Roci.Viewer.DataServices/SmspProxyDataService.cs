@@ -51,12 +51,12 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             HeaderHelper.AddSystemIdentifier("TODO: Add System Identifier", _httpClient);
             HeaderHelper.AddUserRoleId(RoleIdType.Clinician.ToString(), _httpClient);
 
-            await Log(organisationAsId, string.Empty, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(_httpClient.DefaultRequestHeaders), "Request");
+            await Log(organisationAsId, string.Empty, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(_httpClient.DefaultRequestHeaders), PlexusConstants.RequestType.HttpGet);
 
             var httpResponse = await _httpClient.GetAsync(url);
             var returnData = await httpResponse.Content.ReadAsStringAsync();
 
-            await Log(organisationAsId, returnData, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(httpResponse.Headers), "Response");       
+            await Log(organisationAsId, returnData, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(httpResponse.Headers), PlexusConstants.RequestType.HttpGet);       
 
             return returnData;
         }
@@ -84,7 +84,11 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                     RequestType = requestType,
                     Resource = endpoint,
                     RequestBody = content,
-                    RequestHeader = headerjson
+                    RequestHeader = headerjson,
+                    UserId="Todo:Add user id",
+                    NhsNumber= "Todo:Add nhs number",
+                    OrganisationOdsCode="Todo: Add ods code",
+                    PracticeOdsCode = "Todo"
                 };
 
                 await _loggingTopicPublisher.PublishAsync(plexusLog, correlationId, Lchra.MessageBroker.Common.Messages.MessageType.LogMessage.PlexusLog);
