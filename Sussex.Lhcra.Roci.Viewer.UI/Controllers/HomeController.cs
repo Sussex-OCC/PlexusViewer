@@ -72,16 +72,24 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             string patientGivenName, string patientFamilyName, string patientPostCode,
             string patientGender, string patientPracticeOdsCode, string patientAddress)
         {
+            //patientGivenName = "Omon";
+            //patientFamilyName = "Ohiro";
+            //patientPostCode = "HA7 4TU";
+            //patientGender = "M";
+            //patientPracticeOdsCode = "ODX";
+            //patientAddress = "24 Criagweil Drive";
+            //organisationASID = "200000001503";
+            //organisationODScode = "L7A7Q";
 
 
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
+            //if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
+            //{
+            //    nhsNumber = "9658218873";
+            //    dob = "19-06-1927";
+            //    correlationId = Guid.NewGuid().ToString();
+            //}
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
@@ -143,7 +151,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary, patientGivenName, patientFamilyName,  patientPostCode,patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -151,8 +159,122 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             return View(Constants.All, vm);
+        }
+
+        private  DemographicsViewModel GetDemographicsDifferences(Patient patient, string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress, string dateOfBirth)
+        {
+            if (patient == null)
+            {
+                return null;
+            }
+
+            DemographicsViewModel model = new DemographicsViewModel();
+
+            var givenNames = patient.Name.SelectMany(x => x.Given);
+            var familyNames = patient.Name.SelectMany(x => x.Family);
+            var otherNames = patient.Name.SelectMany(x => x.Suffix);
+            var fullnames = patient.Name.Select(x => x.Text);
+            var prefixes = patient.Name.SelectMany(x => x.Prefix);
+
+            givenNames = givenNames.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
+            familyNames = familyNames.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
+            fullnames = fullnames.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
+            prefixes = prefixes.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
+
+            var localfamilyName = patientFamilyName;
+            var localGivenName = patientGivenName;
+
+
+            if (familyNames.Any() && !string.IsNullOrEmpty(localfamilyName))
+            {
+                var familyNameExists = familyNames.Contains(localfamilyName.Trim().ToUpper());
+
+                if (!familyNameExists)
+                {
+                    model.FamilyNames = string.Join(",", familyNames);
+                    model.LocalFamilyNames = localfamilyName;
+                    model.DifferencesFound = true;
+                }
+            }
+
+            if (givenNames.Any() && !string.IsNullOrEmpty(localGivenName))
+            {
+                var givenNameExists = givenNames.Contains(localGivenName.Trim().ToUpper());
+
+                if (!givenNameExists)
+                {
+                    model.GivenNames = string.Join(",", givenNames);
+                    model.LocalGivenNames = localGivenName;
+                    model.DifferencesFound = true;
+                }
+            }
+
+            
+            if (patient.Address != null)
+            {
+                var postcodes = patient.Address.Where(x => !string.IsNullOrEmpty(x.PostalCode)).Select(x => x.PostalCode.Trim().ToUpper());
+                var gpConnectAddresses = patient.Address.SelectMany(x => x.Line).ToList();
+                var fullAddress = patient.Address.Select(x => x.Text).ToList();
+                gpConnectAddresses.AddRange(fullAddress);
+                gpConnectAddresses.ForEach(x => x = x.ToUpper());
+
+                if(postcodes.Any())
+                {
+                    var postcodeExists = postcodes.Contains(patientPostCode.Trim().ToUpper());
+
+                    if (!postcodeExists)
+                    {
+                        model.Postcode = string.Join(",", postcodes);
+                        model.LocalPostcode = patientPostCode;
+                        model.DifferencesFound = true;
+                    }
+                }
+
+                if(gpConnectAddresses.Any())
+                {
+                    var addressExists = gpConnectAddresses.Contains(patientAddress.Trim().ToUpper());
+
+                    if (!addressExists)
+                    {
+                        model.Addreses = string.Join(",", gpConnectAddresses);
+                        model.LocalAddreses = patientAddress;
+                        model.DifferencesFound = true;
+                    }
+                }
+            }
+
+            //var localeDob = dateOfBirth;
+
+            //if (!patient.BirthDate.Equals(localeDob))
+            //{
+            //    model.DateOfBirth = patient.BirthDate;
+            //    model.DifferencesFound = true;
+            //}
+
+            if (patient.Gender.HasValue)
+            {
+                var sameGender = patient.Gender.Value.ToString().ToUpper().Contains(patientGender);
+
+                if (!sameGender)
+                {
+                    model.Gender = patient.Gender.Value.ToString();
+                    model.LocalGender = patientGender;
+                    model.DifferencesFound = true;
+                }
+            }
+            
+
+            if (patient.ManagingOrganization != null)
+            {
+               
+            }
+          
+
+            return model;
 
         }
+
 
 
         [HttpGet]
@@ -233,7 +355,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -321,7 +443,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.ProblemsAndIssues);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.ProblemsAndIssues, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -410,7 +532,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Immunisations);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Immunisations, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -498,7 +620,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Medication);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Medication, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -586,7 +708,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Allergies);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Allergies, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -674,7 +796,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Encounters);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Encounters, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -761,7 +883,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Observations);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Observations, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -849,7 +971,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Referrals);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Referrals, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -936,7 +1058,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Admin);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Admin, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -1023,7 +1145,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("Error");
             }
 
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Clinical);
+            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Clinical, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
@@ -1141,7 +1263,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             return Json(new { content = s });
         }
 
-        private async Task<ResourceViewModel> GetViewModel(string bundle, string dateOfBirth, string nhsNumber, string heading)
+        private async Task<ResourceViewModel> GetViewModel(string bundle, string dateOfBirth, string nhsNumber, string heading,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress)
         {
             try
             {
@@ -1164,10 +1288,15 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 var age = dob.CalculateAge();
 
                 vm.Div = div;
-                var demographicsDiff = await GetDemographicsDiff(patient);
+                var demographicsDiff = GetDemographicsDifferences(patient,patientGivenName, patientFamilyName, patientPostCode,patientGender,  patientPracticeOdsCode,  patientAddress, dateOfBirth);
 
-                vm.DemographicsDiffDiv = demographicsDiff;
-                vm.Patient = patient;
+                vm.DemographicsDiffDivModel = demographicsDiff;
+
+                if (demographicsDiff != null && demographicsDiff.DifferencesFound)
+                {
+                    vm.DifferencesFound = 1;
+                }
+                    vm.Patient = patient;
                 vm.Detail = "PLEXUS SUMMARY";
                 vm.Heading = heading;
                 vm.FormattedDateOfBirth = dateOfBirth;

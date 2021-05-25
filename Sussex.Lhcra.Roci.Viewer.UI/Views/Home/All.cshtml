@@ -31,8 +31,11 @@
     }
 </style>
 
+
+
 <script>
-    $(window).scroll(function () {
+    $(window).scroll(function ()
+    {
         $("#floating_box").animate({ top: $(window).scrollTop() + "px" }, { queue: false, duration: 350 });
     });
 
@@ -44,57 +47,173 @@
         $(this).find('.accordion-heading').not($(e.target)).removeClass('accordion-opened');
     });
 
-    @*$(function ()
+    $(function ()
     {
-        var diffDiv = "@Model.DemographicsDiffDiv";
+        var differencesFound = 0;
 
-        if (diffDiv != "")
+        differencesFound = "@Model.DifferencesFound";
+
+        if (differencesFound == 1)
         {
-            var url = "/home/GetDemographicDiv";
+            CreateDemographicDiv();
+        }
 
-            $.ajax({
-                url: url,
-                dataType: "json",
-                type: "GET",
-                error: function ()
-                {
-                    alert("An error occurred.");
-                },
-                success: function (data) {
-                    $.confirm({
-                        title: 'SMSP/GPConnect demographics differences found!',
-                        content: data.content,
-                        type: 'red',
-                        boxWidth: '100%',
-                        useBootstrap: true,
-                        buttons:
+
+        function CreateDemographicDiv()
+        {
+            var list = $("#demoGraphicsDiv");
+
+            $.confirm({
+                title: 'Demographics differences found!',
+                type: 'red',
+                boxWidth: '50%',
+                useBootstrap: false,
+                typeAnimated: true,
+                content: '' + list.html(),
+                buttons: {
+                    formSubmit: {
+                        text: 'CANCEL',
+                        btnClass: 'btn-red',
+                        action: function ()
                         {
-                            cancelUser:
-                            {
-                                text: 'Cancel',
-                                btnClass: 'btn-red',
-                                action: function ()
-                                {
-                                   
-                                }
-                            }
-                        },
-                        onContentReady: function () {
-                            var self = this;
-                        },
-
-                        columnClass: 'medium',
-                    });
+                           
+                        }
+                    }
+                },
+                onContentReady: function ()
+                {
+                    
                 }
             });
         }
-
-    });*@
+    });
 
 </script>
 
-<div id="demoGraphicsDiv" class="row">
-</div>
+@if (Model.DemographicsDiffDivModel != null && Model.DemographicsDiffDivModel.DifferencesFound)
+{
+    <div id="demoGraphicsDiv" class="row" style="display:none;">
+
+        <div class="row">
+            <div class="col-md-12">
+                <p style="color:red;">* Please see below the SMSP demographics differences compared against demographics returned from GPConnect.</p>
+            </div>
+            <div class="col-md-12">
+                <table class="w3-table">
+
+                    <tr>
+
+
+
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.FamilyNames))
+                        {
+                            <th>Family Names</th>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.GivenNames))
+                        {
+                            <th>Given Names</th>
+                        }
+
+
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.Addreses))
+                        {
+                            <th>Address</th>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.Postcode))
+                        {
+                            <th>Postcode</th>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.DateOfBirth))
+                        {
+                            <th>Date Of Birth</th>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.Gender))
+                        {
+                            <th>Gender</th>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.GPPracticeODSCode))
+                        {
+                            <th>GPPractice Code</th>
+                        }
+
+
+                    </tr>
+                    <tr>
+
+
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.FamilyNames))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.FamilyNames</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.GivenNames))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.GivenNames</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.Addreses))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.Addreses</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.Postcode))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.Postcode</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.DateOfBirth))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.DateOfBirth</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.Gender))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.Gender</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.GPPracticeODSCode))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.GPPracticeODSCode</td>
+                        }
+
+                    </tr>
+
+                    <tr>
+
+
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.LocalFamilyNames))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.LocalFamilyNames</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.LocalGivenNames))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.LocalGivenNames</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.LocalAddreses))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.LocalAddreses</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.LocalPostcode))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.LocalPostcode</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.LocalDateOfBirth))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.LocalDateOfBirth</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.LocalGender))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.LocalGender</td>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.LocalGPPracticeODSCode))
+                        {
+                            <td>@Model.DemographicsDiffDivModel.LocalGPPracticeODSCode</td>
+                        }
+
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+    </div>
+}
+
+
 
 <div class="row">
 

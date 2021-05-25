@@ -36,8 +36,50 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
             if (string.IsNullOrEmpty(NHSNumber))
                 return false;
 
+            if (string.IsNullOrEmpty(OrganisationASID))
+                return false;
+
+            if (string.IsNullOrEmpty(OrganisationODScode))
+                return false;
+
+            if (string.IsNullOrEmpty(UserId))
+                return false;
+
+            if (string.IsNullOrEmpty(UserName))
+                return false;
+
+            if (string.IsNullOrEmpty(UserRole))
+                return false;
+
+            if (string.IsNullOrEmpty(SessionId))
+                return false;
+
             if (string.IsNullOrEmpty(CorrelationId))
                 return false;
+
+            if (string.IsNullOrEmpty(PatientGivenName))
+                return false;
+
+            if (string.IsNullOrEmpty(PatientFamilyName))
+                return false;
+
+            if (string.IsNullOrEmpty(PatientPostCode))
+                return false;
+
+            if (string.IsNullOrEmpty(PatientGender))
+                return false;
+
+            if (string.IsNullOrEmpty(PatientPracticeOdsCode))
+                return false;
+
+            if (string.IsNullOrEmpty(PatientAddress))//15
+                return false;
+
+            /*string nhsNumber, string dob,
+            string organisationASID, string organisationODScode, string userId,
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress*/
 
             return !HasValidationErrors;
         }
