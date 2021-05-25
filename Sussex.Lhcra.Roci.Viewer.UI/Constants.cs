@@ -23,6 +23,6 @@
         public const string All = "All";
         public const string Investigations = "Investigations";
         public const string Immunisations = "Immunisations";
-        public const string OrganisationOdsCode = "QNX";
+        public const string OrganisationOdsCode = "QNX";//OCC ODS CODE
     }
 }
