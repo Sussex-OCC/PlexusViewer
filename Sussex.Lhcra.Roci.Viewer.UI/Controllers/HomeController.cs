@@ -72,24 +72,28 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             string patientGivenName, string patientFamilyName, string patientPostCode,
             string patientGender, string patientPracticeOdsCode, string patientAddress)
         {
-            //patientGivenName = "Omon";
-            //patientFamilyName = "Ohiro";
-            //patientPostCode = "HA7 4TU";
-            //patientGender = "M";
-            //patientPracticeOdsCode = "ODX";
-            //patientAddress = "24 Criagweil Drive";
-            //organisationASID = "200000001503";
-            //organisationODScode = "L7A7Q";
+            patientGivenName = "Omon";
+            patientFamilyName = "Ohiro";
+            patientPostCode = "HA7 4TU";
+            patientGender = "M";
+            patientPracticeOdsCode = "ODX";
+            patientAddress = "24 Criagweil Drive";
+            organisationASID = "200000001503";
+            organisationODScode = "L7A7Q";
+            userId = "00012001";
+            userName = "abianue";
+            userRole = "clinician";
+            sessionId = "testSessionId";
 
 
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            //if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            //{
-            //    nhsNumber = "9658218873";
-            //    dob = "19-06-1927";
-            //    correlationId = Guid.NewGuid().ToString();
-            //}
+            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
+            {
+                nhsNumber = "9658218873";
+                dob = "19-06-1927";
+                correlationId = Guid.NewGuid().ToString();
+            }
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)

@@ -28,6 +28,7 @@ using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
 using System;
 using System.Net.Http;
+using System.Reflection;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -117,6 +118,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             //{
             //    o.Configuration = Configuration.GetConnectionString(redisConn);
             //});
+            services.AddSwaggerGen();
 
             services.AddControllersWithViews();
 
@@ -159,6 +161,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", Assembly.GetExecutingAssembly().GetName().Name);
+            });
 
             app.UseRouting();
 
