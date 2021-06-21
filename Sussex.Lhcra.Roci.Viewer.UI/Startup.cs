@@ -117,8 +117,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             //services.AddDistributedRedisCache(o =>
             //{
             //    o.Configuration = Configuration.GetConnectionString(redisConn);
-            //});
-            services.AddSwaggerGen();
+            //});          
 
             services.AddControllersWithViews();
 
@@ -161,13 +160,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             }
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
-            app.UseSwagger();
-
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", Assembly.GetExecutingAssembly().GetName().Name);
-            });
 
             app.UseRouting();
 
