@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+<!DOCTYPE html>
 
 <html>
 <head>
@@ -26,6 +28,32 @@
                 </a>
 
             </div>
+            @if (Configuration.GetValue<bool>("EmbeddedMode") == false)
+            {
+                if (User.Identity.IsAuthenticated)
+                {
+                    var userClaims = User.Identity as System.Security.Claims.ClaimsIdentity;
+                    <div class="pull-right">
+                        <div class="text-info ">@userClaims?.FindFirst("name")?.Value</div>
+
+                        @if (userClaims?.HasClaim(claim => claim.Value == "clinical") == true)
+                        {
+                            <div class="text-info ">Role: Clinical</div>
+                        }
+
+                        <div>
+                            <a class="navbar-brand header-text text-danger" asp-controller="Account" asp-action="SignOut">Sign out</a>
+                            @*<a class="navbar-brand header-text text-danger " asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>*@
+                        </div>
+                    </div>
+
+                }
+                else
+                {
+
+                    <a class="navbar-brand header-text  text-info pull-right" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+                }
+            }
 
             <div class="navbar-default sidebar" role="navigation">
 
@@ -35,32 +63,32 @@
 
                         @*<li class="sidebar-search">
 
-                            <form method="get" action="#" enctype="multipart/form-data">
+                                <form method="get" action="#" enctype="multipart/form-data">
 
-                                <div class="input-group custom-search-form">
+                                    <div class="input-group custom-search-form">
 
-                                    <input id="quickSearch" name="quickSearch" type="text" class="form-control" placeholder="">
+                                        <input id="quickSearch" name="quickSearch" type="text" class="form-control" placeholder="">
 
-                                    <span class="input-group-btn">
+                                        <span class="input-group-btn">
 
-                                        <button class="btn btn-default" type="submit">
+                                            <button class="btn btn-default" type="submit">
 
-                                            <i class="fa fa-search"></i>
+                                                <i class="fa fa-search"></i>
 
-                                        </button>
+                                            </button>
 
-                                    </span>
+                                        </span>
 
-                                </div>
+                                    </div>
 
-                            </form>
+                                </form>
 
 
-                        </li>*@
+                            </li>*@
 
                         @*<li>
-                            <a href="@Url.Action("Index","Home")"><i style="width:30px" class="fas fa-calendar"></i>&nbsp;Dashboard</a>
-                        </li>*@
+                                <a href="@Url.Action("Index","Home")"><i style="width:30px" class="fas fa-calendar"></i>&nbsp;Dashboard</a>
+                            </li>*@
 
                         @if (!string.IsNullOrEmpty(ViewBag.Dob) && !string.IsNullOrEmpty(ViewBag.NhsNumber))
                         {
