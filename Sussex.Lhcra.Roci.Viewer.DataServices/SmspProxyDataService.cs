@@ -48,7 +48,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             HeaderHelper.AddCorrelation(correlationId, _httpClient);
             HeaderHelper.AddOrganisationAsId(organisationAsId, _httpClient);
             HeaderHelper.AddAppDomainTypeId("Plexus", _httpClient);
-            HeaderHelper.AddSystemIdentifier("TODO: Add System Identifier", _httpClient);
+            HeaderHelper.AddSystemIdentifier("Plexus Viewer", _httpClient);
             HeaderHelper.AddUserRoleId(RoleIdType.Clinician.ToString(), _httpClient);
 
             await Log(organisationAsId, string.Empty, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(_httpClient.DefaultRequestHeaders), PlexusConstants.RequestType.HttpGet);

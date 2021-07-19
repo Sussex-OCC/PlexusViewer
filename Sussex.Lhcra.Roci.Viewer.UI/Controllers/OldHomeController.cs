@@ -102,7 +102,7 @@
 
 //            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
 //            spineModel.OrganisationAsId = organisationAsid;
-//            spineModel.PractitionerId = correlationId;
+//            spineModel.PractitionerId = userId; 
 //            spineModel.Username = "PLEXUSVIEWER";
 
 //            SetPatientModelSession(spineModel);

@@ -79,7 +79,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = correlationId;
+            spineModel.PractitionerId = Guid.NewGuid().ToString(); 
             spineModel.Username = "PLEXUSVIEWER";
 
             SetPatientModelSession(spineModel);
@@ -157,7 +157,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = correlationId;
+            spineModel.PractitionerId = userId; 
             spineModel.CorrelationId = correlationId;
             spineModel.Username = "PLEXUSVIEWER";
 
