@@ -96,7 +96,7 @@
 
         <div class="row">
             <div class="col-md-12">
-                <p style="color:red;">* Please see below the SMSP demographics differences compared against demographics returned from GPConnect.</p>
+                <p style="color:red;">* Please see below the demographics differences found. Demographics returned from GPConnect is compared to that held locally.</p>
             </div>
             <div class="col-md-12">
                 <table class="w3-table">
@@ -132,6 +132,7 @@
                         {
                             <th>Gender</th>
                         }
+
                         @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.GPPracticeODSCode))
                         {
                             <th>GPPractice Code</th>

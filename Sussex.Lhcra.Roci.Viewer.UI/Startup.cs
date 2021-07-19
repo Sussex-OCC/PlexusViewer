@@ -83,13 +83,20 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
 
-
             services.Configure<ClientCertificateConfig>(Configuration.GetSection(nameof(ClientCertificateConfig)));
 
+            var auditTopicServicebusConfig = new MessageBrokerTopicConfig();
+            Configuration.Bind("AuditLogTopicServiceBusConfig", auditTopicServicebusConfig);
+            var auditMessageBrokerTopicPublisher = new TopicPublisher(auditTopicServicebusConfig);
+
+            services.AddScoped<IAuditLogTopicPublisher>(x => new AuditLogTopicPublisher(auditMessageBrokerTopicPublisher));
+
             //services.AddSingleton<ICacheService>(provider => new CacheService(config.DatabaseConnectionStrings.RedisCacheConnectionString));
+
             var loggingConfig = new MessageBrokerTopicConfig();
             var loggingSection = Configuration.GetSection("LogRecordTopicServiceBusConfig");
             loggingSection.Bind(loggingConfig);
+
             var logMessageBrokerTopicPublisher = new TopicPublisher(loggingConfig);
             services.AddScoped<ILoggingTopicPublisher>(x => new LoggingTopicPublisher(logMessageBrokerTopicPublisher));
 

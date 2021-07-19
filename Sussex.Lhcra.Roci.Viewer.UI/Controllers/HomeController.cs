@@ -40,6 +40,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly IRociGatewayDataService _rociGatewayDataService;
         private readonly IIpAddressProvider _ipAddressProvider;
         private readonly ITokenService _tokenService;
+        private readonly IAuditLogTopicPublisher _auditLogTopicPublisher;
 
         public HomeController(
             ILogger<HomeController> logger,
@@ -48,7 +49,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             IRociGatewayDataService rociGatewayDataService,
             IIpAddressProvider ipAddressProvider,
             ITokenService tokenService,
-            IConfiguration configuration, ICertificateProvider appSecretsProvider)
+            IConfiguration configuration, ICertificateProvider appSecretsProvider, IAuditLogTopicPublisher auditLogTopicPublisher)
         {
             _logger = logger;
             _viewerConfiguration = configurationOption.Value;
@@ -58,6 +59,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _tokenService = tokenService;
             _configuration = configuration;
             _appSecretsProvider = appSecretsProvider;
+            _auditLogTopicPublisher = auditLogTopicPublisher;
         }
 
         protected bool IsProd => _configuration.GetValue<bool>("IsProd");
@@ -72,28 +74,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             string patientGivenName, string patientFamilyName, string patientPostCode,
             string patientGender, string patientPracticeOdsCode, string patientAddress)
         {
-            patientGivenName = "Omon";
-            patientFamilyName = "Ohiro";
-            patientPostCode = "HA7 4TU";
-            patientGender = "M";
-            patientPracticeOdsCode = "ODX";
-            patientAddress = "24 Criagweil Drive";
-            organisationASID = "200000001503";
-            organisationODScode = "L7A7Q";
-            userId = "00012001";
-            userName = "abianue";
-            userRole = "clinician";
-            sessionId = "testSessionId";
-
-
             UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
@@ -105,10 +86,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
-            }
 
             SaveModelToViewBag(nhsNumber, dob,
             organisationASID, organisationODScode, userId,
@@ -124,7 +101,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             try
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);            
             }
             catch
             {
@@ -146,7 +123,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -165,7 +143,24 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             return View(Constants.All, vm);
         }
 
-        private  DemographicsViewModel GetDemographicsDifferences(Patient patient, string patientGivenName, string patientFamilyName, string patientPostCode,
+        private async Task<bool> LogAuditRecordModel(HttpRequest request, PatientCareRecordRequestDomainModel model, Guid correlationId, string section)
+        {
+            var auditLog = new AuditLogRequestModel(AppDomainType.Plexus, _ipAddressProvider.GetClientIpAddress(), _ipAddressProvider.GetHostIpAddress(), _tokenService.GetSystemIdentifier(), _viewerConfiguration.ApplicationName + $" --SECTION--(" + section + ")"
+                                                    , GetAbsolutePath(Request), model.OrganisationAsId, model.PractitionerId, model.NhsNumber, _tokenService.GetUsername(), _tokenService.GetTokenString(), Guid.NewGuid().ToString()
+                                                    , Guid.NewGuid().ToString(), correlationId, _tokenService.GetUserRole());
+            try
+            {
+                await _auditLogTopicPublisher.PublishAsync(auditLog);
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private DemographicsViewModel GetDemographicsDifferences(Patient patient, string patientGivenName, string patientFamilyName, string patientPostCode,
             string patientGender, string patientPracticeOdsCode, string patientAddress, string dateOfBirth)
         {
             if (patient == null)
@@ -271,15 +266,33 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             if (patient.ManagingOrganization != null)
             {
-               
+                if(!string.IsNullOrEmpty(patient.ManagingOrganization.Display))
+                {
+                    if(patient.ManagingOrganization.Display.ToUpper() != patientPracticeOdsCode.ToUpper())
+                    {
+                        model.GPPracticeODSCode = patient.ManagingOrganization.Display;
+                        model.LocalGPPracticeODSCode = patientPracticeOdsCode;
+                        model.DifferencesFound = true;
+                    }
+                }
+                else
+                {
+                    model.GPPracticeODSCode = "NULL";
+                    model.LocalGPPracticeODSCode = patientPracticeOdsCode;
+                    model.DifferencesFound = true;
+                }
+             
             }
-          
+            else
+            {
+                model.GPPracticeODSCode = "NULL";
+                model.LocalGPPracticeODSCode = patientPracticeOdsCode;
+                model.DifferencesFound = true;
+            }          
 
             return model;
 
         }
-
-
 
         [HttpGet]
         public async Task<IActionResult> Summary(string nhsNumber, string dob,
@@ -288,16 +301,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
            string patientGivenName, string patientFamilyName, string patientPostCode,
            string patientGender, string patientPracticeOdsCode, string patientAddress)
         {
-
-
             UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
@@ -309,10 +313,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
-            }
+           
 
             SaveModelToViewBag(nhsNumber, dob,
             organisationASID, organisationODScode, userId,
@@ -324,18 +325,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = "";
+             var spineModel = GetPatientModelSession();
 
-            try
+            if (spineModel == null)
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-            }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
+                var strSpineModel = "";
 
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                }
+                catch
+                {
+                    return View("InvalidCertErrorPage");
+                }
+
+               spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+            }           
 
             if (spineModel == null)
             {
@@ -350,7 +356,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -380,13 +387,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
-
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
@@ -395,11 +395,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             if (!urlModel.IsValid())
             {
                 return View("InvalidModelErrorPage", urlModel);
-            }
-
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
             }
 
             SaveModelToViewBag(nhsNumber, dob,
@@ -412,18 +407,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = "";
+            var spineModel = GetPatientModelSession();
 
-            try
+            if (spineModel == null)
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-            }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
+                var strSpineModel = "";
 
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                }
+                catch
+                {
+                    return View("InvalidCertErrorPage");
+                }
+
+                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+            }
 
             if (spineModel == null)
             {
@@ -438,7 +438,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.ProblemsAndIssues);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.ProblemsAndIssues, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -469,13 +470,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
-
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
@@ -486,11 +480,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
-            }
-
             SaveModelToViewBag(nhsNumber, dob,
             organisationASID, organisationODScode, userId,
             userName, userRole, sessionId, correlationId,
@@ -499,20 +488,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
-            organisationAsid = organisationASID ?? organisationAsid;
+            var spineModel = GetPatientModelSession();
 
-            var strSpineModel = "";
-
-            try
+            if (spineModel == null)
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-            }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
+                var strSpineModel = "";
 
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                }
+                catch
+                {
+                    return View("InvalidCertErrorPage");
+                }
+
+                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+            }
 
             if (spineModel == null)
             {
@@ -527,7 +519,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Immunisations);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Immunisations, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -557,13 +550,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
-
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
@@ -572,11 +558,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             if (!urlModel.IsValid())
             {
                 return View("InvalidModelErrorPage", urlModel);
-            }
-
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
             }
 
             SaveModelToViewBag(nhsNumber, dob,
@@ -589,18 +570,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = "";
+            var spineModel = GetPatientModelSession();
 
-            try
+            if (spineModel == null)
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-            }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
+                var strSpineModel = "";
 
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                }
+                catch
+                {
+                    return View("InvalidCertErrorPage");
+                }
+
+                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+            }
 
             if (spineModel == null)
             {
@@ -615,7 +601,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Medication);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Medication, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -645,13 +632,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
-
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
@@ -660,11 +640,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             if (!urlModel.IsValid())
             {
                 return View("InvalidModelErrorPage", urlModel);
-            }
-
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
             }
 
             SaveModelToViewBag(nhsNumber, dob,
@@ -677,18 +652,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = "";
+            var spineModel = GetPatientModelSession();
 
-            try
+            if (spineModel == null)
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-            }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
+                var strSpineModel = "";
 
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                }
+                catch
+                {
+                    return View("InvalidCertErrorPage");
+                }
+
+                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+            }
 
             if (spineModel == null)
             {
@@ -703,7 +683,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Allergies);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Allergies, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -733,13 +714,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
-
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
@@ -750,10 +724,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
-            }
+          
 
             SaveModelToViewBag(nhsNumber, dob,
             organisationASID, organisationODScode, userId,
@@ -765,18 +736,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = "";
+            var spineModel = GetPatientModelSession();
 
-            try
+            if (spineModel == null)
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-            }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
+                var strSpineModel = "";
 
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                }
+                catch
+                {
+                    return View("InvalidCertErrorPage");
+                }
+
+                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+            }
 
             if (spineModel == null)
             {
@@ -791,7 +767,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Encounters);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Encounters, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -821,13 +798,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
-
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
@@ -838,11 +808,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
-            }
-
+           
             SaveModelToViewBag(nhsNumber, dob,
             organisationASID, organisationODScode, userId,
             userName, userRole, sessionId, correlationId,
@@ -853,17 +819,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = "";
+            var spineModel = GetPatientModelSession();
 
-            try
+            if (spineModel == null)
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                var strSpineModel = "";
+
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                }
+                catch
+                {
+                    return View("InvalidCertErrorPage");
+                }
+
+                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
             }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
 
             if (spineModel == null)
             {
@@ -878,7 +850,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Observations);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Observations, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -908,13 +881,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
-
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
@@ -925,10 +891,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
-            }
+           
 
             SaveModelToViewBag(nhsNumber, dob,
             organisationASID, organisationODScode, userId,
@@ -940,18 +903,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = "";
+            var spineModel = GetPatientModelSession();
 
-            try
+            if (spineModel == null)
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-            }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
+                var strSpineModel = "";
 
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                }
+                catch
+                {
+                    return View("InvalidCertErrorPage");
+                }
+
+                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+            }
 
             if (spineModel == null)
             {
@@ -966,7 +934,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Referrals);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Referrals, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -995,13 +964,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
-
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
@@ -1012,10 +974,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
-            }
 
             SaveModelToViewBag(nhsNumber, dob,
             organisationASID, organisationODScode, userId,
@@ -1027,18 +985,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = "";
+            var spineModel = GetPatientModelSession();
 
-            try
+            if (spineModel == null)
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-            }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
+                var strSpineModel = "";
 
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                }
+                catch
+                {
+                    return View("InvalidCertErrorPage");
+                }
+
+                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+            }
 
             if (spineModel == null)
             {
@@ -1053,8 +1016,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
 
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Admin);
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Admin, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
@@ -1082,13 +1045,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
-            if (string.IsNullOrEmpty(nhsNumber) || string.IsNullOrEmpty(dob))
-            {
-                nhsNumber = "9658218873";
-                dob = "19-06-1927";
-                correlationId = Guid.NewGuid().ToString();
-            }
-
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
@@ -1097,11 +1053,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             if (!urlModel.IsValid())
             {
                 return View("InvalidModelErrorPage", urlModel);
-            }
-
-            if (string.IsNullOrEmpty(correlationId))
-            {
-                correlationId = Guid.NewGuid().ToString();
             }
 
             SaveModelToViewBag(nhsNumber, dob,
@@ -1114,18 +1065,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             organisationAsid = organisationASID ?? organisationAsid;
 
-            var strSpineModel = "";
+            var spineModel = GetPatientModelSession();
 
-            try
+            if (spineModel == null)
             {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-            }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
+                var strSpineModel = "";
 
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
+                }
+                catch
+                {
+                    return View("InvalidCertErrorPage");
+                }
+
+                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+            }
 
             if (spineModel == null)
             {
@@ -1140,7 +1096,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
-            //await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+
+            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Clinical);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Clinical, correlationId, spineModel.OrganisationAsId, spineModel);
 
@@ -1380,7 +1337,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 spineGivennames.Add(spineGivenName2);
             }
 
-            //spineGivennames.Add("Andrew");
 
             if (spineGivennames.Any() || givenNames.Any())
             {
