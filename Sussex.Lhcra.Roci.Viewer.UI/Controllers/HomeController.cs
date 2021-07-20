@@ -86,7 +86,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-
             SaveModelToViewBag(nhsNumber, dob,
             organisationASID, organisationODScode, userId,
             userName, userRole, sessionId, correlationId,
