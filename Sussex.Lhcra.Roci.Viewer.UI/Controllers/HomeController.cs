@@ -284,9 +284,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
             else
             {
-                model.GPPracticeODSCode = "NULL";
-                model.LocalGPPracticeODSCode = patientPracticeOdsCode;
-                model.DifferencesFound = true;
+                //model.GPPracticeODSCode = "NULL";
+                //model.LocalGPPracticeODSCode = patientPracticeOdsCode;
+                //model.DifferencesFound = true;
             }          
 
             return model;
