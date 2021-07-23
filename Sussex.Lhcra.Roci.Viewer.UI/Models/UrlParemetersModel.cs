@@ -24,6 +24,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
         private string PatientGender { get; set; }
         private string PatientPracticeOdsCode { get; set; }
         private string PatientAddress { get; set; }
+        private string PractitionerNamePrefix { get; set; }
+        private string PractitionerFamilyName { get; set; }
+        private string PractitionerGivenName { get; set; }
 
         public UrlParemetersModel AddNHSNumber(string val)
         {
@@ -72,7 +75,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
             if (string.IsNullOrEmpty(PatientPracticeOdsCode))
                 return false;
 
-            if (string.IsNullOrEmpty(PatientAddress))//15
+            if (string.IsNullOrEmpty(PatientAddress))
+                return false;
+
+            if (string.IsNullOrEmpty(PractitionerNamePrefix))
+                return false;
+
+            if (string.IsNullOrEmpty(PractitionerGivenName))
+                return false;
+
+            if (string.IsNullOrEmpty(PractitionerFamilyName))
                 return false;
 
             /*string nhsNumber, string dob,
@@ -181,6 +193,24 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
         public UrlParemetersModel AddPatientPracticeOdsCode(string val)
         {
             PatientPracticeOdsCode = val;
+            return this;
+        }
+
+        public UrlParemetersModel AddPractitionerNamePrefix(string val)
+        {
+            PractitionerNamePrefix = val;
+            return this;
+        }
+
+        public UrlParemetersModel AddPractitionerFamilyName(string val)
+        {
+            PractitionerFamilyName = val;
+            return this;
+        }
+
+        public UrlParemetersModel AddPractitionerGivenName(string val)
+        {
+            PractitionerGivenName = val;
             return this;
         }
 

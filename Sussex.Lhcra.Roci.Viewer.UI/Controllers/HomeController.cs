@@ -72,14 +72,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             string organisationASID, string organisationODScode, string userId,
             string userName, string userRole, string sessionId, string correlationId,
             string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
 
             if (!urlModel.IsValid())
             {
@@ -90,10 +92,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             organisationASID, organisationODScode, userId,
             userName, userRole, sessionId, correlationId,
             patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+            patientGender, patientPracticeOdsCode, patientAddress,practitionerNamePrefix,practitionerGivenName, practitionerFamilyName);
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
             organisationAsid = organisationASID ?? organisationAsid;
 
             var strSpineModel = "";
@@ -116,9 +117,14 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
+            //spineModel.GpPractice = new Smsp.Domain.Models.GpPracticeModel {  };
+
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -231,7 +237,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
                 if(gpConnectAddresses.Any())
                 {
-                    var addressExists = gpConnectAddresses.Contains(patientAddress.Trim().ToUpper());
+                    //var addressExists = gpConnectAddresses.Contains(patientAddress.Trim().ToUpper());
+
+                    var addressExists = false;
+
+                    foreach (var gpConnectAddress in gpConnectAddresses)
+                    {
+                        if(gpConnectAddress.ToUpper().Contains(patientAddress.Trim().ToUpper()))
+                        {
+                            addressExists = true;
+                        }
+                    }
 
                     if (!addressExists)
                     {
@@ -295,30 +311,33 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Summary(string nhsNumber, string dob,
-           string organisationASID, string organisationODScode, string userId,
-           string userName, string userRole, string sessionId, string correlationId,
-           string patientGivenName, string patientFamilyName, string patientPostCode,
-           string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string organisationASID, string organisationODScode, string userId,
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
 
             if (!urlModel.IsValid())
             {
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-           
+
 
             SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+                 organisationASID, organisationODScode, userId,
+                 userName, userRole, sessionId, correlationId,
+                 patientGivenName, patientFamilyName, patientPostCode,
+                 patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName, practitionerFamilyName);
+
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
@@ -349,9 +368,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -379,17 +401,19 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> ProblemsAndIssues(string nhsNumber, string dob,
-           string organisationASID, string organisationODScode, string userId,
-           string userName, string userRole, string sessionId, string correlationId,
-           string patientGivenName, string patientFamilyName, string patientPostCode,
-           string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string organisationASID, string organisationODScode, string userId,
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
 
             if (!urlModel.IsValid())
             {
@@ -397,10 +421,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+                organisationASID, organisationODScode, userId,
+                userName, userRole, sessionId, correlationId,
+                patientGivenName, patientFamilyName, patientPostCode,
+                patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName, practitionerFamilyName);
+
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
@@ -431,9 +456,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -462,17 +490,19 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Immunisations(string nhsNumber, string dob,
-           string organisationASID, string organisationODScode, string userId,
-           string userName, string userRole, string sessionId, string correlationId,
-           string patientGivenName, string patientFamilyName, string patientPostCode,
-           string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string organisationASID, string organisationODScode, string userId,
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
 
             if (!urlModel.IsValid())
             {
@@ -480,10 +510,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+             organisationASID, organisationODScode, userId,
+             userName, userRole, sessionId, correlationId,
+             patientGivenName, patientFamilyName, patientPostCode,
+             patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName, practitionerFamilyName);
+
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
@@ -512,9 +543,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -542,17 +576,19 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Medication(string nhsNumber, string dob,
-           string organisationASID, string organisationODScode, string userId,
-           string userName, string userRole, string sessionId, string correlationId,
-           string patientGivenName, string patientFamilyName, string patientPostCode,
-           string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string organisationASID, string organisationODScode, string userId,
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
 
             if (!urlModel.IsValid())
             {
@@ -560,10 +596,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+               organisationASID, organisationODScode, userId,
+               userName, userRole, sessionId, correlationId,
+               patientGivenName, patientFamilyName, patientPostCode,
+               patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName, practitionerFamilyName);
+
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
@@ -594,9 +631,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -624,17 +664,19 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Allergies(string nhsNumber, string dob,
-           string organisationASID, string organisationODScode, string userId,
-           string userName, string userRole, string sessionId, string correlationId,
-           string patientGivenName, string patientFamilyName, string patientPostCode,
-           string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string organisationASID, string organisationODScode, string userId,
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
 
             if (!urlModel.IsValid())
             {
@@ -642,10 +684,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+               organisationASID, organisationODScode, userId,
+               userName, userRole, sessionId, correlationId,
+               patientGivenName, patientFamilyName, patientPostCode,
+               patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName, practitionerFamilyName);
+
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
@@ -676,9 +719,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -706,30 +752,32 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Encounters(string nhsNumber, string dob,
-           string organisationASID, string organisationODScode, string userId,
-           string userName, string userRole, string sessionId, string correlationId,
-           string patientGivenName, string patientFamilyName, string patientPostCode,
-           string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string organisationASID, string organisationODScode, string userId,
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
 
             if (!urlModel.IsValid())
             {
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-          
 
             SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+                        organisationASID, organisationODScode, userId,
+                        userName, userRole, sessionId, correlationId,
+                        patientGivenName, patientFamilyName, patientPostCode,
+                        patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName, practitionerFamilyName);
+
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
@@ -760,9 +808,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -790,29 +841,32 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Observations(string nhsNumber, string dob,
-           string organisationASID, string organisationODScode, string userId,
-           string userName, string userRole, string sessionId, string correlationId,
-           string patientGivenName, string patientFamilyName, string patientPostCode,
-           string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string organisationASID, string organisationODScode, string userId,
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
 
             if (!urlModel.IsValid())
             {
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-           
+
             SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+               organisationASID, organisationODScode, userId,
+               userName, userRole, sessionId, correlationId,
+               patientGivenName, patientFamilyName, patientPostCode,
+               patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName, practitionerFamilyName);
+
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
@@ -843,9 +897,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -873,30 +930,33 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Referrals(string nhsNumber, string dob,
-           string organisationASID, string organisationODScode, string userId,
-           string userName, string userRole, string sessionId, string correlationId,
-           string patientGivenName, string patientFamilyName, string patientPostCode,
-           string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string organisationASID, string organisationODScode, string userId,
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
 
             if (!urlModel.IsValid())
             {
                 return View("InvalidModelErrorPage", urlModel);
             }
 
-           
+
 
             SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+                organisationASID, organisationODScode, userId,
+                userName, userRole, sessionId, correlationId,
+                patientGivenName, patientFamilyName, patientPostCode,
+                patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName, practitionerFamilyName);
+
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
@@ -927,9 +987,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -959,15 +1022,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             string organisationASID, string organisationODScode, string userId,
             string userName, string userRole, string sessionId, string correlationId,
             string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
-
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
+           
             if (!urlModel.IsValid())
             {
                 return View("InvalidModelErrorPage", urlModel);
@@ -975,10 +1040,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
 
             SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+                 organisationASID, organisationODScode, userId,
+                 userName, userRole, sessionId, correlationId,
+                 patientGivenName, patientFamilyName, patientPostCode,
+                 patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName, practitionerFamilyName);
+
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
@@ -1009,9 +1075,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -1037,17 +1106,19 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Clinical(string nhsNumber, string dob,
-           string organisationASID, string organisationODScode, string userId,
-           string userName, string userRole, string sessionId, string correlationId,
-           string patientGivenName, string patientFamilyName, string patientPostCode,
-           string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string organisationASID, string organisationODScode, string userId,
+            string userName, string userRole, string sessionId, string correlationId,
+            string patientGivenName, string patientFamilyName, string patientPostCode,
+            string patientGender, string patientPracticeOdsCode, string patientAddress,
+            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName)
         {
             UrlParemetersModel urlModel = new UrlParemetersModel();
 
             urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
                 .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
                 .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress);
+                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
+                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName);
 
             if (!urlModel.IsValid())
             {
@@ -1055,10 +1126,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
 
             SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress);
+                      organisationASID, organisationODScode, userId,
+                      userName, userRole, sessionId, correlationId,
+                      patientGivenName, patientFamilyName, patientPostCode,
+                      patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName, practitionerFamilyName);
+
 
             var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
 
@@ -1089,9 +1161,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId; 
+            spineModel.PractitionerId = userId;
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = "PLEXUSVIEWER";
+            spineModel.Username = userName;
+            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
+            spineModel.PractitionerGivenName = practitionerGivenName;
+            spineModel.PractitionerFamilyName = practitionerFamilyName;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -1121,7 +1196,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             string organisationASID, string organisationODScode, string userId,
             string userName, string userRole, string sessionId, string correlationId,
             string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress)
+            string patientGender, string patientPracticeOdsCode, string patientAddress, string practitionerNamePrefix,
+            string practitionerGivenName, string practitionerFamilyName)
         {
             ViewBag.Dob = dob;
             ViewBag.NhsNumber = nhsNumber;
@@ -1138,6 +1214,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.PatientGender = patientGender;
             ViewBag.PatientPracticeOdsCode = patientPracticeOdsCode;
             ViewBag.PatientAddress = patientAddress;
+            ViewBag.PractitionerNamePrefix = practitionerNamePrefix;
+            ViewBag.PractitionerGivenName = practitionerGivenName;
+            ViewBag.PractitionerFamilyName = practitionerFamilyName;
         }
         public async Task<IActionResult> MentalHealthCrisisPlans(string dob, string nhsNumber)
         {
