@@ -123,8 +123,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
-            //spineModel.GpPractice = new Smsp.Domain.Models.GpPracticeModel {  };
-
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -374,6 +373,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -462,6 +462,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -549,6 +550,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -637,6 +639,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -725,6 +728,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -814,6 +818,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -903,6 +908,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -993,6 +999,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -1081,6 +1088,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);
@@ -1167,6 +1175,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerNamePrefix = practitionerNamePrefix;
             spineModel.PractitionerGivenName = practitionerGivenName;
             spineModel.PractitionerFamilyName = practitionerFamilyName;
+            spineModel.PractitionerRoleId = userRole;
 
             SetPatientModelSession(spineModel);
             SetUrlParametersModelSession(urlModel);

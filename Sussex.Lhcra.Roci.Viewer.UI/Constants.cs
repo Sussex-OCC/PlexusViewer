@@ -7,6 +7,10 @@
         public const string ViewerSessionDemographicDiv = "Plexus.Viewer.Session.Demographics";
         public const string ViewerSessionUrlParametersKeyName = "Plexus.Viewer.Session.UrlParameters";
 
+        public const string ClinicianRole = "CLINICIAN";
+        public const string UnknownRole = "UNK";
+
+
         public const string Summary = "Summary";
         public const string ProblemsAndIssues = "ProblemsAndIssues";
         public const string Medication = "Medication";
