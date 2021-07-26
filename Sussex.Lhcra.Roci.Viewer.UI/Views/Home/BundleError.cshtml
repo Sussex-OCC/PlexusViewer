@@ -1,0 +1,49 @@
+﻿@model Sussex.Lhcra.Roci.Viewer.Domain.Models.PatientCareRecordBundleDomainModel
+
+@{
+    ViewData["Title"] = "Error";
+}
+
+
+@if (null != Model)
+{
+    @if ((int)Model.StatusCode == 502)// Add To Constants
+    {
+        <p>
+            <strong>Message :</strong> <code> @Model.Message </code>
+        </p>
+    }
+    else if ((int)Model.StatusCode == 403)// Add To Constants
+    {
+        <p>
+            <strong>Message :</strong> <code> NO_PATIENT_CONSENT </code>
+        </p>
+    }
+    else
+    {
+        <h1 class="text-danger">Error.</h1>
+        <h2 class="text-danger">An error occurred while processing your request.</h2>
+        <p>
+            <strong>Corellation ID:</strong> <code>@Model.CorrelationId</code>
+        </p>
+
+        <p>
+            <strong>Message:</strong> <code>@Model.Message.ToString()</code>
+        </p>
+
+        <p>
+            <strong>Status Code:</strong> <code>@Model.StatusCode.ToString()</code>
+        </p>
+
+        <p>
+            <strong>Error Code:</strong> <code>@Model?.ErrorCode?.ToString()</code>
+        </p>
+
+    }
+}
+else
+{
+    <p style="color:red;">
+        <strong>Message :</strong> <code> Connection Error </code>
+    </p>
+}

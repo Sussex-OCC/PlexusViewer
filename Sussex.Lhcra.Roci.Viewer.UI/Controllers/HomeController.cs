@@ -138,11 +138,19 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
+            else if(pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError",pBundle);
+            }
+
+            
 
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary, patientGivenName, patientFamilyName,  patientPostCode,patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -390,11 +398,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
+            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError", pBundle);
+            }
 
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -481,11 +495,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
+            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError", pBundle);
+            }
 
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.ProblemsAndIssues, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -571,11 +591,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
+            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError", pBundle);
+            }
 
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Immunisations, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -662,11 +688,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
+            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError", pBundle);
+            }
 
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Medication, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -753,11 +785,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
+            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError", pBundle);
+            }
 
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Allergies, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -845,11 +883,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
+            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError", pBundle);
+            }
 
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Encounters, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -937,11 +981,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
+            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError", pBundle);
+            }
 
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Observations, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -1031,11 +1081,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
-
+            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError", pBundle);
+            }
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Referrals, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -1121,11 +1176,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
+            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError", pBundle);
+            }
 
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Admin, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -1211,11 +1272,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 return View("Error");
             }
+            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                pBundle.CorrelationId = correlationId;
+                return View("BundleError", pBundle);
+            }
 
             var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Clinical, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
