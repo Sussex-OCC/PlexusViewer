@@ -8,7 +8,9 @@
         public const string ViewerSessionUrlParametersKeyName = "Plexus.Viewer.Session.UrlParameters";
 
         public const string ClinicianRole = "CLINICIAN";
-        public const string UnknownRole = "UNK";
+        public const string UnknownRole = "UNK";//"SUSSEX MENTAL HEALTH SERVICES (INTEGRATIONS)”"
+        public const string SPFT = "SUSSEX MENTAL HEALTH SERVICES (INTEGRATIONS)";
+
 
 
         public const string Summary = "Summary";
