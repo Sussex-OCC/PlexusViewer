@@ -57,7 +57,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
             }
             else
             {
-                if(UserRole.Trim().ToUpper() != Constants.ClinicianRole || UserRole.Trim().ToUpper() != Constants.UnknownRole)
+                if(UserRole.Trim().ToUpper() != Constants.ClinicianRole && UserRole.Trim().ToUpper() != Constants.UnknownRole)
                 {
                     return false;
                 }
