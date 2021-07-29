@@ -28,6 +28,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
         private string PractitionerFamilyName { get; set; }
         private string PractitionerGivenName { get; set; }
 
+        private string SdsUserId { get; set; }
+        private string RequestorId { get; set; }
+
+
         public UrlParemetersModel AddNHSNumber(string val)
         {
             NHSNumber = val;
@@ -95,6 +99,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
                 return false;
 
             if (string.IsNullOrEmpty(PractitionerFamilyName))
+                return false;
+
+            if (string.IsNullOrEmpty(SdsUserId))
+                return false;
+
+            if (string.IsNullOrEmpty(RequestorId))
                 return false;
 
             /*string nhsNumber, string dob,
@@ -215,6 +225,18 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
         public UrlParemetersModel AddPractitionerFamilyName(string val)
         {
             PractitionerFamilyName = val;
+            return this;
+        }
+
+        public UrlParemetersModel AddRequestorId(string val)
+        {
+            RequestorId = val;
+            return this;
+        }
+
+        public UrlParemetersModel AddSdsUserId(string val)
+        {
+            SdsUserId = val;
             return this;
         }
 

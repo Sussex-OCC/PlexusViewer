@@ -61,6 +61,12 @@ namespace Sussex.Lhcra.Roci.Viewer.Domain.Models
         [JsonProperty("username")]
         public string Username { get; set; }
 
+        [JsonProperty("requestorId")]
+        public string RequestorId { get; set; }
+
+        [JsonProperty("sdsUserId")]
+        public string SdsUserId { get; set; }
+
         [JsonProperty("practitionerRoleId")]
         public string PractitionerRoleId { get; set; }
 

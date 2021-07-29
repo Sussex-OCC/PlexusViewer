@@ -51,7 +51,7 @@
                                 Address @Model.Patient.Address.FirstOrDefault().Text
                             </div>
                             <div class="col-md-4">
-                                Phone And Email @Model.Patient.Telecom.FirstOrDefault().Value
+                                Phone And Email @(Model.Patient.Telecom != null && Model.Patient.Telecom.Any() ? Model.Patient.Telecom.FirstOrDefault().Value : "N/A")
                             </div>
                             <div class="col-md-2">
 
