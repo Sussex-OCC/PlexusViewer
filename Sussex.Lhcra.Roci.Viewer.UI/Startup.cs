@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+using Prometheus;
 using Sussex.Lchra.AzureServiceBusMessageBroker.Publisher.PublisherTypes;
 using Sussex.Lchra.MessageBroker.Common.Configurations;
 using Sussex.Lhcra.Common.AzureADServices;
@@ -61,25 +62,32 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             {
                 services.AddScoped<ITokenService, EmbeddedTokenService>();
 
-                services.AddHttpClient<IDownStreamAuthorisation, ADDownStreamAuthorisation>();
+                services.AddHttpClient<IDownStreamAuthorisation, ADDownStreamAuthorisation>()
+                    .UseHttpClientMetrics();
             }
 
             DetermineCertificateType(services, config);
 
             services.AddTransient<CertificateHttpClientHandler>();
 
-            services.Configure<ViewerAppSettingsConfiguration>(Configuration.GetSection("ViewerAppSettings"));         
+            services.Configure<ViewerAppSettingsConfiguration>(Configuration.GetSection("ViewerAppSettings"));
             services.Configure<RociGatewayADSetting>(Configuration.GetSection(nameof(RociGatewayADSetting)));
             services.Configure<EmbeddedTokenConfig>(Configuration.GetSection(nameof(EmbeddedTokenConfig)));
 
 
 
-            services.AddHttpClient<IAuditDataService, AuditDataService>();
+            services.AddHttpClient<IAuditDataService, AuditDataService>()
+                    .UseHttpClientMetrics();
 
-            services.AddHttpClient<IAppLogDataService, AppLogDataService>();
+
+            services.AddHttpClient<IAppLogDataService, AppLogDataService>()
+                    .UseHttpClientMetrics();
+
 
             services.AddHttpClient<IRociGatewayDataService, RociGatewayDataService>()
-                     .AddHttpMessageHandler<CertificateHttpClientHandler>();
+                     .AddHttpMessageHandler<CertificateHttpClientHandler>()
+                     .UseHttpClientMetrics();
+
 
             services.AddScoped<IIpAddressProvider, IpAddressProvider>();
 
@@ -105,7 +113,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             services.AddHttpClient<ISmspProxyDataService, SmspProxyDataService>(client =>
             {
                 client.BaseAddress = new Uri(config.ProxyEndpoints.SpineMiniServicesEndpoint);
-            }).AddHttpMessageHandler<CertificateHttpClientHandler>();
+            }).AddHttpMessageHandler<CertificateHttpClientHandler>()
+             .UseHttpClientMetrics();
+
 
             services.AddScoped<SessionTimeout>();
 
@@ -131,6 +141,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
              .AddMicrosoftIdentityUI();
             services.AddApplicationInsightsTelemetry(Configuration["APPINSIGHTS_CONNECTIONSTRING"]);
 
+
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
@@ -152,6 +163,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
+            app.UseMetricServer();
+
             app.UseForwardedHeaders();
 
             if (env.IsDevelopment())
@@ -174,8 +188,27 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             app.UseSession();
 
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.RouteValues.Values.Count == 0)
+                {
+                    await next.Invoke();
+                    return;
+                }
+
+                var loginDuration = Metrics.CreateHistogram("MiddleWare_Metric_for_" + context.Request.Path.Value.Replace("/", "_"), "Timming the duration of any request to the controller");
+
+                using (loginDuration.NewTimer())
+                {
+                    await next.Invoke();
+                }
+
+            });
+
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapMetrics();
+
                 var mappController = endpoints.MapControllerRoute(
                      name: "default",
                      pattern: "{controller=Home}/{action=Index}/{id?}");
