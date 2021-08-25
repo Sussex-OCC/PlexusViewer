@@ -23,8 +23,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var certificate = await _appSecretsProvider.GetCertificate(_clientCerConfig.CertificateName);
-            request.Headers.Add("X-ClientCert", certificate.GetRawCertDataString());
+            var certificate = await _appSecretsProvider.GetCertificate(_clientCerConfig.SerialNumber);
+            request.Headers.Add("X-ClientCert",Convert.ToBase64String(certificate.GetRawCertData()));
             return await base.SendAsync(request, cancellationToken);
         }
     }

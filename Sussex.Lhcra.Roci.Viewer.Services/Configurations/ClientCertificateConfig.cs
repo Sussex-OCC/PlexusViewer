@@ -2,6 +2,6 @@
 {
     public class ClientCertificateConfig
     {
-        public string CertificateName { get; set; }
+        public string SerialNumber { get; set; }
     }
 }
