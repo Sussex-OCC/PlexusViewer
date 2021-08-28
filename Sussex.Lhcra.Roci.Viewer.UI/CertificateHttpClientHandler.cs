@@ -2,8 +2,6 @@
 using Sussex.Lhcra.Roci.Viewer.Services.Configurations;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +21,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var certificate = await _appSecretsProvider.GetCertificate(_clientCerConfig.SerialNumber);
+            var certificate = await _appSecretsProvider.GetCertificate(_clientCerConfig.KeyVaultCertificateName);
             request.Headers.Add("X-ClientCert",Convert.ToBase64String(certificate.GetRawCertData()));
             return await base.SendAsync(request, cancellationToken);
         }

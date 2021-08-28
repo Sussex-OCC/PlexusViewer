@@ -2,10 +2,6 @@
 {
     public class KeyVaultConfiguration
     {
-        public string KeyVaultUrl { get; set; }
-
-        public string KeyVaultclientId { get; set; }
-
-        public string KeyVaultclientSecret { get; set; }
+        public string KeyVaultUrl { get; set; }     
     }
 }

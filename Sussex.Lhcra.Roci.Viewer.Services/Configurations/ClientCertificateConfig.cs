@@ -2,6 +2,7 @@
 {
     public class ClientCertificateConfig
     {
-        public string SerialNumber { get; set; }
+        public string LocalCertificateSerialNumber { get; set; }
+        public string KeyVaultCertificateName { get; set; }
     }
 }

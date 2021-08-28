@@ -1,8 +1,7 @@
-﻿using Microsoft.Azure.KeyVault;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
+﻿using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Secrets;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using System;
-using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
@@ -10,24 +9,20 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
 {
     public class AzureCertificateProvider : ICertificateProvider
     {
-        private string _vaultUrl;
-        private string _clientId;
-        private string _clientSecret;
+        private readonly CertificateClient _certificateClient;
+        private readonly SecretClient _secretClient;
 
-        public AzureCertificateProvider(string vaultUrl, string clientId, string clientSecret)
+        public AzureCertificateProvider(CertificateClient certificateClient, SecretClient secretClient)
         {
-            _vaultUrl = vaultUrl;
-            _clientId = clientId;
-            _clientSecret = clientSecret;
+            _certificateClient = certificateClient;
+            _secretClient = secretClient;
         }
 
         public async Task<X509Certificate2> GetCertificate(string certificateName)
         {
-            var certificateSecret = await GetSecretAsync(certificateName);
-            byte[] clientCertBytes = StringToByteArray(certificateSecret);            
-            var certificate = new X509Certificate2(clientCertBytes);
-            //Certificate pull down to be tested..
-            return certificate;
+            var certificateResponse = await _certificateClient.DownloadCertificateAsync(certificateName);
+
+            return certificateResponse.Value;
         }
 
         public async Task<string> GetSecretAsync(string vaultKey)
@@ -36,22 +31,9 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
 
             try
             {
-                var kv = new KeyVaultClient(async (authority, resource, scope) =>
-                {
-                    var authContext = new AuthenticationContext(authority);
-                    var clientCred = new ClientCredential(_clientId, _clientSecret);
+                var secret = await _secretClient.GetSecretAsync(vaultKey);
 
-                    var result = await authContext.AcquireTokenAsync(resource, clientCred);
-
-                    if (result == null)
-                        throw new InvalidOperationException("Failed to obtain the JWT token");
-
-                    return result.AccessToken;
-                });
-
-                var secret = await kv.GetSecretAsync(_vaultUrl, vaultKey);
-
-                returnValue = secret.Value;
+                returnValue = secret.Value.Value;
             }
             catch (Exception)
             {

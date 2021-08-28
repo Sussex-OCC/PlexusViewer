@@ -1,3 +1,6 @@
+using Azure.Identity;
+using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -26,10 +29,7 @@ using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
 using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
 using System;
-using System.Net.Http;
-using System.Reflection;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -156,7 +156,22 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             }
             else
             {
-                services.AddSingleton<ICertificateProvider>(provider => new AzureCertificateProvider(config.KeyVault.KeyVaultUrl, config.KeyVault.KeyVaultclientId, config.KeyVault.KeyVaultclientSecret));
+                services.AddSingleton(serviceProvider =>
+                {
+                    return new CertificateClient(new Uri(config.KeyVault.KeyVaultUrl), new DefaultAzureCredential());
+                });
+
+                services.AddSingleton(serviceProvider =>
+                {
+                    return new SecretClient(new Uri(config.KeyVault.KeyVaultUrl), new DefaultAzureCredential());
+                });
+
+                services.AddSingleton<ICertificateProvider>(provider =>
+                {
+                    var certificateClient =  provider.GetService<CertificateClient>();
+                    var secretClient = provider.GetService<SecretClient>();
+                    return new AzureCertificateProvider(certificateClient, secretClient);
+                });
             }
         }
 
