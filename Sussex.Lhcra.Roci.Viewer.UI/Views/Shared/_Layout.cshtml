@@ -41,15 +41,30 @@
             background: #d9edf7;
             text-align: center;
             width: 100%;
-            max-height:137px;
+            max-height: 137px;
         }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 30%;
+            height: 30%;
+            z-index: 9999;
+            background-color: #ffffffcf;
+        }
+
+            .loader img {
+                position: relative;
+                left: 40%;
+                top: 40%;
+            }
     </style>
-
-
+    
 </head>
 <body class=" color-light ">
 
-    @RenderSection("FloatingBanner", required:false) 
+    @RenderSection("FloatingBanner", required: false)
 
     <!-- loader Start -->
     <div id="loading">
@@ -389,7 +404,21 @@
     <!-- app JavaScript -->
     <script src="~/assets/js/app.js"></script>
 
+
     <script>
+
+        $(function () {
+            $("#submitbutton").click(function () {
+                $('.loader').show();
+            });
+            $(".active").click(function () {
+                $('.loader').show();
+            });
+            $(".Inactive").click(function () {
+                $('.loader').show();
+            });
+        })
+
         $(window).scroll(function () {
             $("#floating_box").animate({ top: 70 + $(window).scrollTop() + "px" }, { queue: false, duration: 350 });
         });
