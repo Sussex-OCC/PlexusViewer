@@ -44,16 +44,19 @@
                             <div class="blog-description mt-3">
                                 <div class="blog-meta d-flex align-items-center mb-3">
 
-                                    @if (Model.Patient.Name != null && Model.Patient.Name.Count > 0)
+                                    @if (Model.Patient.Address != null && Model.Patient.Address.Count > 0)
                                     {
-                                        <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-user-fill pr-2 rtl-pl-2 "></i>@Model.Patient.Name.FirstOrDefault().Text @Model.Title</div>
+                                        <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-user-fill pr-2 rtl-pl-2 "></i>Usual Address @Model.Patient.Address.FirstOrDefault().Text</div>
 
                                     }
 
-                                    <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>Born: @Model.FormattedDateOfBirth (@Model.StrAge)</div>
-                                    <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-heart pr-2 rtl-pl-2 "></i>Gender: @(Model.Patient.Gender.HasValue ? Model.Patient.Gender.Value.ToString() : "OTHER")</div>
-                                    <div class="comments"><i class="ri-chat-3-fill pr-2 rtl-pl-2 "></i>NHS No. @Model.NhsNumber</div>
+                                    @if (Model.Patient.Telecom != null && Model.Patient.Telecom.Count > 0)
+                                    {
+                                       <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-user-fill pr-2 rtl-pl-2 "></i>@Model.Patient.Telecom.FirstOrDefault().Use.Value @Model.Patient.Telecom.FirstOrDefault().Value</div>
 
+                                    }
+
+                                
                                 </div>
                             </div>
                         </div>
