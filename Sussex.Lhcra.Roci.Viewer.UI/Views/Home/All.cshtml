@@ -1,103 +1,46 @@
 ﻿@model Sussex.Lhcra.Roci.Viewer.UI.Models.ResourceViewModel
 
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Patient Data";
 }
 
 <style>
-    @@import url('https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css');
-
-    .accordion-toggle:after {
-        font-family: 'FontAwesome';
-        content: "\f078";
-        float: right;
+    .swal-width {
+        width: 50%;
+    }
+    h1 {
+        font-size: 32px;
+    }
+    h2 {
+        font-size: 20px;
+    }
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background-color: #ffffffcf;
     }
 
-    .accordion-opened .accordion-toggle:after {
-        content: "\f054";
-    }
-
-    #floating_box {
-        position: absolute;
-        top: 80px;
-        right: 23px;
-        z-index: 10;
-        background: #d9edf7;
-        padding: 5px;
-        border: 1px solid #CCCCCC;
-        text-align: center;
-        font-weight: bold;
-        width: 76%;
-    }
+        .loader img {
+            position: relative;
+            left: 40%;
+            top: 40%;
+        }
 </style>
 
+<link href="~/css/CoolTable.css" rel="stylesheet" />
+<link href="~/assets/css/Sidebar.css" rel="stylesheet" />
 
 
-<script>
-    $(window).scroll(function ()
-    {
-        $("#floating_box").animate({ top: $(window).scrollTop() + "px" }, { queue: false, duration: 350 });
-    });
-
-    $(document).on('show', '.accordion', function (e) {
-        $(e.target).prev('.accordion-heading').addClass('accordion-opened');
-    });
-
-    $(document).on('hide', '.accordion', function (e) {
-        $(this).find('.accordion-heading').not($(e.target)).removeClass('accordion-opened');
-    });
-
-    $(function ()
-    {
-        var differencesFound = 0;
-
-        differencesFound = "@Model.DifferencesFound";
-
-        if (differencesFound == 1)
-        {
-            CreateDemographicDiv();
-        }
-
-
-        function CreateDemographicDiv()
-        {
-            var list = $("#demoGraphicsDiv");
-
-            $.confirm({
-                title: 'Demographics differences found!',
-                type: 'red',
-                boxWidth: '50%',
-                useBootstrap: false,
-                typeAnimated: true,
-                content: '' + list.html(),
-                buttons: {
-                    formSubmit: {
-                        text: 'CANCEL',
-                        btnClass: 'btn-red',
-                        action: function ()
-                        {
-                           
-                        }
-                    }
-                },
-                onContentReady: function ()
-                {
-                    
-                }
-            });
-        }
-    });
-
-</script>
 
 @if (Model.DemographicsDiffDivModel != null && Model.DemographicsDiffDivModel.DifferencesFound)
 {
     <div id="demoGraphicsDiv" class="row" style="display:none;">
 
-        <div class="row">
-            <div class="col-md-12">
-                <p style="color:red;">* Please see below the demographics differences found. Demographics returned from GPConnect is compared to that held locally.</p>
-            </div>
+        <div class="row">          
             <div class="col-md-12">
                 <table class="w3-table">
 
@@ -216,56 +159,190 @@
 
 
 
-<div class="row">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12 col-lg-2">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <div class="header-title">
+                        <h4 class="card-title">Departments</h4>
+                    </div>
+                </div>
+                <div class="card-body">
 
-    <div id="floating_box">
-        <partial name="Partials/_NavBanner" model="Model" />
-    </div>
+                    <div class="container">
+                        <nav>
+                            <ul class="mcd-menu">
+
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Summary })" class="@(Model.ActiveView == Constants.Summary ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Summary</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.ProblemsAndIssues })" class="@(Model.ActiveView == Constants.ProblemsAndIssues ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Problems & Issues</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Medication })" class="@(Model.ActiveView == Constants.Medication ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Medications</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Allergies }) class=" @(Model.ActiveView == Constants.Allergies ? "active" : "Inactive") "">
+                                        <strong style="font-size:11px;">Allergies</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Encounters })" class="@(Model.ActiveView == Constants.Encounters ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Encounters</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Observations })" class="@(Model.ActiveView == Constants.Observations ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Observations</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Immunisations })" class="@(Model.ActiveView == Constants.Immunisations ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Immunisations</strong>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Referrals })" class="@(Model.ActiveView == Constants.Referrals ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Referrals</strong>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Clinical })" class="@(Model.ActiveView == Constants.Clinical ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Clinical Items</strong>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Admin })" class="@(Model.ActiveView == Constants.Admin ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Admin Items</strong>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.MentalHealthCrisisPlans })" class="@(Model.ActiveView == Constants.MentalHealthCrisisPlans ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Crisis Plans</strong>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.CommunityCarePlans })" class="@(Model.ActiveView == Constants.CommunityCarePlans ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Community Plans</strong>
+                                    </a>
+                                </li>
 
 
-    <div class="col-md-12">
 
-        <div class="panel panel-default">
-
-            <div class="panel-heading">
-
-            </div>
-
-            <div class="panel-body">
-
-                <ul class="nav nav-tabs">
-
-                    <li class="active">
-                        <a href="#detail" data-toggle="tab">PLEXUS VIEWER</a>
-                    </li>
-
-                </ul>
-
-                <div class="tab-content">
-
-                    <div class="tab-pane fade in active" id="detail" style="padding-top:15px;margin-top:15px;">
-
-                        <div class="row">
-
-                            <div class="col-md-12">
-
-                                <div>
-                                    @Html.Raw(Model.Div)
-                                </div>
-
-                            </div>
-
-
-                        </div>
-
+                            </ul>
+                        </nav>
                     </div>
 
                 </div>
-
             </div>
-
         </div>
+        <div class="col-sm-12 col-lg-10">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <div class="header-title">
+                        <h4 class="card-title">Patient Record</h4>
+                    </div>
+                </div>
+                <div class="card-body">
 
+                    <div>
+                        @Html.Raw(Model.Div)
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+
+<script>
+    $(function ()
+    {
+
+        var differencesFound = 0;
+
+        differencesFound = "@(Model.DifferencesFound)";
+
+        if (differencesFound == 1)
+        {
+            CreateDemographicDiv();
+        }
+
+        function CreateDemographicDiv()
+        {
+            var list = $("#demoGraphicsDiv");
+
+            Swal.fire({
+                title: '<span style="color:Red;font-size:20px;"><small>Please see below the demographics differences found. Demographics returned from GPConnect is compared to that held by SMSP.</small></span>',
+                icon: 'error',
+                html: list.html(),
+                customClass: 'swal-width',
+
+                showDenyButton: false,
+                showCancelButton: false,
+                confirmButtonText: 'OK',
+            }).then((result) => {
+                if (result.isConfirmed)
+                {
+                } else if (result.isDenied)
+                {
+                }
+            })
+
+
+            //Swal.fire({
+            //    title: list,
+            //    icon: 'info',
+            //    html: list.html(),
+            //    showCloseButton: true,
+            //    showCancelButton: true,
+            //    focusConfirm: false,
+            //    confirmButtonText:
+            //        '<i class="fa fa-thumbs-up"></i> Great!',
+            //    confirmButtonAriaLabel: 'Thumbs up, great!',
+            //    cancelButtonText:
+            //        '<i class="fa fa-thumbs-down"></i>',
+            //    cancelButtonAriaLabel: 'Thumbs down'
+            //})
+
+            //$.confirm({
+            //    title: 'Demographics differences found!',
+            //    type: 'red',
+            //    boxWidth: '50%',
+            //    useBootstrap: false,
+            //    typeAnimated: true,
+            //    content: '' + list.html(),
+            //    buttons: {
+            //        formSubmit: {
+            //            text: 'CANCEL',
+            //            btnClass: 'btn-red',
+            //            action: function ()
+            //            {
+
+            //            }
+            //        }
+            //    },
+            //    onContentReady: function ()
+            //    {
+
+            //    }
+            //});
+        }
+    });
+</script>

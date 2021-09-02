@@ -150,20 +150,17 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                                ErrorCode = "",
                                Message = "Retrieve patient data was successful",
                              };
-                            //result = JsonConvert.DeserializeObject<PatientCareRecordBundleDomainModel>(responseContent);
                         }
                         else
                         {
-                            responseContent = await response.Content.ReadAsStringAsync();
-                            result = JsonConvert.DeserializeObject<PatientCareRecordBundleDomainModel>(responseContent);
-                            //result = new PatientCareRecordBundleDomainModel
-                            //{
-                            //    Content = responseContent,
-                            //    StrBundle = responseContent,
-                            //    StatusCode = response.StatusCode,
-                            //    ErrorCode = "",
-                            //    Message = "Retrieve patient data was not successful",
-                            //};
+                            result = new PatientCareRecordBundleDomainModel
+                            {
+                                Content = "",
+                                StrBundle = "",
+                                StatusCode = response.StatusCode,
+                                ErrorCode = "",
+                                Message = "Retrieve patient data was unsuccessful",
+                            };
                         }
 
                         await Log(

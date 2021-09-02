@@ -81,5 +81,6 @@ namespace Sussex.Lhcra.Roci.Viewer.Domain.Models
 
         [JsonProperty("practitionerFamilyName")]
         public string PractitionerFamilyName { get; set; }
+        public string DateOfBirth { get; set; }
     }
 }

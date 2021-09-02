@@ -1,4 +1,5 @@
 ﻿using Hl7.Fhir.Model;
+using Sussex.Lhcra.Roci.Viewer.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,5 +25,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
         public string DemographicsDiffDiv { get; set; }
         public DemographicsViewModel DemographicsDiffDivModel { get; set; }
         public int DifferencesFound { get; set; }
+        public string ActiveView { get; set; }
+        public IEnumerable<PatientCarePlanRecord> Plans { get; set; }
     }
 }

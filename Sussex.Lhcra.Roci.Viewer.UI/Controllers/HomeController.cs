@@ -26,13 +26,12 @@ using System.Collections.Generic;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 
+
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
-
-    //[ServiceFilter(typeof(SessionTimeout))]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<NowHomeController> _logger;
         private readonly IConfiguration _configuration;
         private readonly ICertificateProvider _appSecretsProvider;
         private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
@@ -43,7 +42,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly IAuditLogTopicPublisher _auditLogTopicPublisher;
 
         public HomeController(
-            ILogger<HomeController> logger,
+            ILogger<NowHomeController> logger,
             IOptions<ViewerAppSettingsConfiguration> configurationOption,
             ISmspProxyDataService smspProxyDataService,
             IRociGatewayDataService rociGatewayDataService,
@@ -65,100 +64,269 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         protected bool IsProd => _configuration.GetValue<bool>("IsProd");
         protected string SmspIntEnvAsid => _configuration.GetValue<string>("SmspIntEnvAsid");
 
-        
+
+        public IActionResult Index()
+        {
+            var model = new ResourceViewModel
+            {
+                DateOfBirth = new DateTime(1927, 6, 19),
+                NhsNumber = "9658218873"
+            };
+
+            return View(model);
+        }
 
         [HttpGet]
-        public async Task<IActionResult> Index(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
+        public async Task<IActionResult> GetPatientData(string patientView)
         {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
+            var organisationAsid = "200000001564";
+            var guid = Guid.NewGuid();
+            var correlationId = guid.ToString();
 
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress,practitionerNamePrefix,practitionerGivenName, 
-            practitionerFamilyName, requestorId, sdsUserId);
-
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-            organisationAsid = organisationASID ?? organisationAsid;
-
-            var strSpineModel = "";
-
-            try
-            {
-                strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);            
-            }
-            catch
-            {
-                return View("InvalidCertErrorPage");
-            }
-
-            var spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+            var spineModel = GetPatientModelSession();
 
             if (spineModel == null)
             {
-                return View("InvalidSpineModelErrorPage");
+                return RedirectToAction("Index");
             }
 
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
+            spineModel.PractitionerId = "123459990";
             spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
+            spineModel.Username = "BRUNO";
+            spineModel.PractitionerNamePrefix = "Dr";
+            spineModel.PractitionerGivenName = "LAKE";
+            spineModel.PractitionerFamilyName = "Gregory";
+            spineModel.PractitionerRoleId = "UNK";
             spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
+            spineModel.GpPractice.OdsCode = "A20047";
+            spineModel.RequestorId = "bc131b18-a908-4056-96f4-ba4752848605";
+            spineModel.SdsUserId = "UNK";
 
             SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
 
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
+            await LogAuditRecordModel(Request, spineModel, guid, patientView);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, organisationAsid, spineModel);
+
+            if (null == pBundle || pBundle.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return View("Error");
+            }
+
+            var vm = GetViewModel(pBundle.StrBundle, spineModel.DateOfBirth, spineModel.NhsNumber, patientView, spineModel);
+
+            if (null == vm)
+            {
+                return View("Error", pBundle);
+            }
+
+            vm.ActiveView = patientView;
+
+            vm.DifferencesFound = vm.ActiveView == Constants.Summary && vm.DifferencesFound == 1 ? 1 : 0;
+
+            return View(Constants.All, vm);
+
+        }
+
+        public static string SerialisedMentalHealthCP = @"[{""NHSNumber"":""9990099782"",""PlanType"":null,""Category"":null,""Name"":null,""DateStart"":""2016-01-01T00:00:00"",""DateEnd"":null,""Aim"":""In the event of a crisis between 8:30am and 5pm on week days please contact the Assessment and Treatment Team on 01323 747222 and ask to speak to your lead practitioner. If they are not available at this time leave a message and it will be answered within the working day. Outside of the above hours, please contact the Mental Healthline on 0300 5000 101, this service is available from 5pm-9am Monday to Friday and 24/7/ at weekends and Bank Holidays.If you are feeling that you cannot keep yourself safe, present to A&E to be seen by Mental Health Liaison Service."",""ProviderName"":""SPFT""}]";
+        public static string SerialisedCCP = @"[{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""skin flap injury to back  1-2 units"",""DateStart"":""2015-02-03T14:42:32"",""DateEnd"":""2015-03-03T00:00:00"",""Aim"":""Curative"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""?urine burns to groins 1-2 units"",""DateStart"":""2015-03-02T11:29:18"",""DateEnd"":""2015-03-03T00:00:00"",""Aim"":""Curative"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""ESHT Blood Sampling"",""DateStart"":""2015-11-23T10:54:29"",""DateEnd"":""2016-01-15T00:00:00"",""Aim"":""Assessment"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Blood Pressure"",""Name"":""Check blood pressure"",""DateStart"":""2015-11-23T10:54:29"",""DateEnd"":""2016-01-15T00:00:00"",""Aim"":""Assessment"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Blood Sampling"",""DateStart"":""2016-11-02T13:37:52"",""DateEnd"":""2016-11-11T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Blood Sampling\nCSN PLEASE ATTEND"",""DateStart"":""2018-07-03T08:46:00"",""DateEnd"":""2018-11-03T00:00:00"",""Aim"":""Assessment"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""assess for pressure relieving equipment."",""DateStart"":""2019-06-11T08:55:12"",""DateEnd"":""2019-06-11T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Blood Sampling"",""DateStart"":""2019-06-12T12:47:16"",""DateEnd"":""2019-06-20T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""breast wound dressing"",""DateStart"":""2016-03-14T12:49:43"",""DateEnd"":""2016-04-12T00:00:00"",""Aim"":""Curative"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""pressure area care"",""DateStart"":""2016-03-15T11:00:00"",""DateEnd"":""2016-04-12T00:00:00"",""Aim"":""Curative"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""BP check"",""DateStart"":""2017-03-29T12:36:12"",""DateEnd"":""2017-04-17T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Blood Sampling"",""DateStart"":""2017-04-03T13:33:33"",""DateEnd"":""2017-04-12T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Ear syringing  4 units"",""DateStart"":""2017-08-14T14:09:54"",""DateEnd"":""2017-08-20T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""Lying / Sitting / Standing BP check check heart rate"",""DateStart"":""2018-03-12T16:20:38"",""DateEnd"":""2018-05-20T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Blood Sampling"",""DateStart"":""2018-03-13T11:11:03"",""DateEnd"":""2018-03-14T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Nursing Care Plan"",""DateStart"":""2018-04-25T12:42:42"",""DateEnd"":""2018-05-20T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Initial Nursing Assessment 2"",""DateStart"":""2020-04-17T09:24:07"",""DateEnd"":""2020-05-29T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Pressure Ulcer to heel (2 units)"",""DateStart"":""2020-04-17T09:24:07"",""DateEnd"":""2020-05-29T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT  Primary  Prevention Plan (Purpose T)"",""DateStart"":""2020-04-28T10:00:00"",""DateEnd"":""2020-05-29T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""sore grion assess 2-3 units"",""DateStart"":""2015-01-09T10:49:43"",""DateEnd"":""2015-01-22T00:00:00"",""Aim"":""Curative"",""ProviderName"":""ESHT""}]";
+
+
+        public async Task<IActionResult> MentalHealthCrisisPlans(string patientView)
+        {
+            var correlationId = Guid.NewGuid().ToString();
+
+            var spineModel = GetPatientModelSession();
+
+            if (spineModel == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+
+            IEnumerable<PatientCarePlanRecord> patientCarePlanRecords = null;
+
+            //var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, correlationId, spineModel.OrganisationAsId, spineModel);
+            for (double i = 0; i < 99999999; i++) ;
+
+            if(patientView == Constants.MentalHealthCrisisPlans)
+            {
+                patientCarePlanRecords = JsonConvert.DeserializeObject<IEnumerable<PatientCarePlanRecord>>(SerialisedMentalHealthCP);
+            }
+            else
+            {
+                patientCarePlanRecords = JsonConvert.DeserializeObject<IEnumerable<PatientCarePlanRecord>>(SerialisedCCP);
+
+            }
+
+
+            var vm = new ResourceViewModel
+            {
+                ActiveView = patientView,
+                Plans = patientCarePlanRecords
+            };
+
+            return View(Constants.MentalHealthCrisisPlans, vm);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> Summary(DateTime dateOfBirth, string nhsNumber)
+        {
+            var organisationAsid = "200000001564";
+            var guid = Guid.NewGuid();
+            var correlationId = guid.ToString();
+            var strDod = dateOfBirth.ToString("dd-MM-yyyy");
+            ViewBag.Dob = strDod;
+            ViewBag.NhsNumber = nhsNumber;
+
+            var spineModel = GetPatientModelSession();
+
+            if(spineModel == null)
+            {
+                var strSpineModel = "";
+
+                try
+                {
+                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsid);
+                    spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
+                }
+                catch (Exception)
+                {
+                    return View("InvalidCertErrorPage");
+                }
+               
+                if (spineModel == null)
+                {
+                    return View("InvalidSpineModelErrorPage");
+                }
+            }           
+
+            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
+            spineModel.OrganisationAsId = organisationAsid;
+            spineModel.PractitionerId = "123459990";
+            spineModel.CorrelationId = correlationId;
+            spineModel.Username = "BRUNO";
+            spineModel.PractitionerNamePrefix = "Dr";
+            spineModel.PractitionerGivenName = "LAKE";
+            spineModel.PractitionerFamilyName = "Gregory";
+            spineModel.PractitionerRoleId = "UNK";
+            spineModel.GpPractice.Name = Constants.SPFT;
+            spineModel.GpPractice.OdsCode = "A20047";
+            spineModel.RequestorId = "bc131b18-a908-4056-96f4-ba4752848605";
+            spineModel.SdsUserId = "UNK";
+            spineModel.DateOfBirth = strDod;
+
+            SetPatientModelSession(spineModel);
+
+            await LogAuditRecordModel(Request, spineModel, guid, Constants.Summary);
+
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, organisationAsid, spineModel);
 
             if (null == pBundle)
             {
                 return View("Error");
             }
-            else if(pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError",pBundle);
-            }
 
-            
-
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary, patientGivenName, patientFamilyName,  patientPostCode,patientGender, patientPracticeOdsCode, patientAddress);
+            var vm = GetViewModel(pBundle.StrBundle, strDod, nhsNumber, Constants.Summary, spineModel);
 
             if (null == vm)
             {
-                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
+            vm.ActiveView = Constants.Summary;
+
             return View(Constants.All, vm);
+
+        }
+
+        public void SetPatientModelSession(PatientCareRecordRequestDomainModel model)
+        {
+            if (HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName) == null)
+            {
+                HttpContext.Session.Set<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName, model);
+            }
+        }
+
+        private ResourceViewModel GetViewModel(string bundle, string dateOfBirth, string nhsNumber, string heading,
+        PatientCareRecordRequestDomainModel spineModel)
+        {
+            
+            try
+            {
+
+                var fjp = new FhirJsonParser();
+                var gpBundle = fjp.Parse<Hl7.Fhir.Model.Bundle>(bundle);
+                var vm = new ResourceViewModel();
+
+                var compositions = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Composition).Cast<Composition>().ToList();
+
+                var patient = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Patient).Cast<Patient>().FirstOrDefault();
+
+                var organisation = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Organization).Cast<Organization>().FirstOrDefault();
+
+                var title = "";
+                title = patient.Name.Any() ? patient.Name.FirstOrDefault().PrefixElement.FirstOrDefault().ToString() : "";
+                var sectionsDivs = compositions.SelectMany(x => x.Section.Select(y => y.Text.Div)).ToList();
+                var div = sectionsDivs.FirstOrDefault();
+
+                var dob = DateTime.Now;
+                DateTime.TryParse(dateOfBirth, out dob);
+                var age = dob.CalculateAge();
+
+                vm.Div = div;
+                var demographicsDiff = GetDemographicsDifferences(patient, organisation, spineModel);
+
+                vm.DemographicsDiffDivModel = demographicsDiff;
+
+                if (demographicsDiff != null && demographicsDiff.DifferencesFound)
+                {
+                    vm.DifferencesFound = 1;
+                }
+                vm.Patient = patient;
+                vm.Detail = "PLEXUS SUMMARY";
+                vm.Heading = heading;
+                vm.FormattedDateOfBirth = dateOfBirth;
+                vm.NhsNumber = nhsNumber;
+                vm.Age = age;
+                vm.StrAge = $"{age}y";
+                vm.Title = title;
+                return vm;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+
+        public PatientCareRecordRequestDomainModel GetPatientModelSession()
+        {
+            return HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName);
+        }
+
+        private string GetAbsolutePath(HttpRequest request)
+        {
+            var absoluteUri = string.Concat(
+                request.Scheme,
+                "://",
+                request.Host.ToUriComponent(),
+                request.PathBase.ToUriComponent(),
+                request.Path.ToUriComponent(),
+                request.QueryString.ToUriComponent());
+
+            return absoluteUri;
+
+        }
+
+        public JsonResult GetDemographicDiv()
+        {
+            var s = HttpContext.Session.Get<string>(Constants.ViewerSessionDemographicDiv);
+            return Json(new { content = s });
         }
 
         private async Task<bool> LogAuditRecordModel(HttpRequest request, PatientCareRecordRequestDomainModel model, Guid correlationId, string section)
@@ -178,13 +346,19 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             return true;
         }
 
-        private DemographicsViewModel GetDemographicsDifferences(Patient patient, Organization organisation, string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress, string dateOfBirth)
+        private DemographicsViewModel GetDemographicsDifferences(Patient patient, Organization organisation, PatientCareRecordRequestDomainModel spineModel)
         {
             if (patient == null)
             {
                 return null;
             }
+
+            string patientGivenName = "NIKE";
+            string patientFamilyName = "MEAKING";
+            string patientPostCode = "HA8 9Tb";
+            string patientGender = "F";
+            string patientPracticeOdsCode = "A42077";
+            string patientAddress = "24b Craigweil";
 
             DemographicsViewModel model = new DemographicsViewModel();
 
@@ -227,7 +401,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 }
             }
 
-            
+
             if (patient.Address != null)
             {
                 var postcodes = patient.Address.Where(x => !string.IsNullOrEmpty(x.PostalCode)).Select(x => x.PostalCode.Trim().ToUpper());
@@ -237,7 +411,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 gpConnectAddresses.AddRange(fullAddress);
                 gpConnectAddresses.ForEach(x => x = x.ToUpper());
 
-                if(postcodes.Any())
+                if (postcodes.Any())
                 {
                     var postcodeExists = postcodes.Contains(patientPostCode.Trim().ToUpper());
 
@@ -249,15 +423,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     }
                 }
 
-                if(gpConnectAddresses.Any())
+                if (gpConnectAddresses.Any())
                 {
-                    //var addressExists = gpConnectAddresses.Contains(patientAddress.Trim().ToUpper());
-
                     var addressExists = false;
 
                     foreach (var gpConnectAddress in gpConnectAddresses)
                     {
-                        if(gpConnectAddress.ToUpper().Contains(patientAddress.Trim().ToUpper()))
+                        if (gpConnectAddress.ToUpper().Contains(patientAddress.Trim().ToUpper()))
                         {
                             addressExists = true;
                         }
@@ -270,15 +442,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                         model.DifferencesFound = true;
                     }
                 }
-            }
-
-            //var localeDob = dateOfBirth;
-
-            //if (!patient.BirthDate.Equals(localeDob))
-            //{
-            //    model.DateOfBirth = patient.BirthDate;
-            //    model.DifferencesFound = true;
-            //}
+            }            
 
             if (patient.Gender.HasValue)
             {
@@ -291,19 +455,18 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     model.DifferencesFound = true;
                 }
             }
-            
 
             if (organisation != null)
             {
                 var odsCodeIdentifier = organisation.Identifier.FirstOrDefault();
 
-                if(odsCodeIdentifier != null && odsCodeIdentifier.Value != null)
+                if (odsCodeIdentifier != null && odsCodeIdentifier.Value != null)
                 {
-                    if(odsCodeIdentifier.Value.ToUpper() != patientPracticeOdsCode.ToUpper())
+                    if (odsCodeIdentifier.Value.ToUpper() != patientPracticeOdsCode.ToUpper())
                     {
-                        model.GPPracticeODSCode = patient.ManagingOrganization.Display;
-                        model.LocalGPPracticeODSCode = patientPracticeOdsCode;
-                        model.DifferencesFound = true;
+                        //model.GPPracticeODSCode = patient.ManagingOrganization.Display;
+                        //model.LocalGPPracticeODSCode = patientPracticeOdsCode;
+                        //model.DifferencesFound = true;
                     }
                 }
                 else
@@ -312,1433 +475,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     model.LocalGPPracticeODSCode = patientPracticeOdsCode;
                     model.DifferencesFound = true;
                 }
-             
-            }                  
+
+            }
 
             return model;
 
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Summary(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
-        {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName,
-            practitionerFamilyName, requestorId, sdsUserId);
-
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
-            organisationAsid = organisationASID ?? organisationAsid;
-
-             var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-                }
-                catch
-                {
-                    return View("InvalidCertErrorPage");
-                }
-
-               spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            }           
-
-            if (spineModel == null)
-            {
-                return View("InvalidSpineModelErrorPage");
-            }
-
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
-
-            SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Summary);
-
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if (null == pBundle)
-            {
-                return View("Error");
-            }
-            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError", pBundle);
-            }
-
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Summary, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
-
-            if (null == vm)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("Error", pBundle);
-            }
-
-            return View(Constants.All, vm);
-
-        }
-
-
-        [HttpGet]
-        public async Task<IActionResult> ProblemsAndIssues(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
-        {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName,
-            practitionerFamilyName, requestorId, sdsUserId);
-
-
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
-            organisationAsid = organisationASID ?? organisationAsid;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-                }
-                catch
-                {
-                    return View("InvalidCertErrorPage");
-                }
-
-                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            }
-
-            if (spineModel == null)
-            {
-                return View("InvalidSpineModelErrorPage");
-            }
-
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
-
-            SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.ProblemsAndIssues);
-
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.ProblemsAndIssues, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if (null == pBundle)
-            {
-                return View("Error");
-            }
-            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError", pBundle);
-            }
-
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.ProblemsAndIssues, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
-
-            if (null == vm)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("Error", pBundle);
-            }
-
-            return View(Constants.All, vm);
-
-        }
-
-
-
-        [HttpGet]
-        public async Task<IActionResult> Immunisations(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
-        {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName,
-            practitionerFamilyName, requestorId, sdsUserId);
-
-
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-                }
-                catch
-                {
-                    return View("InvalidCertErrorPage");
-                }
-
-                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            }
-
-            if (spineModel == null)
-            {
-                return View("InvalidSpineModelErrorPage");
-            }
-
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
-
-            SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Immunisations);
-
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Immunisations, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if (null == pBundle)
-            {
-                return View("Error");
-            }
-            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError", pBundle);
-            }
-
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Immunisations, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
-
-            if (null == vm)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("Error", pBundle);
-            }
-
-            return View(Constants.All, vm);
-
-        }
-
-
-        [HttpGet]
-        public async Task<IActionResult> Medication(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
-        {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName,
-            practitionerFamilyName, requestorId, sdsUserId);
-
-
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
-            organisationAsid = organisationASID ?? organisationAsid;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-                }
-                catch
-                {
-                    return View("InvalidCertErrorPage");
-                }
-
-                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            }
-
-            if (spineModel == null)
-            {
-                return View("InvalidSpineModelErrorPage");
-            }
-
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
-
-            SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Medication);
-
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Medication, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if (null == pBundle)
-            {
-                return View("Error");
-            }
-            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError", pBundle);
-            }
-
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Medication, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
-
-            if (null == vm)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("Error", pBundle);
-            }
-
-            return View(Constants.All, vm);
-
-        }
-
-
-        [HttpGet]
-        public async Task<IActionResult> Allergies(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
-        {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName,
-            practitionerFamilyName, requestorId, sdsUserId);
-
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
-            organisationAsid = organisationASID ?? organisationAsid;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-                }
-                catch
-                {
-                    return View("InvalidCertErrorPage");
-                }
-
-                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            }
-
-            if (spineModel == null)
-            {
-                return View("InvalidSpineModelErrorPage");
-            }
-
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
-
-            SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Allergies);
-
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Allergies, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if (null == pBundle)
-            {
-                return View("Error");
-            }
-            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError", pBundle);
-            }
-
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Allergies, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
-
-            if (null == vm)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("Error", pBundle);
-            }
-
-            return View(Constants.All, vm);
-
-        }
-
-
-        [HttpGet]
-        public async Task<IActionResult> Encounters(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
-        {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName,
-            practitionerFamilyName, requestorId, sdsUserId);
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
-            organisationAsid = organisationASID ?? organisationAsid;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-                }
-                catch
-                {
-                    return View("InvalidCertErrorPage");
-                }
-
-                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            }
-
-            if (spineModel == null)
-            {
-                return View("InvalidSpineModelErrorPage");
-            }
-
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
-
-            SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Encounters);
-
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Encounters, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if (null == pBundle)
-            {
-                return View("Error");
-            }
-            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError", pBundle);
-            }
-
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Encounters, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
-
-            if (null == vm)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("Error", pBundle);
-            }
-
-            return View(Constants.All, vm);
-
-        }
-
-
-        [HttpGet]
-        public async Task<IActionResult> Observations(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
-        {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName,
-            practitionerFamilyName, requestorId, sdsUserId);
-
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
-            organisationAsid = organisationASID ?? organisationAsid;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-                }
-                catch
-                {
-                    return View("InvalidCertErrorPage");
-                }
-
-                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            }
-
-            if (spineModel == null)
-            {
-                return View("InvalidSpineModelErrorPage");
-            }
-
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
-
-            SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Observations);
-
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Observations, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if (null == pBundle)
-            {
-                return View("Error");
-            }
-            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError", pBundle);
-            }
-
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Observations, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
-
-            if (null == vm)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("Error", pBundle);
-            }
-
-            return View(Constants.All, vm);
-
-        }
-
-
-        [HttpGet]
-        public async Task<IActionResult> Referrals(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
-        {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName,
-            practitionerFamilyName, requestorId, sdsUserId);
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
-            organisationAsid = organisationASID ?? organisationAsid;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-                }
-                catch
-                {
-                    return View("InvalidCertErrorPage");
-                }
-
-                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            }
-
-            if (spineModel == null)
-            {
-                return View("InvalidSpineModelErrorPage");
-            }
-
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
-
-
-            SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Referrals);
-
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Referrals, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if (null == pBundle)
-            {
-                return View("Error");
-            }
-            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError", pBundle);
-            }
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Referrals, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
-
-            if (null == vm)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("Error", pBundle);
-            }
-
-            return View(Constants.All, vm);
-
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Admin(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
-        {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName,
-            practitionerFamilyName, requestorId, sdsUserId);
-
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
-            organisationAsid = organisationASID ?? organisationAsid;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-                }
-                catch
-                {
-                    return View("InvalidCertErrorPage");
-                }
-
-                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            }
-
-            if (spineModel == null)
-            {
-                return View("InvalidSpineModelErrorPage");
-            }
-
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
-
-            SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Admin);
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Admin, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if (null == pBundle)
-            {
-                return View("Error");
-            }
-            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError", pBundle);
-            }
-
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Admin, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
-
-            if (null == vm)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("Error", pBundle);
-            }
-
-            return View(Constants.All, vm);
-
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> Clinical(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress,
-            string practitionerNamePrefix, string practitionerGivenName, string practitionerFamilyName,
-            string requestorId, string sdsUserId)
-        {
-            UrlParemetersModel urlModel = new UrlParemetersModel();
-
-            urlModel.AddNHSNumber(nhsNumber).AddDateOfBirth(dob).AddOrganisationASID(organisationASID)
-                .AddOrganisationODScode(organisationODScode).AddUserId(userId).AddUserName(userName).AddUserRole(userRole)
-                .AddSessionId(sessionId).AddCorrelationId(correlationId).AddPatientGivenName(patientGivenName).AddPatientFamilyName(patientFamilyName)
-                .AddPatientPostCode(patientPostCode).AddPatientGender(patientGender).AddPatientPracticeOdsCode(patientPracticeOdsCode).AddPatientAddress(patientAddress)
-                .AddPractitionerNamePrefix(practitionerNamePrefix).AddPractitionerGivenName(practitionerGivenName).AddPractitionerFamilyName(practitionerFamilyName).AddSdsUserId(sdsUserId).AddRequestorId(requestorId);
-
-            if (!urlModel.IsValid())
-            {
-                return View("InvalidModelErrorPage", urlModel);
-            }
-
-            SaveModelToViewBag(nhsNumber, dob,
-            organisationASID, organisationODScode, userId,
-            userName, userRole, sessionId, correlationId,
-            patientGivenName, patientFamilyName, patientPostCode,
-            patientGender, patientPracticeOdsCode, patientAddress, practitionerNamePrefix, practitionerGivenName,
-            practitionerFamilyName, requestorId, sdsUserId);
-
-            var organisationAsid = IsProd ? _viewerConfiguration.OrganisationAsId : SmspIntEnvAsid;
-
-            organisationAsid = organisationASID ?? organisationAsid;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{dob}", correlationId, organisationAsid);
-                }
-                catch
-                {
-                    return View("InvalidCertErrorPage");
-                }
-
-                spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-            }
-
-            if (spineModel == null)
-            {
-                return View("InvalidSpineModelErrorPage");
-            }
-
-            spineModel.OrganisationOdsCode = organisationODScode ?? Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = userId;
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = userName;
-            spineModel.PractitionerNamePrefix = practitionerNamePrefix;
-            spineModel.PractitionerGivenName = practitionerGivenName;
-            spineModel.PractitionerFamilyName = practitionerFamilyName;
-            spineModel.PractitionerRoleId = userRole.ToUpper();
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = patientPracticeOdsCode;
-            spineModel.RequestorId = requestorId;
-            spineModel.SdsUserId = sdsUserId;
-
-            SetPatientModelSession(spineModel);
-            SetUrlParametersModelSession(urlModel);
-
-            await LogAuditRecordModel(Request, spineModel, new Guid(correlationId), Constants.Clinical);
-
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Clinical, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if (null == pBundle)
-            {
-                return View("Error");
-            }
-            else if (pBundle.StatusCode != System.Net.HttpStatusCode.OK)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("BundleError", pBundle);
-            }
-
-            var vm = await GetViewModel(pBundle.StrBundle, dob, nhsNumber, Constants.Clinical, patientGivenName, patientFamilyName, patientPostCode, patientGender, patientPracticeOdsCode, patientAddress);
-
-            if (null == vm)
-            {
-                pBundle.CorrelationId = correlationId;
-                return View("Error", pBundle);
-            }
-
-            return View(Constants.All, vm);
-
-        }
-       
-        
-        private void SaveModelToViewBag(string nhsNumber, string dob,
-            string organisationASID, string organisationODScode, string userId,
-            string userName, string userRole, string sessionId, string correlationId,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress, string practitionerNamePrefix,
-            string practitionerGivenName, string practitionerFamilyName, string requestorId, string sdsUserId)
-        {
-            ViewBag.Dob = dob;
-            ViewBag.NhsNumber = nhsNumber;
-            ViewBag.OrganisationASID = organisationASID;
-            ViewBag.OrganisationODScode = organisationODScode;
-            ViewBag.UserName = userName;
-            ViewBag.UserId = userId;
-            ViewBag.UserRole = userRole;
-            ViewBag.SessionId = sessionId;
-            ViewBag.CorrelationId = correlationId;
-            ViewBag.PatientGivenName = patientGivenName;
-            ViewBag.PatientFamilyName = patientFamilyName;
-            ViewBag.PatientPostCode = patientPostCode;
-            ViewBag.PatientGender = patientGender;
-            ViewBag.PatientPracticeOdsCode = patientPracticeOdsCode;
-            ViewBag.PatientAddress = patientAddress;
-            ViewBag.PractitionerNamePrefix = practitionerNamePrefix;
-            ViewBag.PractitionerGivenName = practitionerGivenName;
-            ViewBag.PractitionerFamilyName = practitionerFamilyName;
-            ViewBag.RequestorId = requestorId;
-            ViewBag.SdsUserId = sdsUserId;
-
-        }
-        public async Task<IActionResult> MentalHealthCrisisPlans(string dob, string nhsNumber)
-        {
-            var correlationId = Guid.NewGuid().ToString();
-
-            ViewBag.Dob = dob;
-            ViewBag.NhsNumber = nhsNumber;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                return RedirectToAction("Index");
-            }
-
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-
-            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            return View(Constants.MentalHealthCrisisPlans, patientCarePlanRecords);
-        }
-
-        public async Task<IActionResult> CommunityCarePlans(string dob, string nhsNumber)
-        {
-            var correlationId = Guid.NewGuid().ToString();
-
-            ViewBag.Dob = dob;
-
-            ViewBag.NhsNumber = nhsNumber;
-
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null)
-            {
-                return RedirectToAction("Index");
-            }
-
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-
-            var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.CommunityCarePlans, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            return View(Constants.CommunityCarePlans, patientCarePlanRecords);
-        }
-
-        public void SetPatientModelSession(PatientCareRecordRequestDomainModel model)
-        {
-            if (HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName) == null)
-            {
-                HttpContext.Session.Set<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName, model);
-            }
-        }
-
-        public void SetUrlParametersModelSession(UrlParemetersModel model)
-        {
-            if (HttpContext.Session.Get<UrlParemetersModel>(Constants.ViewerSessionUrlParametersKeyName) == null)
-            {
-                HttpContext.Session.Set<UrlParemetersModel>(Constants.ViewerSessionUrlParametersKeyName, model);
-            }
-        }
-
-        public PatientCareRecordRequestDomainModel GetPatientModelSession()
-        {
-            return HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName);
-        }
-
-        private string GetAbsolutePath(HttpRequest request)
-        {
-            var absoluteUri = string.Concat(
-                request.Scheme,
-                "://",
-                request.Host.ToUriComponent(),
-                request.PathBase.ToUriComponent(),
-                request.Path.ToUriComponent(),
-                request.QueryString.ToUriComponent());
-
-            return absoluteUri;
-
-        }
-
-        public async Task<JsonResult> GetDemographicDiv()
-        {
-            var s = HttpContext.Session.Get<string>(Constants.ViewerSessionDemographicDiv);
-            return Json(new { content = s });
-        }
-
-        private async Task<ResourceViewModel> GetViewModel(string bundle, string dateOfBirth, string nhsNumber, string heading,
-            string patientGivenName, string patientFamilyName, string patientPostCode,
-            string patientGender, string patientPracticeOdsCode, string patientAddress)
-        {
-            try
-            {
-
-                var fjp = new FhirJsonParser();
-                var gpBundle = fjp.Parse<Hl7.Fhir.Model.Bundle>(bundle);
-                var vm = new ResourceViewModel();
-
-                var compositions = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Composition).Cast<Composition>().ToList();
-
-                var patient = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Patient).Cast<Patient>().FirstOrDefault();
-
-                var organisation = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Organization).Cast<Organization>().FirstOrDefault();
-
-                var title = "";
-                title = patient.Name.Any() ? patient.Name.FirstOrDefault().PrefixElement.FirstOrDefault().ToString() : "";
-                var sectionsDivs = compositions.SelectMany(x => x.Section.Select(y => y.Text.Div)).ToList();
-                var div = sectionsDivs.FirstOrDefault();
-
-                var dob = DateTime.Now;
-                DateTime.TryParse(dateOfBirth, out dob);
-                var age = dob.CalculateAge();
-
-                vm.Div = div;
-                var demographicsDiff = GetDemographicsDifferences(patient, organisation,patientGivenName, patientFamilyName, patientPostCode,patientGender,  patientPracticeOdsCode,  patientAddress, dateOfBirth);
-
-                vm.DemographicsDiffDivModel = demographicsDiff;
-
-                if (demographicsDiff != null && demographicsDiff.DifferencesFound)
-                {
-                    vm.DifferencesFound = 1;
-                }
-                    vm.Patient = patient;
-                vm.Detail = "PLEXUS SUMMARY";
-                vm.Heading = heading;
-                vm.FormattedDateOfBirth = dateOfBirth;
-                vm.NhsNumber = nhsNumber;
-                vm.Age = age;
-                vm.StrAge = $"{age}y";
-                vm.Title = title;
-                return vm;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private async Task<string> GetDemographicsDiff(Patient patient)
-        {
-            var spineModel = GetPatientModelSession();
-
-            if (spineModel == null || patient == null)
-            {
-                return "";
-            }
-
-            DemographicsViewModel model = new DemographicsViewModel();
-
-            var differencesFound = false;
-
-            var givenNames = patient.Name.SelectMany(x => x.Given);
-            var familyNames = patient.Name.SelectMany(x => x.Family);
-            var otherNames = patient.Name.SelectMany(x => x.Suffix);
-            var fullnames = patient.Name.Select(x => x.Text);
-            var prefixes = patient.Name.SelectMany(x => x.Prefix);
-
-            givenNames = givenNames.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
-            familyNames = familyNames.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
-            fullnames = fullnames.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
-            prefixes = prefixes.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
-
-            var spinePrefix = spineModel.Person.Prefix;
-            var spinefamilyName = spineModel.Person.FamilyName;
-
-            var spineGivenName1 = spineModel.Person.GivenName1;
-            var spineGivenName2 = spineModel.Person.GivenName2;
-
-            var spineGivennames = new List<string>();
-
-            if (!string.IsNullOrEmpty(spineModel.Person.Prefix) && prefixes.Any())
-            {
-                if (!prefixes.Contains(spineModel.Person.Prefix.Trim().ToUpper()))
-                {
-                    model.Prefixes = spineModel.Person.Prefix.Trim().ToUpper();
-                    differencesFound = true;
-                }
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(spineModel.Person.Prefix))
-                {
-                    model.Prefixes = String.Join(",", prefixes.ToList());
-                    differencesFound = true;
-                }
-                else if (!prefixes.Any())
-                {
-                    model.Prefixes = spineModel.Person.Prefix;
-                    differencesFound = true;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(spineGivenName1))
-            {
-                spineGivennames.Add(spineGivenName1);
-            }
-
-            if (!string.IsNullOrEmpty(spineGivenName2))
-            {
-                spineGivennames.Add(spineGivenName2);
-            }
-
-
-            if (spineGivennames.Any() || givenNames.Any())
-            {
-                if (!spineGivennames.Any())
-                {
-                    model.GivenNames = String.Join(", ", givenNames.ToList());
-                    differencesFound = true;
-                }
-                else if (!givenNames.Any())
-                {
-                    model.GivenNames = String.Join(", ", spineGivennames.ToList());
-                    differencesFound = true;
-                }
-                else
-                {
-
-                    var givennamesDiff = spineGivennames.Except(givenNames, StringComparer.OrdinalIgnoreCase);
-
-                    if (givennamesDiff.Any())
-                    {
-                        model.GivenNames = String.Join(", ", givennamesDiff.ToList());
-                        differencesFound = true;
-                    }
-                }
-            }
-
-            if (familyNames.Any() && !string.IsNullOrEmpty(spineModel.Person.FamilyName))
-            {
-                var familyNameExists = familyNames.Contains(spineModel.Person.FamilyName.Trim().ToUpper());
-
-                if (familyNameExists)
-                {
-                    model.FamilyNames = spineModel.Person.FamilyName;
-                    differencesFound = true;
-                }
-            }
-            else
-            {
-                if (!familyNames.Any())
-                {
-                    model.FamilyNames = spineModel.Person.FamilyName;
-                    differencesFound = true;
-                }
-                else if (string.IsNullOrEmpty(spineModel.Person.FamilyName))
-                {
-                    model.FamilyNames = spineModel.Person.FamilyName;
-                    differencesFound = true;
-                }
-            }
-
-            if (patient.Address != null && spineModel.Person.Address != null)
-            {
-                var postcodes = patient.Address.Where(x => !string.IsNullOrEmpty(x.PostalCode)).Select(x => x.PostalCode.Trim().ToUpper());
-                var gpConnectAddresses = patient.Address.SelectMany(x => x.Line);
-
-                var spinePostcode = spineModel.Person.Address.PostalCode;
-                var address1 = spineModel.Person.Address.AddressLine1;
-                var address2 = spineModel.Person.Address.AddressLine2;
-                var address3 = spineModel.Person.Address.AddressLine3;
-                var address4 = spineModel.Person.Address.AddressLine4;
-                var address5 = spineModel.Person.Address.AddressLine5;
-
-                var spineAddressList = new List<string>();
-
-                if (!string.IsNullOrEmpty(address1))
-                {
-                    spineAddressList.Add(address1);
-                }
-                if (!string.IsNullOrEmpty(address2))
-                {
-                    spineAddressList.Add(address2);
-                }
-                if (!string.IsNullOrEmpty(address3))
-                {
-                    spineAddressList.Add(address3);
-                }
-                if (!string.IsNullOrEmpty(address4))
-                {
-                    spineAddressList.Add(address4);
-                }
-                if (!string.IsNullOrEmpty(address5))
-                {
-                    spineAddressList.Add(address5);
-                }
-
-                if (postcodes != null && postcodes.Any() && string.IsNullOrEmpty(spinePostcode))
-                {
-                    var postCodeExist = postcodes.Contains(spinePostcode.Trim().ToUpper());
-                    if (!postCodeExist)
-                    {
-                        model.Postcode = spinePostcode;
-                        differencesFound = true;
-                    }
-                }
-
-                if (spineAddressList.Any() || gpConnectAddresses.Any())
-                {
-                    if (!spineAddressList.Any())
-                    {
-                        model.Addreses = String.Join(", ", gpConnectAddresses.ToList());
-                        differencesFound = true;
-                    }
-                    else if (!gpConnectAddresses.Any())
-                    {
-                        model.Addreses = String.Join(", ", spineAddressList.ToList());
-                        differencesFound = true;
-                    }
-                    else
-                    {
-                        var addressDiff = gpConnectAddresses.Except(spineAddressList, StringComparer.OrdinalIgnoreCase);
-
-                        if (addressDiff.Any())
-                        {
-                            model.Addreses = String.Join(", ", addressDiff.ToList());
-                            differencesFound = true;
-                        }
-                    }
-                }
-            }
-
-            if (string.IsNullOrEmpty(patient.BirthDate))
-            {
-                model.DateOfBirth = spineModel.Person.DateOfBirth.ToShortDateString();
-                differencesFound = true;
-            }
-            else
-            {
-                var spineDob = spineModel.Person.DateOfBirth.ToShortDateString();
-
-                if (!patient.BirthDate.Equals(spineDob))
-                {
-                    model.DateOfBirth = spineModel.Person.DateOfBirth.ToShortDateString();
-                    differencesFound = true;
-                }
-            }
-
-            spineModel.Person.Gender = 'F';
-
-            if (patient.Gender.HasValue || !string.IsNullOrEmpty(spineModel.Person.Gender.ToString()))
-            {
-                var sameGender = patient.Gender.Value.ToString().ToUpper().Contains(spineModel.Person.Gender);
-
-                if (!sameGender)
-                {
-                    model.Gender = spineModel.Person.Gender.ToString();
-                    differencesFound = true;
-                }
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(spineModel.Person.Gender.ToString()))
-                {
-                    model.Gender = spineModel.Person.Gender.ToString();
-                    differencesFound = true;
-                }
-
-            }
-
-            if (patient.ManagingOrganization != null && spineModel.GpPractice != null)
-            {
-                //Do Compare 
-            }
-            else
-            {
-                if (patient.ManagingOrganization == null)
-                {
-                    model.GPPracticeAddress = spineModel.GpPractice.Address;
-                    model.GPPracticeODSCode = spineModel.GpPractice.OdsCode;
-                    differencesFound = true;
-                }
-            }
-
-
-            var s = "";
-
-            if (differencesFound)
-            {
-                s = await this.RenderViewAsync("~/Views/Shared/_DemographicsDisplay.cshtml", model);
-                HttpContext.Session.Set<string>(Constants.ViewerSessionDemographicDiv, s);
-
-            }
-
-            return s;
-
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
     }
