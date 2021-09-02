@@ -1,48 +1,70 @@
-﻿
+﻿@model Sussex.Lhcra.Roci.Viewer.UI.Models.ResourceViewModel
 
+@if (Model.Patient != null)
+{
 
-<div class="accordion" id="accordion2">
+    <div class="accordion" id="accordion2">
 
-    <div class="accordion-group">
-        <div class="accordion-heading">
-            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="card card-block card-stretch card-height blog blog-detail">
-                            <div class="card-body">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="card card-block card-stretch card-height blog blog-detail">
+                                <div class="card-body" style="margin-top:0;padding-top:0;">
+                                    <div class="blog-description mt-3">
+                                        <div class="blog-meta d-flex align-items-center mb-3">
 
-                                <div class="blog-description mt-3">
-                                    <div class="blog-meta d-flex align-items-center mb-3">
-                                        <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>March 21, 2020</div>
-                                        <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-user-fill pr-2 rtl-pl-2 "></i>By: Admin</div>
-                                        <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-heart pr-2 rtl-pl-2 "></i>0 Hits</div>
-                                        <div class="comments"><i class="ri-chat-3-fill pr-2 rtl-pl-2 "></i>82 comments</div>
+                                            @if (Model.Patient.Name != null && Model.Patient.Name.Count > 0)
+                                            {
+                                                <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-user-fill pr-2 rtl-pl-2 "></i>@Model.Patient.Name.FirstOrDefault().Text @Model.Title</div>
+
+                                            }
+
+                                            <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>Born: @Model.FormattedDateOfBirth (@Model.StrAge)</div>
+                                            <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-heart pr-2 rtl-pl-2 "></i>Gender: @(Model.Patient.Gender.HasValue ? Model.Patient.Gender.Value.ToString() : "OTHER")</div>
+                                            <div class="comments"><i class="ri-chat-3-fill pr-2 rtl-pl-2 "></i>NHS No. @Model.NhsNumber</div>
+                                            <hr />
+                                            <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i> Address @Model.Patient.Address.FirstOrDefault().Text</div>
+                                            <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-heart pr-2 rtl-pl-2 "></i>Phone And Email @(Model.Patient.Telecom != null && Model.Patient.Telecom.Any() ? Model.Patient.Telecom.FirstOrDefault().Value : "N/A")</div>
+                                            @*<div class="comments"><i class="ri-chat-3-fill pr-2 rtl-pl-2 "></i>NHS No. @Model.NhsNumber</div>*@
+
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        <div id="collapseOne" class="accordion-body collapse">
-            <div class="accordion-inner">
-                <div class="card card-block card-stretch card-height blog blog-detail">
-                    <div class="card-body">
+                </a>
+            </div>
+            <div id="collapseOne" class="accordion-body collapse">
+                <div class="accordion-inner">
+                    <div class="card card-block card-stretch card-height blog blog-detail">
+                        <div class="card-body" style="margin-top:0;padding-top:0;">
+                            <div class="blog-description mt-3">
+                                <div class="blog-meta d-flex align-items-center mb-3">
 
-                        <div class="blog-description mt-3">
-                            <div class="blog-meta d-flex align-items-center mb-3">
-                                <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>March 21, 2020</div>
-                                <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-user-fill pr-2 rtl-pl-2 "></i>By: Admin</div>
-                                <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-heart pr-2 rtl-pl-2 "></i>0 Hits</div>
-                                <div class="comments"><i class="ri-chat-3-fill pr-2 rtl-pl-2 "></i>82 comments</div>
+                                    @if (Model.Patient.Name != null && Model.Patient.Name.Count > 0)
+                                    {
+                                        <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-user-fill pr-2 rtl-pl-2 "></i>@Model.Patient.Name.FirstOrDefault().Text @Model.Title</div>
+
+                                    }
+
+                                    <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>Born: @Model.FormattedDateOfBirth (@Model.StrAge)</div>
+                                    <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-heart pr-2 rtl-pl-2 "></i>Gender: @(Model.Patient.Gender.HasValue ? Model.Patient.Gender.Value.ToString() : "OTHER")</div>
+                                    <div class="comments"><i class="ri-chat-3-fill pr-2 rtl-pl-2 "></i>NHS No. @Model.NhsNumber</div>
+
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 
-</div>
+}
+
+
 

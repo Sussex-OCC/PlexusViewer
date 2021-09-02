@@ -34,8 +34,8 @@
 
         #floating_box {
             position: absolute;
-            top: 0px;
-            right: 13px;
+            top: 70px;
+            /*right: 13px;*/
             z-index: 1000;
             padding: 5px;
             background: #d9edf7;
@@ -48,9 +48,7 @@
 </head>
 <body class=" color-light ">
 
-    <div id="floating_box">
-        <partial name="Partials/_NavBanner" model="Model" />
-    </div>
+    @RenderSection("FloatingBanner", required:false) 
 
     <!-- loader Start -->
     <div id="loading">
@@ -392,7 +390,7 @@
 
     <script>
         $(window).scroll(function () {
-            $("#floating_box").animate({ top: $(window).scrollTop() + "px" }, { queue: false, duration: 350 });
+            $("#floating_box").animate({ top: 70 + $(window).scrollTop() + "px" }, { queue: false, duration: 350 });
         });
 
         $(document).on('show', '.accordion', function (e) {
