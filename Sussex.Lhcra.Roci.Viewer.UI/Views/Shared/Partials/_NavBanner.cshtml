@@ -1,114 +1,48 @@
-﻿@model Sussex.Lhcra.Roci.Viewer.UI.Models.ResourceViewModel
+﻿
 
 
-@if (Model.Patient != null)
-{
-    <div class="container">
-        <div class="row">
-            <div class="col-md-5">
+<div class="accordion" id="accordion2">
 
-                @if (Model.Patient.Name != null && Model.Patient.Name.Count > 0)
-                {
-                    <h4 class="panel-title ng-binding">
-                        @Model.Patient.Name.FirstOrDefault().Text @Model.Title
-                    </h4>
-                }
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card card-block card-stretch card-height blog blog-detail">
+                            <div class="card-body">
 
-
-
-
-            </div>
-            <div class="col-md-7 text-left">
-                <ul class="list-inline">
-
-                    <li>
-                        <label style="font-weight: normal;">Born</label>
-                        <strong class="ng-binding">@Model.FormattedDateOfBirth</strong>
-                        <strong class="ng-binding">(@Model.StrAge)</strong>
-                    </li>
-                    <li>
-                        <label style="font-weight: normal;">Gender</label>
-                        <strong class="ng-binding">@(Model.Patient.Gender.HasValue ? Model.Patient.Gender.Value.ToString() : "OTHER")</strong>
-                    </li>
-                    <li class="nhsLabel">
-                        <label style="font-weight: normal;">NHS No.</label> <strong>
-                            <span class="ng-binding">@Model.NhsNumber</span>
-                        </strong>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="accordion" id="accordion2">
-
-        <div class="accordion-group">
-            <div class="accordion-heading">
-                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
-                    <div class="row">
-                        <div class="col-md-12">
-
-                            <div class="col-md-4">
-                                Address @Model.Patient.Address.FirstOrDefault().Text
+                                <div class="blog-description mt-3">
+                                    <div class="blog-meta d-flex align-items-center mb-3">
+                                        <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>March 21, 2020</div>
+                                        <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-user-fill pr-2 rtl-pl-2 "></i>By: Admin</div>
+                                        <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-heart pr-2 rtl-pl-2 "></i>0 Hits</div>
+                                        <div class="comments"><i class="ri-chat-3-fill pr-2 rtl-pl-2 "></i>82 comments</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                Phone And Email @(Model.Patient.Telecom != null && Model.Patient.Telecom.Any() ? Model.Patient.Telecom.FirstOrDefault().Value : "N/A")
-                            </div>
-                            <div class="col-md-2">
-
-                            </div>
-                            <div class="col-md-2">
-                                Known Allegies
-                            </div>
-
                         </div>
-
                     </div>
-                </a>
-            </div>
-            <div id="collapseOne" class="accordion-body collapse">
-                <div class="accordion-inner">
-                    <table class="table">
-                        <tbody>
-                            <tr>
-                                @if (Model.Patient.Address != null && Model.Patient.Address.Count > 0)
-                                {
-                                    <td width="40%">
-                                        <label>Usual Address</label><br />
-                                        <label>1 KNIGHTS COURT</label><br />
-                                        <label></label><br />
-                                        <label></label><br />
-                                        <label>DN16 3PL</label><br />
-                                    </td>
-                                }
+                </div>
+            </a>
+        </div>
+        <div id="collapseOne" class="accordion-body collapse">
+            <div class="accordion-inner">
+                <div class="card card-block card-stretch card-height blog blog-detail">
+                    <div class="card-body">
 
-                                @if (Model.Patient.Telecom != null && Model.Patient.Telecom.Count > 0)
-                                {
-                                    <td width="20%">
-                                        <label>01454587554</label><br />
-                                        <label></label><br />
-                                        <label></label><br />
-                                        <label></label><br />
-                                        <label></label><br />
-                                    </td>
-                                }
-
-
-                                @if (Model.Patient.CareProvider != null && Model.Patient.CareProvider.Count > 0)
-                                {
-                                    <td width="20%">
-                                    </td>
-                                }
-
-                                <td width="20%">
-                                </td>
-
-                            </tr>
-                        </tbody>
-                    </table>
+                        <div class="blog-description mt-3">
+                            <div class="blog-meta d-flex align-items-center mb-3">
+                                <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>March 21, 2020</div>
+                                <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-user-fill pr-2 rtl-pl-2 "></i>By: Admin</div>
+                                <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-heart pr-2 rtl-pl-2 "></i>0 Hits</div>
+                                <div class="comments"><i class="ri-chat-3-fill pr-2 rtl-pl-2 "></i>82 comments</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
     </div>
-}
+
+</div>
 
