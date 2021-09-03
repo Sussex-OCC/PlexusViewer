@@ -45,6 +45,7 @@
             $('#dark-mode').prop('checked', true).attr('data-active', 'false')
             $('.darkmode-logo').removeClass('d-none')
             $('.light-logo').addClass('d-none')
+            $('#PlexusTable table th').css('color', 'black')
             body.addClass('dark')
             dark = true
         } else {
