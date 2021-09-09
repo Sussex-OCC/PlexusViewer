@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 using Sussex.Lhcra.Common.ClientServices.Interfaces;
+using Sussex.Lhcra.Roci.Viewer.Domain.Models;
 
 namespace Sussex.Lhcra.Roci.Viewer.DataServices
 {
@@ -39,7 +40,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             _rociGatewayADSetting = rociGatewayOptions.Value;
         }
 
-        public async Task<string> GetDataContent(string url, string correlationId, string organisationAsId)
+        public async Task<SpineDataModel> GetDataContent(string url, string correlationId, string organisationAsId)
         {
             string token = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_rociGatewayADSetting);
 
@@ -54,11 +55,26 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             await Log(organisationAsId, string.Empty, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(_httpClient.DefaultRequestHeaders), PlexusConstants.RequestType.HttpGet);
 
             var httpResponse = await _httpClient.GetAsync(url);
+
             var returnData = await httpResponse.Content.ReadAsStringAsync();
 
-            await Log(organisationAsId, returnData, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(httpResponse.Headers), PlexusConstants.RequestType.HttpGet);       
+            var spineDataModel = new SpineDataModel();
 
-            return returnData;
+            await Log(organisationAsId, returnData, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(httpResponse.Headers), PlexusConstants.RequestType.HttpGet);
+
+            if (httpResponse.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                spineDataModel.isValid = true;
+                spineDataModel.SpineData = returnData;
+                return spineDataModel;
+            }
+            else
+            {
+                spineDataModel.isValid = false;
+                spineDataModel.SpineData = returnData;
+                spineDataModel.ErrorMessage = returnData;
+                return spineDataModel;
+            }
         }
 
         private async Task<bool> Log(string organisationAsId, string content,

@@ -31,7 +31,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<NowHomeController> _logger;
+        private readonly ILogger<HomeController> _logger;
         private readonly IConfiguration _configuration;
         private readonly ICertificateProvider _appSecretsProvider;
         private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
@@ -42,7 +42,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly IAuditLogTopicPublisher _auditLogTopicPublisher;
 
         public HomeController(
-            ILogger<NowHomeController> logger,
+            ILogger<HomeController> logger,
             IOptions<ViewerAppSettingsConfiguration> configurationOption,
             ISmspProxyDataService smspProxyDataService,
             IRociGatewayDataService rociGatewayDataService,
@@ -149,20 +149,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             IEnumerable<PatientCarePlanRecord> patientCarePlanRecords = null;
 
-            //var patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, correlationId, spineModel.OrganisationAsId, spineModel);
-            for (double i = 0; i < 99999999; i++) ;
-
-            if(patientView == Constants.MentalHealthCrisisPlans)
-            {
-                patientCarePlanRecords = JsonConvert.DeserializeObject<IEnumerable<PatientCarePlanRecord>>(SerialisedMentalHealthCP);
-            }
-            else
-            {
-                patientCarePlanRecords = JsonConvert.DeserializeObject<IEnumerable<PatientCarePlanRecord>>(SerialisedCCP);
-
-            }
-
-
+            patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, correlationId, spineModel.OrganisationAsId, spineModel);
+    
             var vm = new ResourceViewModel
             {
                 ActiveView = patientView,
@@ -183,27 +171,27 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ViewBag.Dob = strDod;
             ViewBag.NhsNumber = nhsNumber;
 
-            var spineModel = GetPatientModelSession();
+            PatientCareRecordRequestDomainModel spineModel = GetPatientModelSession();
 
-            if(spineModel == null)
+            try
             {
-                var strSpineModel = "";
-
-                try
-                {
-                    strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsid);
-                    spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel);
-                }
-                catch (Exception)
-                {
-                    return View("InvalidCertErrorPage");
-                }
+                var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsid);
                
-                if (spineModel == null)
+                if(strSpineModel.isValid)
                 {
-                    return View("InvalidSpineModelErrorPage");
+                    spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel.SpineData);
                 }
-            }           
+                else
+                {
+                    var errorModel = new PatientCareRecordBundleDomainModel();
+                    errorModel.Message = strSpineModel.ErrorMessage;
+                    return View("Error", errorModel);
+                }           
+            }
+            catch (Exception)
+            {
+                return View("InvalidCertErrorPage");
+            }                 
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = organisationAsid;
