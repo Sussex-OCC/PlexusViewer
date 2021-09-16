@@ -52,6 +52,8 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             HeaderHelper.AddSystemIdentifier("Plexus Viewer", _httpClient);
             HeaderHelper.AddUserRoleId(RoleIdType.Clinician.ToString(), _httpClient);
 
+            //url = $"https://wa-int-api-001.azurewebsites.net/Summary/?nhsNumber=9658218873&dob=19-06-1927&organisationASID=200000001564&organisationODScode=L7A7Q&userId=123459990&userName=ohiro&userRole=clinician&sessionId=ab13df88-955d-49e8-a385-b9ca5eb6a7ce&correlationId=d8854b0a-d7fd-4c41-80b4-8e8a6694d0ee&patientGivenName=MIKE&patientFamilyName=MEAKIN&patientPostCode=HA8 9TB&patientGender=M&patientPracticeOdsCode=A20047&patientAddress=1 KNIGHTS COURT, DN16 3PL&practitionerNamePrefix=Dr&practitionerGivenName=Lake&practitionerFamilyName=Gregory&requestorId=bc131b18-a908-4056-96f4-ba4752848605&sdsUserId=UNK";
+
             await Log(organisationAsId, string.Empty, new Guid(correlationId), "Plexus Viewer", url, JsonConvert.SerializeObject(_httpClient.DefaultRequestHeaders), PlexusConstants.RequestType.HttpGet);
 
             var httpResponse = await _httpClient.GetAsync(url);

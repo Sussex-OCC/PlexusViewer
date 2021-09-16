@@ -149,7 +149,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             IEnumerable<PatientCarePlanRecord> patientCarePlanRecords = null;
 
-            patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.MentalHealthCrisisPlans, correlationId, spineModel.OrganisationAsId, spineModel);
+            patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
     
             var vm = new ResourceViewModel
             {
@@ -203,7 +203,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerFamilyName = "Gregory";
             spineModel.PractitionerRoleId = "UNK";
             spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = "A20047";
+            spineModel.GpPractice.OdsCode = "A20047"; //"B86071";// "A20047";
             spineModel.RequestorId = "bc131b18-a908-4056-96f4-ba4752848605";
             spineModel.SdsUserId = "UNK";
             spineModel.DateOfBirth = strDod;
