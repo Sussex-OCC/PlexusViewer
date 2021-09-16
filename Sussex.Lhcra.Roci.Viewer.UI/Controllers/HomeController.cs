@@ -78,9 +78,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetPatientData(string patientView)
-        {
-            var organisationAsid = "200000001564";
+        {   
             var guid = Guid.NewGuid();
+
             var correlationId = guid.ToString();
 
             var spineModel = GetPatientModelSession();
@@ -90,29 +90,15 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
-            spineModel.PractitionerId = "123459990";
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = "BRUNO";
-            spineModel.PractitionerNamePrefix = "Dr";
-            spineModel.PractitionerGivenName = "LAKE";
-            spineModel.PractitionerFamilyName = "Gregory";
-            spineModel.PractitionerRoleId = "UNK";
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = "A20047";
-            spineModel.RequestorId = "bc131b18-a908-4056-96f4-ba4752848605";
-            spineModel.SdsUserId = "UNK";
-
             SetPatientModelSession(spineModel);
 
             await LogAuditRecordModel(Request, spineModel, guid, patientView);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, organisationAsid, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle || pBundle.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                return View("Error");
+                return View("Error", pBundle);
             }
 
             var vm = GetViewModel(pBundle.StrBundle, spineModel.DateOfBirth, spineModel.NhsNumber, patientView, spineModel);
@@ -163,19 +149,20 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         [HttpPost]
         public async Task<IActionResult> Summary(DateTime dateOfBirth, string nhsNumber)
-        {
-            var organisationAsid = "200000001564";
+        {        
             var guid = Guid.NewGuid();
             var correlationId = guid.ToString();
             var strDod = dateOfBirth.ToString("dd-MM-yyyy");
             ViewBag.Dob = strDod;
             ViewBag.NhsNumber = nhsNumber;
 
-            PatientCareRecordRequestDomainModel spineModel = GetPatientModelSession();
+            PatientCareRecordRequestDomainModel spineModel = null;
+
+            var organisationAsId = Constants.OrganisationAsId;//Pass on from user Credentials
 
             try
             {
-                var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsid);
+                var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsId);
                
                 if(strSpineModel.isValid)
                 {
@@ -191,10 +178,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             catch (Exception)
             {
                 return View("InvalidCertErrorPage");
-            }                 
+            } 
+            
+            //The following fields must come from the AZURE AD Account of the current user
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = organisationAsid;
+            spineModel.OrganisationAsId = Constants.OrganisationAsId;
             spineModel.PractitionerId = "123459990";
             spineModel.CorrelationId = correlationId;
             spineModel.Username = "BRUNO";
@@ -203,7 +192,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.PractitionerFamilyName = "Gregory";
             spineModel.PractitionerRoleId = "UNK";
             spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.GpPractice.OdsCode = "A20047"; //"B86071";// "A20047";
             spineModel.RequestorId = "bc131b18-a908-4056-96f4-ba4752848605";
             spineModel.SdsUserId = "UNK";
             spineModel.DateOfBirth = strDod;
@@ -212,7 +200,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, guid, Constants.Summary);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, organisationAsid, spineModel);
+            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle)
             {
