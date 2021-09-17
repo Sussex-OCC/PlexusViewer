@@ -25,7 +25,7 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
-using Microsoft.Identity.Client;
+
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -179,10 +179,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     errorModel.CorrelationId = correlationId;
                     return View("Error", errorModel);
                 }           
-            }
-            catch(MsalUiRequiredException)
-            {
-                return RedirectToAction("SignOut", "Account");
             }
             catch (Exception ex)
             {
