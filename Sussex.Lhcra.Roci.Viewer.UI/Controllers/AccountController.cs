@@ -36,32 +36,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         [HttpGet]
         public async Task<IActionResult> SignOut(string page)
         {
-            
-            try
-            {
-                var redisConn = await _appSecretsProvider.GetSecretAsync(_viewerConfiguration.DatabaseConnectionStrings.RedisCacheConnectionString);
-                _redisCache = new CacheService(redisConn);
-
-                var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-
-                var userCacheSessionId = _redisCache.GetValueOrTimeOut<string>(userId);
-
-                if (!string.IsNullOrEmpty(userCacheSessionId))
-                    _redisCache.SetValue(userId, "");//Only reason for the try/catch is if redis instance cant be accesed it throws an error that needs catching
-
-                _httpContextAccessor.HttpContext.Session.Set<string>(Constants.ViewerSessionLoggedIn, null);
-
-            }
-            catch
-            {
-            }
-
+            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            _httpContextAccessor.HttpContext.Session.Set<string>(Constants.ViewerSessionLoggedIn, null);
             //TODO: Sign out user on azure
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return View();
-
-
         }
     }
 }

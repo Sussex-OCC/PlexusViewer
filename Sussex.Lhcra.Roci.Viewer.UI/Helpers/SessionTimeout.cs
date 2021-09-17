@@ -38,29 +38,20 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
         {
             try
             {
-                var redisConn = await _appSecretsProvider.GetSecretAsync(_viewerConfiguration.DatabaseConnectionStrings.RedisCacheConnectionString);
-                _redisCache = new CacheService(redisConn);
-
+               
                 var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                var userCacheSessionId = _redisCache.GetValueOrTimeOut<string>(userId);
                 var userSessionLoggedInId = _userSession.Get<string>(Constants.ViewerSessionLoggedIn);
 
-                if (string.IsNullOrEmpty(userSessionLoggedInId) && string.IsNullOrEmpty(userCacheSessionId)) // User has no session and is not logged in else where 
+                if (string.IsNullOrEmpty(userSessionLoggedInId)) // User has no session and is not logged in else where 
                 {
                     var newSessionId = Guid.NewGuid().ToString();
                     _httpContextAccessor.HttpContext.Session.Set<string>(Constants.ViewerSessionLoggedIn, newSessionId);
-                    _redisCache.SetValue(userId, newSessionId);
                 }
-                else if (string.IsNullOrEmpty(userSessionLoggedInId) && !string.IsNullOrEmpty(userCacheSessionId))
+                else if (string.IsNullOrEmpty(userSessionLoggedInId))
                 {
                     filterContext.Result = new RedirectResult("~/Account/SignOut");
                     return;
-                }
-                else if (userSessionLoggedInId != userCacheSessionId)
-                {
-                    filterContext.Result = new RedirectResult("~/Account/SignOut");
-                    return;
-                }
+                }               
             }
             catch(Exception)
             {

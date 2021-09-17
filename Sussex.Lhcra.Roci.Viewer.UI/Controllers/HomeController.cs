@@ -29,6 +29,7 @@ using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
+    [ServiceFilter(typeof(SessionTimeout))]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
