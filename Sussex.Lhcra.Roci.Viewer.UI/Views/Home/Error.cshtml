@@ -43,26 +43,16 @@
                                 }
                                 else
                                 {
-                                  
                                     <p>
-                                        <strong>Corellation ID:</strong> <code>@Model.CorrelationId</code>
+                                        <strong>Error Message :</strong> <code>@Model.Message</code>
                                     </p>
-
-                                    <p>
-                                        <strong>Status Code:</strong> <code>@Model.StatusCode.ToString()</code>
-                                    </p>
-
-                                    <p>
-                                        <strong>Error Code:</strong> <code>@Model?.ErrorCode?.ToString()</code>
-                                    </p>
-
                                 }
-                            }
-                            else
-                            {
-                                <p style="color:red;">
-                                    <strong>Message :</strong> <code> Connection Error </code>
+
+                                <p>
+                                    <strong>Corellation ID:</strong> <code>@Model.CorrelationId</code>
                                 </p>
+
+
                             }
                         </div>
                     </div>

@@ -25,11 +25,12 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
-
+using Microsoft.Identity.Client;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
     [ServiceFilter(typeof(SessionTimeout))]
+    [Authorize()]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -99,6 +100,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             if (null == pBundle || pBundle.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -106,6 +108,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             if (null == vm)
             {
+                pBundle.CorrelationId = correlationId;
                 return View("Error", pBundle);
             }
 
@@ -173,12 +176,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 {
                     var errorModel = new PatientCareRecordBundleDomainModel();
                     errorModel.Message = strSpineModel.ErrorMessage;
+                    errorModel.CorrelationId = correlationId;
                     return View("Error", errorModel);
                 }           
             }
-            catch (Exception)
+            catch(MsalUiRequiredException)
             {
-                return View("InvalidCertErrorPage");
+                return RedirectToAction("SignOut", "Account");
+            }
+            catch (Exception ex)
+            {
+                return View("Error", new PatientCareRecordBundleDomainModel { Message = ex.Message, CorrelationId = correlationId });
             } 
             
             //The following fields must come from the AZURE AD Account of the current user

@@ -3,6 +3,7 @@ using Sussex.Lhcra.Roci.Viewer.Services.Configurations;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using System;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,8 +22,19 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var certificate = await _appSecretsProvider.GetCertificate(_clientCerConfig.KeyVaultCertificateName);
+            X509Certificate2 certificate = null;
+
+            try
+            {
+                certificate = await _appSecretsProvider.GetCertificate(_clientCerConfig.KeyVaultCertificateName);
+            }
+            catch
+            {
+                throw new Exception("Invalid or wrong certificate name.");
+            }
+           
             request.Headers.Add("X-ClientCert", Convert.ToBase64String(certificate.GetRawCertData()));
+
             return await base.SendAsync(request, cancellationToken);
         }
     }
