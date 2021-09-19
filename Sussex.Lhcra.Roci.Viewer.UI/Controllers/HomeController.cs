@@ -260,14 +260,23 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 var age = dob.CalculateAge();
 
                 vm.Div = div;
-                var demographicsDiff = GetDemographicsDifferences(patient, organisation, spineModel);
 
-                vm.DemographicsDiffDivModel = demographicsDiff;
+                DemographicsViewModel demographicsDiff = null;
+                vm.DifferencesFound = 0;
 
-                if (demographicsDiff != null && demographicsDiff.DifferencesFound)
+                if (heading == Constants.Summary)
                 {
-                    vm.DifferencesFound = 1;
+                    demographicsDiff = GetDemographicsDifferences(patient, organisation, spineModel);
+
+                    vm.DemographicsDiffDivModel = demographicsDiff;
+
+                    if (demographicsDiff != null && demographicsDiff.DifferencesFound)
+                    {
+                        vm.DifferencesFound = 1;
+                    }
                 }
+
+              
                 vm.Patient = patient;
                 vm.Detail = "PLEXUS SUMMARY";
                 vm.Heading = heading;
@@ -329,17 +338,24 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         private DemographicsViewModel GetDemographicsDifferences(Patient patient, Organization organisation, PatientCareRecordRequestDomainModel spineModel)
         {
-            if (patient == null)
+            if (!(patient != null && spineModel != null && spineModel.Person != null))
             {
                 return null;
             }
 
-            string patientGivenName = "NIKE";
-            string patientFamilyName = "MEAKING";
-            string patientPostCode = "HA8 9Tb";
-            string patientGender = "F";
-            string patientPracticeOdsCode = "A42077";
-            string patientAddress = "24b Craigweil";
+            var person = spineModel.Person;
+
+            string patientGivenName = person.GivenName1;
+            string patientFamilyName = person.FamilyName;
+            string patientPostCode = person.Address.PostalCode;
+            string patientGender = person.Gender.ToString();
+            string patientPracticeOdsCode = spineModel.GpPractice.OdsCode;
+            string patientAddress = person.Address.AddressLine1;
+
+            if(string.IsNullOrEmpty(patientAddress))
+            {
+                patientAddress = person.Address.AddressLine2;
+            }
 
             DemographicsViewModel model = new DemographicsViewModel();
 
@@ -354,30 +370,26 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             fullnames = fullnames.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
             prefixes = prefixes.Where(x => !string.IsNullOrEmpty(x)).Select(x => x.ToUpper());
 
-            var localfamilyName = patientFamilyName;
-            var localGivenName = patientGivenName;
-
-
-            if (familyNames.Any() && !string.IsNullOrEmpty(localfamilyName))
+            if (familyNames.Any() && !string.IsNullOrEmpty(patientFamilyName))
             {
-                var familyNameExists = familyNames.Contains(localfamilyName.Trim().ToUpper());
+                var familyNameExists = familyNames.Contains(patientFamilyName.Trim().ToUpper());
 
                 if (!familyNameExists)
                 {
                     model.FamilyNames = string.Join(",", familyNames);
-                    model.LocalFamilyNames = localfamilyName;
+                    model.LocalFamilyNames = patientFamilyName;
                     model.DifferencesFound = true;
                 }
             }
 
-            if (givenNames.Any() && !string.IsNullOrEmpty(localGivenName))
+            if (givenNames.Any() && !string.IsNullOrEmpty(patientGivenName))
             {
-                var givenNameExists = givenNames.Contains(localGivenName.Trim().ToUpper());
+                var givenNameExists = givenNames.Contains(patientGivenName.Trim().ToUpper());
 
                 if (!givenNameExists)
                 {
                     model.GivenNames = string.Join(",", givenNames);
-                    model.LocalGivenNames = localGivenName;
+                    model.LocalGivenNames = patientGivenName;
                     model.DifferencesFound = true;
                 }
             }

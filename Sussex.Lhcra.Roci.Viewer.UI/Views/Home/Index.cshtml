@@ -15,18 +15,26 @@
                     </p>
                     <img style="display:none; height:80px;width:80px;" height="80" width="80" class="loader" src="~/assets/images/plexuswaiting.gif" />
                     <form id="form-wizard1" class="text-center mt-4" method="post" action="@Url.Action("Summary")">
+
                         <div class="form-group">
-                            <label>NHSNumber *</label>
-                            @Html.TextBoxFor(m => m.NhsNumber, new { @maxlength = "100", @type = "text", @required = "required", @class = "form-control", @placeholder = "Enter NHSNumber" })
-                            <span asp-validation-for="NhsNumber"></span>
-                        </div>
-                        <div class="form-group">
-                            <label for="exampleInputdate">Date Of Birth</label>
-                            <input type="date" name="DateOfBirth" class="form-control" id="DateOfBirth" value="1927-06-19">
-                            <span asp-validation-for="DateOfBirth"></span>
+                            <div class="form-row">
+                                <div class="col-md-6">
+                                    <label style="float:left;">NHSNumber*</label>
+                                    @Html.TextBoxFor(m => m.NhsNumber, new { @maxlength = "100", @type = "text", @required = "required", @class = "form-control", @placeholder = "Enter NHSNumber" })
+                                    <span asp-validation-for="NhsNumber"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label style="float:left;" for="dateOfBirth">Date Of Birth(dd/mm/yyyy)</label>
+                                    <input type="date" name="DateOfBirth" class="form-control" id="DateOfBirth" value="1927-06-19">
+                                    <span asp-validation-for="DateOfBirth"></span>
+                                </div>
+                            </div>
                         </div>
 
-                        <button type="submit" name="next" id="submitbutton" class="btn btn-primary next action-button float-right" value="Next">Search</button>
+                        <div class="form-group">
+                            <button type="submit" name="next" id="submitbutton" class="btn btn-primary next action-button float-right" value="Next">Search</button>
+                        </div>
+
 
                     </form>
                 </div>

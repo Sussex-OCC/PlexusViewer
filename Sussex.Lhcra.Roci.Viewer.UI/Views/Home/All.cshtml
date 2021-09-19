@@ -158,7 +158,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between">
                     <div class="header-title">
-                        <h4 class="card-title">Departments</h4>
+                        <h4 class="card-title">Clinical Items</h4>
                     </div>
                 </div>
                 <div class="card-body">
@@ -246,14 +246,14 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between">
                     <div class="header-title">
-                        <h4 class="card-title">Patient Record</h4>
+                        <h4 class="card-title">Patient Record <span><strong> (GP Records)</strong></span></h4>
                     </div>
                 </div>
                 <div class="card-body">
-
                     <img style="display:none; height:80px;width:80px;" height="80" width="80" class="loader" src="~/assets/images/plexuswaiting.gif" />
 
                     <div id="PlexusTable">
+                        <h4 class="card-title" style="float:right;"><span><strong> (GP Records)</strong></span></h4>
                         @Html.Raw(Model.Div)
                     </div>
 
