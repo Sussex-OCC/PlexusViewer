@@ -140,14 +140,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             IEnumerable<PatientCarePlanRecord> patientCarePlanRecords = null;
 
             patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
-    
+
             var vm = new ResourceViewModel
             {
+                NhsNumber = spineModel.NhsNumber,
                 ActiveView = patientView,
                 Plans = patientCarePlanRecords
             };
 
-            return View(Constants.MentalHealthCrisisPlans, vm);
+            return View(patientView, vm);
+
         }
 
 
@@ -180,9 +182,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     return View("Error", errorModel);
                 }           
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return View("Error", new PatientCareRecordBundleDomainModel { Message = ex.Message, CorrelationId = correlationId });
+                //var isAuth = User.Identity.IsAuthenticated;
+                return RedirectToAction("SignOut","Account");
+                //return View("Error", new PatientCareRecordBundleDomainModel { Message = ex.Message, CorrelationId = correlationId });
             } 
             
             //The following fields must come from the AZURE AD Account of the current user

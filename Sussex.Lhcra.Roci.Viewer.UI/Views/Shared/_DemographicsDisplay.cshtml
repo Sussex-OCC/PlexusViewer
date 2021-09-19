@@ -1,4 +1,4 @@
-﻿@model DemographicsViewModel
+﻿@*@model DemographicsViewModel
 
 <style>
     .w3-image {
@@ -64,12 +64,13 @@
 
     <div class="row">
         <div class="col-md-12">
-            <p style="color:red;">* Please see below the SMSP demographics differences compared against demographics returned from GPConnect.</p>
+            <p style="color:red;">* Please see below the Spine Mini Services demographics details compared against demographics returned from GP Records.</p>
         </div>
         <div class="col-md-12">
             <table class="w3-table">
 
                 <tr>
+                    <th></th>
 
                     @if (!string.IsNullOrEmpty(Model.Prefixes))
                     {
@@ -151,4 +152,4 @@
                 </tr>
             </table>
         </div>
-    </div>
+    </div>*@

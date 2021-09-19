@@ -1,153 +1,150 @@
-﻿@model IEnumerable<Sussex.Lhcra.Roci.Viewer.Domain.Models.PatientCarePlanRecord>
+﻿@model Sussex.Lhcra.Roci.Viewer.UI.Models.ResourceViewModel
 
 @{
     ViewData["Title"] = "Home Page";
 }
 
-<style>
-    @@import url('https://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css');
 
-    .accordion-toggle:after {
-        font-family: 'FontAwesome';
-        content: "\f078";
-        float: right;
-    }
+<link href="~/css/CoolTable.css" rel="stylesheet" />
+<link href="~/assets/css/Sidebar.css" rel="stylesheet" />
 
-    .accordion-opened .accordion-toggle:after {
-        content: "\f054";
-    }
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12 col-lg-2">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <div class="header-title">
+                        <h4 class="card-title">Clinical Items</h4>
+                    </div>
+                </div>
+                <div class="card-body">
 
-    #floating_box {
-        position: absolute;
-        top: 80px;
-        right: 23px;
-        z-index: 10;
-        background: #d9edf7;
-        padding: 5px;
-        border: 1px solid #CCCCCC;
-        text-align: center;
-        font-weight: bold;
-        width: 76%;
-    }
-</style>
+                    <div class="container">
+                        <nav>
+                            <ul class="mcd-menu">
 
-<script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
-<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Summary })" class="@(Model.ActiveView == Constants.Summary ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Summary</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.ProblemsAndIssues })" class="@(Model.ActiveView == Constants.ProblemsAndIssues ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Problems & Issues</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Medication })" class="@(Model.ActiveView == Constants.Medication ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Medications</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Allergies }) class=" @(Model.ActiveView == Constants.Allergies ? "active" : "Inactive") "">
+                                        <strong style="font-size:11px;">Allergies</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Encounters })" class="@(Model.ActiveView == Constants.Encounters ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Encounters</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Observations })" class="@(Model.ActiveView == Constants.Observations ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Observations</strong>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Immunisations })" class="@(Model.ActiveView == Constants.Immunisations ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Immunisations</strong>
+                                    </a>
+                                </li>
 
-<script>
-    $(window).scroll(function () {
-        $("#floating_box").animate({ top: $(window).scrollTop() + "px" }, { queue: false, duration: 350 });
-    });
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Referrals })" class="@(Model.ActiveView == Constants.Referrals ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Referrals</strong>
+                                    </a>
+                                </li>
 
-    $(document).on('show', '.accordion', function (e) {
-        //$('.accordion-heading i').toggleClass(' ');
-        $(e.target).prev('.accordion-heading').addClass('accordion-opened');
-    });
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Clinical })" class="@(Model.ActiveView == Constants.Clinical ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Clinical Items</strong>
+                                    </a>
+                                </li>
 
-    $(document).on('hide', '.accordion', function (e) {
-        $(this).find('.accordion-heading').not($(e.target)).removeClass('accordion-opened');
-        //$('.accordion-heading i').toggleClass('fa-chevron-right fa-chevron-down');
-    });
-</script>
+                                <li>
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Admin })" class="@(Model.ActiveView == Constants.Admin ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Admin Items</strong>
+                                    </a>
+                                </li>
 
+                                <li>
+                                    <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.MentalHealthCrisisPlans })" class="@(Model.ActiveView == Constants.MentalHealthCrisisPlans ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Crisis Plans</strong>
+                                    </a>
+                                </li>
 
-
-
-<div class="row">
-
-    @*<div id="floating_box">
-            <partial name="Partials/_NavBanner" model="Model" />
-        </div>*@
-
-
-    <div class="col-md-12">
-
-        <div class="panel panel-default">
-
-            <div class="panel-heading">
-
-            </div>
-
-            <div class="panel-body">
-
-                <ul class="nav nav-tabs">
-
-                    <li class="active">
-                        <a href="#detail" data-toggle="tab">PLEXUS VIEWER</a>
-                    </li>
-
-                </ul>
-
-                <div class="tab-content">
-
-                    <div class="tab-pane fade in active" id="detail">
-
-                        <div class="row">
-
-                            <div class="col-md-12">
-
-                                <div>
-
-
-                                    @foreach (var mg in Model.GroupBy(x => x.ProviderName))
-                                    {
-                                        <h1>Community Care Plans</h1><div> <h2>@mg.Key Care Plans</h2>
-
-                                            <table id="enc-tab">
-                                                <thead>
-                                                    <tr>
-                                                        <th>NHS Number</th>
-                                                        <th>Plan Type</th>
-                                                        <th>Category</th>
-                                                        <th>Name</th>
-                                                        <th>Aim</th>
-                                                        <th>Start Date</th>
-                                                        <th>End Date</th>
-                                                    </tr>
-                                                </thead>
-
-                                                <tbody>
-
-                                                    @foreach (var m in mg.ToList())
-                                                    {
-                                                        <tr>
-                                                            <td>@m.NHSNumber</td>
-                                                            <td>@m.PlanType</td>
-                                                            <td>@m.Category</td>
-                                                            <td>@m.Name</td>
-                                                            <td>@m.Aim</td>
-                                                            <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
-                                                            <td class="date-column">@(m.DateEnd.HasValue ? m.DateEnd.Value.ToShortDateString() : "UNKNOWN") </td>
-
-                                                        </tr>
-                                                    }
-
-
-                                                </tbody>
-                                            </table>
-
-                                        </div>
-
-                                        <hr />
-
-                                    }
+                                <li>
+                                    <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.CommunityCarePlans })" class="@(Model.ActiveView == Constants.CommunityCarePlans ? "active" : "Inactive")">
+                                        <strong style="font-size:11px;">Community Plans</strong>
+                                    </a>
+                                </li>
 
 
 
-                                </div>
-
-
-                            </div>
-
-                        </div>
-
+                            </ul>
+                        </nav>
                     </div>
 
                 </div>
-
             </div>
-
         </div>
+        <div class="col-sm-12 col-lg-10">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <div class="header-title">
+                        <h4 class="card-title">Patient Record</h4>
+                    </div>
+                </div>
+                <div class="card-body">
 
+                    <div>
+
+                        <h4 class="card-title">@Model.NhsNumber <span><strong>Sussex Partnership NHS Foundation Trust</strong></span></h4>
+                        <h4 class="card-title" style="float:right;"></h4>
+
+                        <table id="enc-tab">
+                            <thead>
+                                <tr>
+                                    <th width="10%">Plan Date</th>
+                                    <th width="20%">Aim</th>
+                                    <th width="20%">Category</th>
+                                    <th width="20%">Name</th>
+                                    <th width="20%">Type</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var m in Model.Plans.ToList())
+                                {
+                                <tr>
+                                    <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
+                                    <td>@m.Aim</td>
+                                    <td>@m.Category</td>
+                                    <td>@m.Name</td>
+                                    <td>@m.PlanType</td>
+                                </tr>
+                                }
+
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
+
 </div>
+

@@ -1,5 +1,4 @@
-﻿
-@model Sussex.Lhcra.Roci.Viewer.UI.Models.ResourceViewModel
+﻿@model Sussex.Lhcra.Roci.Viewer.UI.Models.ResourceViewModel
 
 @{
     ViewData["Title"] = "Home Page";
@@ -15,7 +14,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between">
                     <div class="header-title">
-                        <h4 class="card-title">Departments</h4>
+                        <h4 class="card-title">Clinical Items</h4>
                     </div>
                 </div>
                 <div class="card-body">
@@ -109,10 +108,13 @@
                 <div class="card-body">
 
                     <div>
+
+                        <h4 class="card-title">@Model.NhsNumber <span><strong>Sussex Partnership NHS Foundation Trust</strong></span></h4>
+                        <h4 class="card-title" style="float:right;"></h4>
+
                         <table id="enc-tab">
                             <thead>
                                 <tr>
-                                    <th width="10%">NHS Number</th>
                                     <th width="10%">Plan Date</th>
                                     <th width="80%">Aim</th>
                                 </tr>
@@ -123,7 +125,6 @@
                                 @foreach (var m in Model.Plans.ToList())
                                 {
                                     <tr>
-                                        <td>@m.NHSNumber</td>
                                         <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
                                         <td>@m.Aim</td>
                                     </tr>

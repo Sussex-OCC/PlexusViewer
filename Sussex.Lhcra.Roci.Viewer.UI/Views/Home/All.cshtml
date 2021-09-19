@@ -31,7 +31,7 @@
 
                     <tr>
 
-
+                        <th></th>
 
                         @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.FamilyNames))
                         {
@@ -70,6 +70,7 @@
                     </tr>
                     <tr>
 
+                        <td>GP Records</td>
 
                         @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.FamilyNames))
                         {
@@ -104,6 +105,7 @@
 
                     <tr>
 
+                        <td>Spine Mini Services</td>
 
                         @if (!string.IsNullOrEmpty(Model.DemographicsDiffDivModel.LocalFamilyNames))
                         {
@@ -223,13 +225,13 @@
 
                                 <li>
                                     <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.MentalHealthCrisisPlans })" class="@(Model.ActiveView == Constants.MentalHealthCrisisPlans ? "active" : "Inactive")">
-                                        <strong style="font-size:11px;">Crisis Plans</strong>
+                                        <strong style="font-size:11px;" title="Mental Health Crisis Plans">MH Crisis Plans</strong>
                                     </a>
                                 </li>
 
                                 <li>
                                     <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.CommunityCarePlans })" class="@(Model.ActiveView == Constants.CommunityCarePlans ? "active" : "Inactive")">
-                                        <strong style="font-size:11px;">Community Plans</strong>
+                                        <strong style="font-size:11px;" title="Community Care Plans">Community Plans</strong>
                                     </a>
                                 </li>
 
@@ -286,7 +288,7 @@
             var list = $("#demoGraphicsDiv");
 
             Swal.fire({
-                title: '<span style="color:Red;font-size:20px;"><small>Please see below the demographics differences found. Demographics returned from GPConnect is compared to that held by SMSP.</small></span>',
+                title: '<span style="color:Red;font-size:20px;"><small>Please see below the demographics differences found. Demographics returned from GP Records is compared to that held by Spine Mini Services.</small></span>',
                 icon: 'error',
                 html: list.html(),
                 customClass: 'swal-width',
@@ -294,7 +296,8 @@
                 showDenyButton: false,
                 showCancelButton: false,
                 confirmButtonText: 'OK',
-            }).then((result) => {
+            }).then((result) =>
+            {
                 if (result.isConfirmed)
                 {
                 } else if (result.isDenied)
