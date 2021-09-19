@@ -182,7 +182,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     return View("Error", errorModel);
                 }           
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 //var isAuth = User.Identity.IsAuthenticated;
                 return RedirectToAction("SignOut","Account");

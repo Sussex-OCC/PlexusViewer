@@ -4,7 +4,6 @@
     ViewData["Title"] = "Home Page";
 }
 
-
 <link href="~/css/CoolTable.css" rel="stylesheet" />
 <link href="~/assets/css/Sidebar.css" rel="stylesheet" />
 
@@ -39,7 +38,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Allergies }) class=" @(Model.ActiveView == Constants.Allergies ? "active" : "Inactive") "">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Allergies })"   class="@(Model.ActiveView == Constants.Allergies ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Allergies</strong>
                                     </a>
                                 </li>
@@ -102,45 +101,94 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between">
                     <div class="header-title">
-                        <h4 class="card-title">Patient Record</h4>
+                        <h4 class="card-title">Community Care Plans <span>NHS Number: <strong> @Model.NhsNumber</strong></span></h4>
                     </div>
                 </div>
+
                 <div class="card-body">
 
-                    <div>
+                    @if (Model.Plans != null && Model.Plans.Any())
+                    {
 
-                        <h4 class="card-title">@Model.NhsNumber <span><strong>Sussex Partnership NHS Foundation Trust</strong></span></h4>
-                        <h4 class="card-title" style="float:right;"></h4>
+                        <br />
 
-                        <table id="enc-tab">
-                            <thead>
-                                <tr>
-                                    <th width="10%">Plan Date</th>
-                                    <th width="20%">Aim</th>
-                                    <th width="20%">Category</th>
-                                    <th width="20%">Name</th>
-                                    <th width="20%">Type</th>
-                                </tr>
-                            </thead>
+                        <ul class="nav nav-tabs" id="myTab-1" role="tablist">
 
-                            <tbody>
+                            <li class="nav-item">
+                                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">East Sussex Healthcare Trust</a>
+                            </li>
 
-                                @foreach (var m in Model.Plans.ToList())
-                                {
-                                <tr>
-                                    <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
-                                    <td>@m.Aim</td>
-                                    <td>@m.Category</td>
-                                    <td>@m.Name</td>
-                                    <td>@m.PlanType</td>
-                                </tr>
-                                }
+                            <li class="nav-item">
+                                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Sussex Community Foundation Trust</a>
+                            </li>
+
+                        </ul>
+
+                        <div class="tab-content" id="myTabContent-2">
+                            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+
+                                <table id="enc-tab">
+                                    <thead>
+                                        <tr>
+                                            <th width="10%">Plan Date</th>
+                                            <th width="20%">Aim</th>
+                                            <th width="20%">Category</th>
+                                            <th width="20%">Name</th>
+                                            <th width="20%">Type</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                        @foreach (var m in Model.Plans.Where(x => x.ProviderName == "ESHT").ToList())
+                                        {
+                                            <tr>
+                                                <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
+                                                <td>@m.Aim</td>
+                                                <td>@m.Category</td>
+                                                <td>@m.Name</td>
+                                                <td>@m.PlanType</td>
+                                            </tr>
+                                        }
 
 
-                            </tbody>
-                        </table>
-                    </div>
+                                    </tbody>
+                                </table>
 
+                            </div>
+                            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                                <table id="enc-tab">
+                                    <thead>
+                                        <tr>
+                                            <th width="10%">Plan Date</th>
+                                            <th width="20%">Aim</th>
+                                            <th width="20%">Category</th>
+                                            <th width="20%">Name</th>
+                                            <th width="20%">Type</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                        @foreach (var m in Model.Plans.Where(x => x.ProviderName != "ESHT").ToList())
+                                        {
+                                            <tr>
+                                                <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
+                                                <td>@m.Aim</td>
+                                                <td>@m.Category</td>
+                                                <td>@m.Name</td>
+                                                <td>@m.PlanType</td>
+                                            </tr>
+                                        }
+
+
+                                    </tbody>
+                                </table>
+                            </div>
+                          
+                        </div>
+
+                    }
                 </div>
             </div>
         </div>
