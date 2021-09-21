@@ -141,6 +141,25 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
 
+            if(patientView == Constants.CommunityCarePlans)
+            {
+                var scftpatientCarePlanRecords = patientCarePlanRecords.ToList();
+
+                scftpatientCarePlanRecords.Add(new PatientCarePlanRecord 
+                { 
+                    Aim = "Continence Problems",
+                    Category = "Priority 2 - Within 48 hours",
+                    DateEnd = new DateTime(2019, 01, 19, 0, 0, 0),
+                    DateStart = new DateTime(2019,01,19,0,0,0),
+                    Name = "Community Nursing",
+                    PlanType = "PCN Community Team Burgess Hill and Villages SCFT",
+                    ProviderName = "SPFT",
+                });
+
+                patientCarePlanRecords = scftpatientCarePlanRecords.ToList();
+            }
+
+
             var vm = new ResourceViewModel
             {
                 NhsNumber = spineModel.NhsNumber,

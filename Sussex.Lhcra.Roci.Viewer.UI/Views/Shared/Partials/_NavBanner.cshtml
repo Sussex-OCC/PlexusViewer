@@ -27,7 +27,7 @@
                                                 }
                                             }
 
-                                            <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>Born: @Model.FormattedDateOfBirth (@Model.StrAge)</div>
+                                            <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>Born: @Model.FormattedDateOfBirth @*(@Model.StrAge)*@ </div>
                                             <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-male pr-2 rtl-pl-2 "></i>Gender: @(Model.Patient.Gender.HasValue ? Model.Patient.Gender.Value.ToString() : "OTHER")</div>
                                             <div class="comments"><i class="ri-hospital-fill pr-2 rtl-pl-2 "></i>NHS No. @Model.NhsNumber</div>
                                             <hr />
