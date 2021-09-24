@@ -25,7 +25,7 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
-
+using Sussex.Lhcra.Roci.Viewer.Services;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -101,6 +101,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             if (null == pBundle || pBundle.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 pBundle.CorrelationId = correlationId;
+                _logger.LogError(message: $"Not found error for patient {spineModel.NhsNumber} and correlation Id {spineModel.CorrelationId}", args: spineModel );
                 return View("Error", pBundle);
             }
 
@@ -198,16 +199,22 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     var errorModel = new PatientCareRecordBundleDomainModel();
                     errorModel.Message = strSpineModel.ErrorMessage;
                     errorModel.CorrelationId = correlationId;
+                    _logger.LogError(message: $"Model error: ", args: errorModel);
+
                     return View("Error", errorModel);
                 }           
             }
+            catch (InvalidCertificateException certificateException)
+            {
+                _logger.LogError($"A certificate exception has occured: { certificateException}");
+                return View("InvalidCertErrorPage");
+            }
             catch (Exception ex)
             {
-                //var isAuth = User.Identity.IsAuthenticated;
-                return RedirectToAction("SignOut","Account");
-                //return View("Error", new PatientCareRecordBundleDomainModel { Message = ex.Message, CorrelationId = correlationId });
-            } 
-            
+                _logger.LogError($"An exception has occured: { ex}");
+                return View("ExceptionPage");
+            }
+           
             //The following fields must come from the AZURE AD Account of the current user
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
@@ -229,9 +236,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             await LogAuditRecordModel(Request, spineModel, guid, Constants.Summary);
 
             var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
-
             if (null == pBundle)
             {
+                _logger.LogError(message: $"Patient care record null error: ", args: spineModel);
                 return View("Error");
             }
 
@@ -239,6 +246,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             if (null == vm)
             {
+                _logger.LogError(message: $"View model empty error: NHS Number {nhsNumber}");
                 return View("Error", pBundle);
             }
 

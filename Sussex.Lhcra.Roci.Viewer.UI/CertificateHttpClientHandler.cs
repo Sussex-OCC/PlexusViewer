@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Sussex.Lhcra.Roci.Viewer.Services;
 using Sussex.Lhcra.Roci.Viewer.Services.Configurations;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using System;
@@ -30,7 +31,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             }
             catch
             {
-                throw new Exception("Invalid or wrong certificate name.");
+                throw new InvalidCertificateException("Invalid or wrong certificate name.");
             }
            
             request.Headers.Add("X-ClientCert", Convert.ToBase64String(certificate.GetRawCertData()));
