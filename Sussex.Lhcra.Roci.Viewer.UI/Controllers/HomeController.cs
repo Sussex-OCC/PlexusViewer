@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.Services;
+using Microsoft.Identity.Client;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -212,15 +213,17 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 errorModel.CorrelationId = correlationId;
                 return View("InvalidCertErrorPage", errorModel);
             }
+            catch(MsalUiRequiredException msalException)
+            {
+                _logger.LogError($"An exception has occured: { msalException}");
+                return RedirectToAction("SignOut", "Account");
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"An exception has occured: { ex}");
-                var errorModel = new PatientCareRecordBundleDomainViewModel();
-                errorModel.Message = ex.Message;
-                errorModel.CorrelationId = correlationId;
-                return View("ExceptionPage", errorModel);
+                return RedirectToAction("SignOut", "Account");
             }
-           
+
             //The following fields must come from the AZURE AD Account of the current user
 
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
