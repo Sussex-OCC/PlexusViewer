@@ -92,7 +92,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 return RedirectToAction("Index");
             }
 
-            SetPatientModelSession(spineModel);
+            //SetPatientModelSession(spineModel);
 
             await LogAuditRecordModel(Request, spineModel, guid, patientView);
 
@@ -187,7 +187,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             var organisationAsId = Constants.OrganisationAsId;//Pass on from user Credentials
 
             try
-            {
+            {              
+
                 var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsId);
                
                 if(strSpineModel.isValid)
@@ -196,23 +197,28 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 }
                 else
                 {
-                    var errorModel = new PatientCareRecordBundleDomainModel();
+                    var errorModel = new PatientCareRecordBundleDomainViewModel();
                     errorModel.Message = strSpineModel.ErrorMessage;
                     errorModel.CorrelationId = correlationId;
                     _logger.LogError(message: $"Model error: ", args: errorModel);
-
                     return View("Error", errorModel);
                 }           
             }
             catch (InvalidCertificateException certificateException)
             {
                 _logger.LogError($"A certificate exception has occured: { certificateException}");
-                return View("InvalidCertErrorPage");
+                var errorModel = new PatientCareRecordBundleDomainViewModel();
+                errorModel.Message = certificateException.Message;
+                errorModel.CorrelationId = correlationId;
+                return View("InvalidCertErrorPage", errorModel);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"An exception has occured: { ex}");
-                return View("ExceptionPage");
+                var errorModel = new PatientCareRecordBundleDomainViewModel();
+                errorModel.Message = ex.Message;
+                errorModel.CorrelationId = correlationId;
+                return View("ExceptionPage", errorModel);
             }
            
             //The following fields must come from the AZURE AD Account of the current user
@@ -231,7 +237,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             spineModel.SdsUserId = "UNK";
             spineModel.DateOfBirth = strDod;
 
-            SetPatientModelSession(spineModel);
+            SetPatientModelSession(spineModel, true);
 
             await LogAuditRecordModel(Request, spineModel, guid, Constants.Summary);
 
@@ -256,8 +262,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         }
 
-        public void SetPatientModelSession(PatientCareRecordRequestDomainModel model)
+        public void SetPatientModelSession(PatientCareRecordRequestDomainModel model, bool clear = false)
         {
+            if(clear)
+                HttpContext.Session.Set<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName, null);
+
             if (HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName) == null)
             {
                 HttpContext.Session.Set<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName, model);

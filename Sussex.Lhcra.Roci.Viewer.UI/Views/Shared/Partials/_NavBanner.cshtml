@@ -27,21 +27,28 @@
                                                 }
                                             }
 
-                                            <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>Born: @Model.FormattedDateOfBirth @*(@Model.StrAge)*@ </div>
+                                            <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-calendar-2-fill pr-2 rtl-pl-2 "></i>Born: @Model.FormattedDateOfBirth (@Model.StrAge) </div>
                                             <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-male pr-2 rtl-pl-2 "></i>Gender: @(Model.Patient.Gender.HasValue ? Model.Patient.Gender.Value.ToString() : "OTHER")</div>
                                             <div class="comments"><i class="ri-hospital-fill pr-2 rtl-pl-2 "></i>NHS No. @Model.NhsNumber</div>
                                             <hr />
 
-                                            @if (string.IsNullOrEmpty(Model.Patient.Address.FirstOrDefault().Text))
+                                            @if (Model.Patient.Address.FirstOrDefault() != null)
                                             {
-                                                <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-building-2-fill pr-2 rtl-pl-2 "></i> Address @Model.Patient.Address.FirstOrDefault().Line.FirstOrDefault()</div>
+                                                if (!string.IsNullOrEmpty(Model.Patient.Address.FirstOrDefault().Text))
+                                                {
+                                                    <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-building-2-fill pr-2 rtl-pl-2 "></i> Address @Model.Patient.Address.FirstOrDefault().Text</div>
+                                                }
+                                                else if (Model.Patient.Address.FirstOrDefault().Line != null && Model.Patient.Address.FirstOrDefault().Line.Any())
+                                                {
+                                                    <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-building-2-fill pr-2 rtl-pl-2 "></i> Address @string.Join(", ", @Model.Patient.Address.FirstOrDefault().Line.Where(x => !string.IsNullOrEmpty(x))) <span> @Model.Patient.Address.FirstOrDefault().PostalCode</span> </div>
+                                                }
 
                                             }
                                             else
                                             {
-                                                <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-building-2-fill pr-2 rtl-pl-2 "></i> Address @Model.Patient.Address.FirstOrDefault().Text</div>
-
+                                                <div class="date mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-building-2-fill pr-2 rtl-pl-2 "></i> Address <span>N/A</span></div>
                                             }
+
 
                                             <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="las la-mail-bulk pr-2 rtl-pl-2 "></i>Phone And Email @(Model.Patient.Telecom != null && Model.Patient.Telecom.Any() ? Model.Patient.Telecom.FirstOrDefault().Value : "N/A")</div>
                                             @*<div class="comments"><i class="ri-chat-3-fill pr-2 rtl-pl-2 "></i>NHS No. @Model.NhsNumber</div>*@
@@ -61,22 +68,24 @@
                             <div class="blog-description mt-3">
                                 <div class="blog-meta d-flex align-items-center mb-3">
 
-
-                                    @if (Model.Patient.Address != null && Model.Patient.Address.Count > 0)
+                                    @if (Model.Patient.Address.FirstOrDefault() != null)
                                     {
-                                        if (string.IsNullOrEmpty(Model.Patient.Address.FirstOrDefault().Text))
+                                        if (!string.IsNullOrEmpty(Model.Patient.Address.FirstOrDefault().Text))
                                         {
-                                            <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-building-2-fill pr-2 rtl-pl-2 "></i>Usual Address @Model.Patient.Address.FirstOrDefault().Line.FirstOrDefault()</div>
-
+                                            <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-building-2-fill pr-2 rtl-pl-2 "></i> Usual Address @Model.Patient.Address.FirstOrDefault().Text</div>
                                         }
-                                        else
+                                        else if (Model.Patient.Address.FirstOrDefault().Line != null && Model.Patient.Address.FirstOrDefault().Line.Any())
                                         {
-                                            <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-building-2-fill pr-2 rtl-pl-2 "></i>Usual Address @Model.Patient.Address.FirstOrDefault().Text</div>
-
+                                            <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-building-2-fill pr-2 rtl-pl-2 "></i> Usual Address @string.Join(", ", @Model.Patient.Address.FirstOrDefault().Line.Where(x => !string.IsNullOrEmpty(x))) <span> @Model.Patient.Address.FirstOrDefault().PostalCode</span> </div>
                                         }
+
+                                    }
+                                    else
+                                    {
+                                        <div class="author mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-building-2-fill pr-2 rtl-pl-2 "></i> Usual Address <span>N/A</span></div>
                                     }
 
-                                    @if (Model.Patient.Telecom != null && Model.Patient.Telecom.Count > 0)
+                                    @if (Model.Patient.Telecom != null && Model.Patient.Telecom.Any())
                                     {
                                         <div class="hit mr-4 rtl-ml-4 rtl-mr-0"><i class="ri-phone-fill pr-2 rtl-pl-2 "></i>@Model.Patient.Telecom.FirstOrDefault().Use.Value @Model.Patient.Telecom.FirstOrDefault().Value</div>
                                     }

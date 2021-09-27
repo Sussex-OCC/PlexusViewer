@@ -6,6 +6,28 @@
 
 <link href="~/css/CoolTable.css" rel="stylesheet" />
 <link href="~/assets/css/Sidebar.css" rel="stylesheet" />
+<style>
+    .fade.in {
+        opacity: 1;
+    }
+
+    .alert-danger {
+        color: #a94442;
+        background-color: #f2dede;
+        border-color: #ebccd1;
+    }
+
+    .alert-dismissable, .alert-dismissible {
+        padding-right: 35px;
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+</style>
 
 <div class="container-fluid">
     <div class="row">
@@ -107,88 +129,96 @@
 
                 <div class="card-body">
 
-                    @if (Model.Plans != null && Model.Plans.Any())
-                    {
 
-                        <br />
+                    <div class="alert alert-danger fade in alert-dismissible">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
+                        <strong>Info Message: </strong> Plexus is unable to retrieve this part of the record. This may be because the patient has no record of this type or that information from this source is not yet available.
+                    </div>
 
-                        <ul class="nav nav-tabs" id="myTab-1" role="tablist">
+                    @*@if (Model.Plans != null && Model.Plans.Any())
+        {
 
-                            <li class="nav-item">
-                                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">East Sussex Healthcare Trust</a>
-                            </li>
+            <br />
 
-                            <li class="nav-item">
-                                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Sussex Community Foundation Trust</a>
-                            </li>
+            <ul class="nav nav-tabs" id="myTab-1" role="tablist">
 
-                        </ul>
+                <li class="nav-item">
+                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">East Sussex Healthcare Trust</a>
+                </li>
 
-                        <div class="tab-content" id="myTabContent-2">
-                            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Sussex Community Foundation Trust</a>
+                </li>
 
-                                <table id="enc-tab">
-                                    <thead>
-                                        <tr>
-                                            <th width="10%">Plan Date</th>
-                                            <th width="20%">Aim</th>
-                                            <th width="20%">Category</th>
-                                            <th width="20%">Name</th>
-                                            <th width="20%">Type</th>
-                                        </tr>
-                                    </thead>
+            </ul>
 
-                                    <tbody>
+            <div class="tab-content" id="myTabContent-2">
+                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
 
-                                        @foreach (var m in Model.Plans.Where(x => x.ProviderName == "ESHT").ToList())
-                                        {
-                                            <tr>
-                                                <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
-                                                <td>@m.Aim</td>
-                                                <td>@m.Category</td>
-                                                <td>@m.Name</td>
-                                                <td>@m.PlanType</td>
-                                            </tr>
-                                        }
+                    <table id="enc-tab">
+                        <thead>
+                            <tr>
+                                <th width="10%">Plan Date</th>
+                                <th width="20%">Aim</th>
+                                <th width="20%">Category</th>
+                                <th width="20%">Name</th>
+                                <th width="20%">Type</th>
+                            </tr>
+                        </thead>
 
+                        <tbody>
 
-                                    </tbody>
-                                </table>
-
-                            </div>
-                            <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                                <table id="enc-tab">
-                                    <thead>
-                                        <tr>
-                                            <th width="10%">Plan Date</th>
-                                            <th width="20%">Aim</th>
-                                            <th width="20%">Category</th>
-                                            <th width="20%">Name</th>
-                                            <th width="20%">Type</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-
-                                        @foreach (var m in Model.Plans.Where(x => x.ProviderName != "ESHT").ToList())
-                                        {
-                                            <tr>
-                                                <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
-                                                <td>@m.Aim</td>
-                                                <td>@m.Category</td>
-                                                <td>@m.Name</td>
-                                                <td>@m.PlanType</td>
-                                            </tr>
-                                        }
+                            @foreach (var m in Model.Plans.Where(x => x.ProviderName == "ESHT").ToList())
+                            {
+                                <tr>
+                                    <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
+                                    <td>@m.Aim</td>
+                                    <td>@m.Category</td>
+                                    <td>@m.Name</td>
+                                    <td>@m.PlanType</td>
+                                </tr>
+                            }
 
 
-                                    </tbody>
-                                </table>
-                            </div>
-                          
-                        </div>
+                        </tbody>
+                    </table>
 
-                    }
+                </div>
+                <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+                    <table id="enc-tab">
+                        <thead>
+                            <tr>
+                                <th width="10%">Plan Date</th>
+                                <th width="20%">Aim</th>
+                                <th width="20%">Category</th>
+                                <th width="20%">Name</th>
+                                <th width="20%">Type</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var m in Model.Plans.Where(x => x.ProviderName != "ESHT").ToList())
+                            {
+                                <tr>
+                                    <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
+                                    <td>@m.Aim</td>
+                                    <td>@m.Category</td>
+                                    <td>@m.Name</td>
+                                    <td>@m.PlanType</td>
+                                </tr>
+                            }
+
+
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        }*@
+
+
                 </div>
             </div>
         </div>

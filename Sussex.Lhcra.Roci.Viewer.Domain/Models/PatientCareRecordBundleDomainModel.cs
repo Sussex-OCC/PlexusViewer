@@ -2,7 +2,7 @@
 
 namespace Sussex.Lhcra.Roci.Viewer.Domain.Models
 {
-    public class PatientCareRecordBundleDomainModel
+    public class PatientCareRecordBundleDomainViewModel
     {
         public HttpStatusCode StatusCode { get; set; }
 

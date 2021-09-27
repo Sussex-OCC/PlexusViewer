@@ -7,6 +7,28 @@
 
 <link href="~/css/CoolTable.css" rel="stylesheet" />
 <link href="~/assets/css/Sidebar.css" rel="stylesheet" />
+<style>
+    .fade.in {
+        opacity: 1;
+    }
+
+    .alert-danger {
+        color: #a94442;
+        background-color: #f2dede;
+        border-color: #ebccd1;
+    }
+
+    .alert-dismissable, .alert-dismissible {
+        padding-right: 35px;
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+</style>
 
 <div class="container-fluid">
     <div class="row">
@@ -107,33 +129,38 @@
                 </div>
                 <div class="card-body">
 
-                    <div>
-
-                        <h4 class="card-title"><span><strong>Sussex Partnership NHS Foundation Trust</strong></span></h4>
-                        <h4 class="card-title" style="float:right;"></h4>
-
-                        <table id="enc-tab">
-                            <thead>
-                                <tr>
-                                    <th width="10%">Plan Date</th>
-                                    <th width="80%">Aim</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-
-                                @foreach (var m in Model.Plans.ToList())
-                                {
-                                    <tr>
-                                        <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
-                                        <td>@m.Aim</td>
-                                    </tr>
-                                }
-
-
-                            </tbody>
-                        </table>
+                    <div class="alert alert-danger fade in alert-dismissible">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
+                        <strong>Info Message: </strong> Plexus is unable to retrieve this part of the record. This may be because the patient has no record of this type or that information from this source is not yet available.
                     </div>
+
+                    @*<div>
+
+            <h4 class="card-title"><span><strong>Sussex Partnership NHS Foundation Trust</strong></span></h4>
+            <h4 class="card-title" style="float:right;"></h4>
+
+            <table id="enc-tab">
+                <thead>
+                    <tr>
+                        <th width="10%">Plan Date</th>
+                        <th width="80%">Aim</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var m in Model.Plans.ToList())
+                    {
+                        <tr>
+                            <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
+                            <td>@m.Aim</td>
+                        </tr>
+                    }
+
+
+                </tbody>
+            </table>
+        </div>*@
 
                 </div>
             </div>

@@ -8,12 +8,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Extensions
     {
         public static int CalculateAge(this DateTime dateOfBirth)
         {
-            int age = 0;
-            age = DateTime.Now.Year - dateOfBirth.Year;
-            if (DateTime.Now.DayOfYear < dateOfBirth.DayOfYear)
-                age = age - 1;
+            DateTime Now = DateTime.Now;
+            int years = new DateTime(DateTime.Now.Subtract(dateOfBirth).Ticks).Year - 1;
+            return years;
 
-            return age;
         }
         public static void Set<T>(this ISession session, string key, T value)
         {

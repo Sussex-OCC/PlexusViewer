@@ -102,9 +102,9 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
         }
 
 
-        public async Task<PatientCareRecordBundleDomainModel> GetDataContentAsync(string endPoint, string controllerName, string correlationId, string organisationAsId, PatientCareRecordRequestDomainModel model)
+        public async Task<PatientCareRecordBundleDomainViewModel> GetDataContentAsync(string endPoint, string controllerName, string correlationId, string organisationAsId, PatientCareRecordRequestDomainModel model)
         {
-            PatientCareRecordBundleDomainModel result = null;
+            PatientCareRecordBundleDomainViewModel result = null;
 
             try
             {
@@ -142,7 +142,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                         if (response.IsSuccessStatusCode)
                         {
                             responseContent = await response.Content.ReadAsStringAsync();
-                            result = new PatientCareRecordBundleDomainModel
+                            result = new PatientCareRecordBundleDomainViewModel
                             {
                                Content = responseContent,
                                StrBundle = responseContent,
@@ -153,7 +153,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                         }
                         else
                         {
-                            result = new PatientCareRecordBundleDomainModel
+                            result = new PatientCareRecordBundleDomainViewModel
                             {
                                 Content = "",
                                 StrBundle = "",
