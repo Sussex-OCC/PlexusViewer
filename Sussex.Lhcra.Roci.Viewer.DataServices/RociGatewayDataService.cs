@@ -153,13 +153,15 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                         }
                         else
                         {
+                            responseContent = await response.Content.ReadAsStringAsync();
+
                             result = new PatientCareRecordBundleDomainViewModel
                             {
                                 Content = "",
                                 StrBundle = "",
                                 StatusCode = response.StatusCode,
-                                ErrorCode = "",
-                                Message = "Retrieve patient data was unsuccessful",
+                                ErrorCode = response.StatusCode.ToString(),
+                                Message = responseContent,
                             };
                         }
 
