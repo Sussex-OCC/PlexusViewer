@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Roci.Viewer.Da
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{93C65B22-53CD-4918-8109-C3244CDE0444}"
 	ProjectSection(SolutionItems) = preProject
-		Sussex.Lhcra.Roci.Viewer.UI\Dockerfile = Sussex.Lhcra.Roci.Viewer.UI\Dockerfile
+		Dockerfile = Dockerfile
 		Nuget.Config = Nuget.Config
 	EndProjectSection
 EndProject
