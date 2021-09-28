@@ -14,7 +14,7 @@ COPY ["Sussex.Lhcra.Roci.Viewer.UI/Sussex.Lhcra.Roci.Viewer.UI.csproj", "Sussex.
 COPY ["Sussex.Lhcra.Roci.Viewer.DataServices/Sussex.Lhcra.Roci.Viewer.DataServices.csproj", "Sussex.Lhcra.Roci.Viewer.DataServices/"]
 COPY ["Sussex.Lhcra.Roci.Viewer.Domain/Sussex.Lhcra.Roci.Viewer.Domain.csproj", "Sussex.Lhcra.Roci.Viewer.Domain/"]
 COPY Nuget.Config ./
-RUN dotnet restore "Sussex.Lhcra.Roci.Viewer.UI/Sussex.Lhcra.Roci.Viewer.UI.csproj"
+RUN dotnet restore "Sussex.Lhcra.Roci.Viewer.UI/Sussex.Lhcra.Roci.Viewer.UI.csproj" --configfile  NuGet.Config
 COPY . .
 WORKDIR "/src/Sussex.Lhcra.Roci.Viewer.UI"
 RUN dotnet build "Sussex.Lhcra.Roci.Viewer.UI.csproj" -c Release -o /app/build
