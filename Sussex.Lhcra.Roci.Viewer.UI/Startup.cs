@@ -197,11 +197,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             app.UseStaticFiles();
 
             app.UseRouting();
+           
+
+            app.UseSession();
 
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseSession();
 
             app.Use(async (context, next) =>
             {
