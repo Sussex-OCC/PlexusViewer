@@ -10,11 +10,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Extensions
     {
         public static int CalculateAge(this DateTime dateOfBirth)
         {
-            dateOfBirth = DateTime.ParseExact(dateOfBirth.ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+            //dateOfBirth = DateTime.ParseExact(dateOfBirth.ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.CurrentCulture);
 
             var now = DateTime.Now;
 
-            now = DateTime.ParseExact(now.ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+            //now = DateTime.ParseExact(now.ToString(), "dd/MM/yyyy HH:mm:ss", CultureInfo.CurrentCulture);
 
             int years = new DateTime(DateTime.Now.Subtract(dateOfBirth).Ticks).Year - 1;
 
