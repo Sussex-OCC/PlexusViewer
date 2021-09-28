@@ -168,7 +168,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
                 services.AddSingleton<ICertificateProvider>(provider =>
                 {
-                    var certificateClient =  provider.GetService<CertificateClient>();
+                    var certificateClient = provider.GetService<CertificateClient>();
                     var secretClient = provider.GetService<SecretClient>();
                     return new AzureCertificateProvider(certificateClient, secretClient);
                 });
@@ -197,7 +197,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             app.UseStaticFiles();
 
             app.UseRouting();
-           
+
 
             app.UseSession();
 
@@ -228,6 +228,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 var mappController = endpoints.MapControllerRoute(
                      name: "default",
                      pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapRazorPages();
 
                 if (Configuration.GetValue<bool>("EmbeddedMode") == false)
                 {
