@@ -180,7 +180,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
         {
             app.UseForwardedHeaders();
 
-            app.UseMetricServer();       
+            //app.UseMetricServer();       
 
             if (env.IsDevelopment())
             {
@@ -196,29 +196,29 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             app.UseStaticFiles();
 
             app.UseRouting();
-
-
-            app.UseSession();
+            
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.RouteValues.Values.Count == 0)
-                {
-                    await next.Invoke();
-                    return;
-                }
+            app.UseSession();
 
-                var loginDuration = Metrics.CreateHistogram("MiddleWare_Metric_for_" + context.Request.Path.Value.Replace("/", "_"), "Timming the duration of any request to the controller");
+            //app.Use(async (context, next) =>
+            //{
+            //    if (context.Request.RouteValues.Values.Count == 0)
+            //    {
+            //        await next.Invoke();
+            //        return;
+            //    }
 
-                using (loginDuration.NewTimer())
-                {
-                    await next.Invoke();
-                }
+            //    var loginDuration = Metrics.CreateHistogram("MiddleWare_Metric_for_" + context.Request.Path.Value.Replace("/", "_"), "Timming the duration of any request to the controller");
 
-            });
+            //    using (loginDuration.NewTimer())
+            //    {
+            //        await next.Invoke();
+            //    }
+
+            //});
 
             app.UseEndpoints(endpoints =>
             {
