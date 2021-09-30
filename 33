@@ -1,0 +1,31 @@
+﻿using System;
+using System.Runtime.Serialization;
+
+namespace Sussex.Lhcra.Roci.Viewer.Services
+{
+<<<<<<< HEAD
+=======
+    [Serializable]
+>>>>>>> e7f53ce (12695 Added Certificate exception page and general exception page)
+    public class InvalidCertificateException : Exception
+    {
+        public InvalidCertificateException()
+        {
+        }
+
+        public InvalidCertificateException(string message) : base(message)
+        {
+        }
+
+        public InvalidCertificateException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+<<<<<<< HEAD
+=======
+
+        protected InvalidCertificateException(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+>>>>>>> e7f53ce (12695 Added Certificate exception page and general exception page)
+    }
+}

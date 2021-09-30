@@ -1,11 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Graph;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -22,5 +18,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 {
                     webBuilder.UseStartup<Startup>();
                 });
+                //.ConfigureServices((hostContext, services) =>
+                //{
+                //    services.AddTransient<IAuthenticationProvider, Services.GraphAuthenticationProvider>();
+                //    //services.AddTransient<IGraphServiceClient, GraphServiceClient>();
+                //   // services.AddTransient<IGraphProvider, MicrosoftGraphProvider>();
+                //});
     }
 }

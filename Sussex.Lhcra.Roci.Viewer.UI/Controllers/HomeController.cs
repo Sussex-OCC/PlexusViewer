@@ -43,6 +43,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly IIpAddressProvider _ipAddressProvider;
         private readonly ITokenService _tokenService;
         private readonly IAuditLogTopicPublisher _auditLogTopicPublisher;
+        private readonly ISpineModelBuilder _spineModelBuilder;
 
         public HomeController(
             ILogger<HomeController> logger,
@@ -51,7 +52,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             IRociGatewayDataService rociGatewayDataService,
             IIpAddressProvider ipAddressProvider,
             ITokenService tokenService,
-            IConfiguration configuration, ICertificateProvider appSecretsProvider, IAuditLogTopicPublisher auditLogTopicPublisher)
+            IConfiguration configuration, ICertificateProvider appSecretsProvider, IAuditLogTopicPublisher auditLogTopicPublisher, ISpineModelBuilder spineModelBuilder)
         {
             _logger = logger;
             _viewerConfiguration = configurationOption.Value;
@@ -62,6 +63,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _configuration = configuration;
             _appSecretsProvider = appSecretsProvider;
             _auditLogTopicPublisher = auditLogTopicPublisher;
+            _spineModelBuilder = spineModelBuilder;
         }
 
         protected bool IsProd => _configuration.GetValue<bool>("IsProd");
@@ -226,6 +228,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             //The following fields must come from the AZURE AD Account of the current user
 
+            FetchUserDetailsForSpine(spineModel);
+
             spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
             spineModel.OrganisationAsId = Constants.OrganisationAsId;
             spineModel.PractitionerId = "123459990";
@@ -263,6 +267,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             return View(Constants.All, vm);
 
+        }
+
+        private void FetchUserDetailsForSpine(PatientCareRecordRequestDomainModel spineModel)
+        {
+            _spineModelBuilder.FillUserDetailsFromAzureAsync(spineModel);
         }
 
         public void SetPatientModelSession(PatientCareRecordRequestDomainModel model, bool clear = false)
