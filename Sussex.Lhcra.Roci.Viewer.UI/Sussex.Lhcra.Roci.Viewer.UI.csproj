@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
     <UserSecretsId>db605bef-5e6c-4463-bdbd-S736fdbb73e28</UserSecretsId>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
     <ApplicationInsightsResourceId>/subscriptions/175a635d-7799-4146-8426-bf787cca3d87/resourceGroups/rg-gpc-int-001/providers/microsoft.insights/components/ai-int-careplan-001</ApplicationInsightsResourceId>
   </PropertyGroup>
 
