@@ -228,11 +228,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 _logger.LogError($"An exception has occured: { ex}");
                 return RedirectToAction("SignOut", "Account");
             }
-
-            //The following fields must come from the AZURE AD Account of the current user
-
+                    
             await FillUserDetailsFromAzureAsync(spineModel);
 
+            //The following fields must come from the AZURE AD Account of the current user
             //spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode; //
             //spineModel.OrganisationAsId = Constants.OrganisationAsId;
 

@@ -70,9 +70,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 services.AddHttpClient<IDownStreamAuthorisation, ADDownStreamAuthorisation>()
                     .UseHttpClientMetrics();
             }
-
-           // services.AddScoped<ISpineModelBuilder, SpineModelBuilder>();
-          //  services.AddScoped<GraphClient, GraphClient>();
+         
             services.AddScoped<IGraphProvider, GraphProvider>();
 
             DetermineCertificateType(services, config);

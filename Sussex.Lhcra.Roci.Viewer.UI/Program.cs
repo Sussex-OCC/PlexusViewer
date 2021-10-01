@@ -17,12 +17,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                });
-                //.ConfigureServices((hostContext, services) =>
-                //{
-                //    services.AddTransient<IAuthenticationProvider, Services.GraphAuthenticationProvider>();
-                //    //services.AddTransient<IGraphServiceClient, GraphServiceClient>();
-                //   // services.AddTransient<IGraphProvider, MicrosoftGraphProvider>();
-                //});
+                });                
     }
 }
