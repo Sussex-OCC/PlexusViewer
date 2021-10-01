@@ -17,20 +17,30 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
             this.graphServiceClient = graphServiceClient;
         }
 
-        public Task<string> GetIdByEmail(string email)
+        public async Task<PlexusUser> GetLoggedInUserDetails()
         {
-            throw new NotImplementedException();
+            var azureUser = await graphServiceClient.Me.Request().GetAsync();
+
+            return MapToPlexusUser(azureUser);
         }
 
-        public Task<string> GetIdByGroupName(string groupName)
+        private PlexusUser MapToPlexusUser(User azureUser)
         {
-            throw new NotImplementedException();
-        }
+            if (azureUser == null)
+                throw new Exception("Logged in user details from Azure is null");
 
-        public async Task<string> GetUserDetails(string userId)
-        {
-            var testUser = await graphServiceClient.Me.Request().GetAsync();
-            return testUser.DisplayName;
-        }
+            return new PlexusUser()
+            {
+                UserId = azureUser.Id,                
+                GivenName = azureUser.GivenName,
+                FamilyName = azureUser.Surname,
+                Username = azureUser.DisplayName, //dont think this is right
+                OrganisationName = azureUser.CompanyName,
+                OrganisationAsid = azureUser.Department,
+                OrganisationOdsCode = azureUser.EmployeeId,
+                UsernamePrefix = azureUser.JobTitle               
+            };
+
+        }       
     }
 }
