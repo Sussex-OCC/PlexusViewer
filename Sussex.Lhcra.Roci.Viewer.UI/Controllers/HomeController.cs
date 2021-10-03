@@ -276,7 +276,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         private async Task FillUserDetailsFromAzureAsync(PatientCareRecordRequestDomainModel requestModel)
         {
-            var plexusUser = await _graphProvider.GetLoggedInUserDetails();
+            var plexusUser = await _graphProvider.GetLoggedInUserDetails(MandatoryFields.UserAzureProperties);
+
+            CheckForNull(plexusUser);
 
             requestModel.PractitionerId = plexusUser.UserId;
             requestModel.RequestorId = plexusUser.UserId;
@@ -294,6 +296,21 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             
             requestModel.OrganisationOdsCode = plexusUser.OrganisationOdsCode;
             requestModel.OrganisationAsId = plexusUser.OrganisationAsid;
+        }
+
+        private void CheckForNull(PlexusUser plexusUser)
+        {
+            var nullProperties = plexusUser.GetType().GetProperties()
+                    .Where(p => p.PropertyType == typeof(string) && string.IsNullOrEmpty((string)p.GetValue(plexusUser)) == true)
+                    .Select(p => p.Name);
+                    
+            //var nullProp = plexusUser.GetType().GetProperties()
+            //       .Where(p => p.PropertyType == typeof(string))
+            //       .Select(p => (string)p.GetValue(plexusUser))
+            //       .Any(value => string.IsNullOrEmpty(value));
+
+            if (nullProperties.Count() > 0)
+                throw new Exception($"Some of the required properties of the logged in user are missing in Azure {string.Join(",", nullProperties)}");
         }
 
         public void SetPatientModelSession(PatientCareRecordRequestDomainModel model, bool clear = false)

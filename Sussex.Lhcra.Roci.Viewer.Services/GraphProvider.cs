@@ -11,15 +11,16 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
     public class GraphProvider : IGraphProvider
     {
         private readonly GraphServiceClient graphServiceClient;
+       // public readonly string[] MandatoryUserAzureProperties = new[] { "Id", "GivenName", "Surname", "DisplayName", "Companyname", "Department", "EmployeeId", "JobTitle" };
 
         public GraphProvider(GraphServiceClient graphServiceClient)
         {
             this.graphServiceClient = graphServiceClient;
         }
 
-        public async Task<PlexusUser> GetLoggedInUserDetails()
+        public async Task<PlexusUser> GetLoggedInUserDetails(List<string> properties)
         {
-            var azureUser = await graphServiceClient.Me.Request().GetAsync();
+            var azureUser = await graphServiceClient.Me.Request().Select(string.Join(",", properties)).GetAsync();
 
             return MapToPlexusUser(azureUser);
         }
