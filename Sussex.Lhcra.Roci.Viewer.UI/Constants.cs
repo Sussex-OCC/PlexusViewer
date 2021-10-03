@@ -1,4 +1,7 @@
-﻿namespace Sussex.Lhcra.Roci.Viewer.UI
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+namespace Sussex.Lhcra.Roci.Viewer.UI
 {
     public static class Constants
     {
@@ -10,8 +13,6 @@
         public const string ClinicianRole = "CLINICIAN";
         public const string UnknownRole = "UNK";//"SUSSEX MENTAL HEALTH SERVICES (INTEGRATIONS)”"
         public const string SPFT = "SUSSEX MENTAL HEALTH SERVICES (INTEGRATIONS)";
-
-
 
         public const string Summary = "Summary";
         public const string ProblemsAndIssues = "ProblemsAndIssues";
@@ -30,7 +31,15 @@
         public const string Investigations = "Investigations";
         public const string Immunisations = "Immunisations";
         public const string OrganisationOdsCode = "QNX";//OCC ODS CODE
-        public const string OrganisationAsId = "200000032019";//OCC ORG ASID
+       public const string OrganisationAsId = "200000032019";//OCC ORG ASID
+     //   public const string OrganisationAsId = "200000001564";//OCC ORG ASID in INT
+
+    }
+
+
+    public static class MandatoryFields
+    {
+        public static readonly  List<string> UserAzureProperties = new ReadOnlyCollection<string>( new List<string> { "Id", "GivenName", "Surname", "DisplayName", "Companyname", "Department", "EmployeeId", "JobTitle" }));
 
     }
 }

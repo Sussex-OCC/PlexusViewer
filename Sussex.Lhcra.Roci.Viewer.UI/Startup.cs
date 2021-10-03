@@ -22,11 +22,13 @@ using Sussex.Lhcra.Common.Domain.Audit.Services;
 using Sussex.Lhcra.Common.Domain.Logging.Services;
 using Sussex.Lhcra.Roci.Viewer.DataServices;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
+using Sussex.Lhcra.Roci.Viewer.Domain;
 using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.Services;
 using Sussex.Lhcra.Roci.Viewer.Services.Configurations;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
+using Sussex.Lhcra.Roci.Viewer.UI.Controllers;
 using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using System;
@@ -50,13 +52,16 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             if (Configuration.GetValue<bool>("EmbeddedMode") == false)
             {
+                string[] initialScopes = Configuration.GetValue<string>("DownstreamAPI:Scopes")?.Split(' ');
+
                 services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                     .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAD"))
-                    .EnableTokenAcquisitionToCallDownstreamApi()
+                    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)                    
+                     .AddMicrosoftGraph(Configuration.GetSection("DownstreamAPI"))
                     .AddInMemoryTokenCaches();
 
                 services.AddAzureADServices();
-
+                //.AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
             }
             else
             {
@@ -65,6 +70,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 services.AddHttpClient<IDownStreamAuthorisation, ADDownStreamAuthorisation>()
                     .UseHttpClientMetrics();
             }
+         
+            services.AddScoped<IGraphProvider, GraphProvider>();
 
             DetermineCertificateType(services, config);
 
@@ -73,8 +80,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             services.Configure<ViewerAppSettingsConfiguration>(Configuration.GetSection("ViewerAppSettings"));
             services.Configure<RociGatewayADSetting>(Configuration.GetSection(nameof(RociGatewayADSetting)));
             services.Configure<EmbeddedTokenConfig>(Configuration.GetSection(nameof(EmbeddedTokenConfig)));
-
-
 
             services.AddHttpClient<IAuditDataService, AuditDataService>()
                     .UseHttpClientMetrics();

@@ -27,6 +27,7 @@ using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.Services;
 using Microsoft.Identity.Client;
+using Sussex.Lhcra.Roci.Viewer.Domain;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -43,6 +44,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly IIpAddressProvider _ipAddressProvider;
         private readonly ITokenService _tokenService;
         private readonly IAuditLogTopicPublisher _auditLogTopicPublisher;
+        private readonly IGraphProvider _graphProvider;
 
         public HomeController(
             ILogger<HomeController> logger,
@@ -51,7 +53,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             IRociGatewayDataService rociGatewayDataService,
             IIpAddressProvider ipAddressProvider,
             ITokenService tokenService,
-            IConfiguration configuration, ICertificateProvider appSecretsProvider, IAuditLogTopicPublisher auditLogTopicPublisher)
+            IConfiguration configuration, ICertificateProvider appSecretsProvider, IAuditLogTopicPublisher auditLogTopicPublisher, IGraphProvider graphProvider)
         {
             _logger = logger;
             _viewerConfiguration = configurationOption.Value;
@@ -62,6 +64,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _configuration = configuration;
             _appSecretsProvider = appSecretsProvider;
             _auditLogTopicPublisher = auditLogTopicPublisher;
+            _graphProvider = graphProvider;
         }
 
         protected bool IsProd => _configuration.GetValue<bool>("IsProd");
@@ -188,8 +191,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             var organisationAsId = Constants.OrganisationAsId;//Pass on from user Credentials
 
             try
-            {              
-
+            {
+#if DEBUG
+                await FillUserDetailsFromAzureAsync(new PatientCareRecordRequestDomainModel());
+#endif
                 var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsId);
                
                 if(strSpineModel.isValid)
@@ -223,22 +228,26 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 _logger.LogError($"An exception has occured: { ex}");
                 return RedirectToAction("SignOut", "Account");
             }
+                    
+            await FillUserDetailsFromAzureAsync(spineModel);
 
             //The following fields must come from the AZURE AD Account of the current user
+            //spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode; //
+            //spineModel.OrganisationAsId = Constants.OrganisationAsId;
 
-            spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode;
-            spineModel.OrganisationAsId = Constants.OrganisationAsId;
-            spineModel.PractitionerId = "123459990";
-            spineModel.CorrelationId = correlationId;
-            spineModel.Username = "BRUNO";
-            spineModel.PractitionerNamePrefix = "Dr";
-            spineModel.PractitionerGivenName = "LAKE";
-            spineModel.PractitionerFamilyName = "Gregory";
-            spineModel.PractitionerRoleId = "UNK";
-            spineModel.GpPractice.Name = Constants.SPFT;
-            spineModel.RequestorId = "bc131b18-a908-4056-96f4-ba4752848605";
-            spineModel.SdsUserId = "UNK";
+            //spineModel.PractitionerId = "123459990";
+            //spineModel.RequestorId = "bc131b18-a908-4056-96f4-ba4752848605";//same as practitioer id
+            //spineModel.Username = "BRUNO";
+            //spineModel.PractitionerNamePrefix = "Dr"; //title {a.JobTitle}
+            //spineModel.PractitionerGivenName = "LAKE";
+            //spineModel.PractitionerFamilyName = "Gregory"; //?? find out
+            //spineModel.PractitionerRoleId = "UNK"; //const
+            //spineModel.GpPractice.Name = Constants.SPFT; //azure.company name
+            //spineModel.SdsUserId = "UNK"; //const
+
             spineModel.DateOfBirth = strDod;
+            spineModel.CorrelationId = correlationId;
+
 
             SetPatientModelSession(spineModel, true);
 
@@ -263,6 +272,45 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             return View(Constants.All, vm);
 
+        }
+
+        private async Task FillUserDetailsFromAzureAsync(PatientCareRecordRequestDomainModel requestModel)
+        {
+            var plexusUser = await _graphProvider.GetLoggedInUserDetails(MandatoryFields.UserAzureProperties);
+
+            CheckForNull(plexusUser);
+
+            requestModel.PractitionerId = plexusUser.UserId;
+            requestModel.RequestorId = plexusUser.UserId;
+            requestModel.Username = plexusUser.Username;
+            requestModel.PractitionerNamePrefix = plexusUser.UsernamePrefix;
+            requestModel.PractitionerGivenName = plexusUser.GivenName;
+            requestModel.PractitionerFamilyName = plexusUser.FamilyName;
+            requestModel.PractitionerRoleId = "UNK";
+            requestModel.SdsUserId = "UNK";
+
+            if (requestModel.GpPractice != null)
+                requestModel.GpPractice.Name = plexusUser.OrganisationName;
+            else
+                requestModel.GpPractice = new Smsp.Domain.Models.GpPracticeModel() { Name = plexusUser.OrganisationName };   
+            
+            requestModel.OrganisationOdsCode = plexusUser.OrganisationOdsCode;
+            requestModel.OrganisationAsId = plexusUser.OrganisationAsid;
+        }
+
+        private void CheckForNull(PlexusUser plexusUser)
+        {
+            var nullProperties = plexusUser.GetType().GetProperties()
+                    .Where(p => p.PropertyType == typeof(string) && string.IsNullOrEmpty((string)p.GetValue(plexusUser)) == true)
+                    .Select(p => p.Name);
+                    
+            //var nullProp = plexusUser.GetType().GetProperties()
+            //       .Where(p => p.PropertyType == typeof(string))
+            //       .Select(p => (string)p.GetValue(plexusUser))
+            //       .Any(value => string.IsNullOrEmpty(value));
+
+            if (nullProperties.Count() > 0)
+                throw new Exception($"Some of the required properties of the logged in user are missing in Azure {string.Join(",", nullProperties)}");
         }
 
         public void SetPatientModelSession(PatientCareRecordRequestDomainModel model, bool clear = false)
