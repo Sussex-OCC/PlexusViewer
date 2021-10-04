@@ -27,7 +27,7 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
         private PlexusUser MapToPlexusUser(User azureUser)
         {
             if (azureUser == null)
-                throw new Exception("Logged in user details from Azure is null");
+                throw new UserNullException("Logged in user details from Azure is null");
 
             return new PlexusUser()
             {

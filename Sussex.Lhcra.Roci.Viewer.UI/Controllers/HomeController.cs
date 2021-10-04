@@ -282,12 +282,15 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         private void CheckForNull(PlexusUser plexusUser)
         {
-            var nullProperties = plexusUser.GetType().GetProperties()
+            var missingProperties = plexusUser.GetType().GetProperties()
                     .Where(p => p.PropertyType == typeof(string) && string.IsNullOrEmpty((string)p.GetValue(plexusUser)) == true)
                     .Select(p => p.Name);
-          
-            if (nullProperties.Count() > 0)
-                throw new Exception($"Some of the required properties of the logged in user are missing in Azure {string.Join(",", nullProperties)}");
+
+            if (missingProperties.Count() > 0)
+            {
+                _logger.LogError($"Some of the mandatory details of the logged in user are missing in Azure", string.Join(",", missingProperties));
+                throw new MissingUserDetailsException($"Some of the mandatory details of the logged in user are missing in Azure {string.Join(",", missingProperties)}");
+            }
         }
 
         public void SetPatientModelSession(PatientCareRecordRequestDomainModel model, bool clear = false)
