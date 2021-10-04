@@ -11,14 +11,13 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
     public class GraphProvider : IGraphProvider
     {
         private readonly GraphServiceClient graphServiceClient;
-       // public readonly string[] MandatoryUserAzureProperties = new[] { "Id", "GivenName", "Surname", "DisplayName", "Companyname", "Department", "EmployeeId", "JobTitle" };
 
         public GraphProvider(GraphServiceClient graphServiceClient)
         {
             this.graphServiceClient = graphServiceClient;
         }
 
-        public async Task<PlexusUser> GetLoggedInUserDetails(List<string> properties)
+        public async Task<PlexusUser> GetLoggedInUserDetails(IEnumerable<string> properties)
         {
             var azureUser = await graphServiceClient.Me.Request().Select(string.Join(",", properties)).GetAsync();
 
@@ -28,7 +27,7 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
         private PlexusUser MapToPlexusUser(User azureUser)
         {
             if (azureUser == null)
-                throw new Exception("Logged in user details from Azure is null");
+                throw new UserNullException("Logged in user details from Azure is null");
 
             return new PlexusUser()
             {

@@ -192,9 +192,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             try
             {
-#if DEBUG
-                await FillUserDetailsFromAzureAsync(new PatientCareRecordRequestDomainModel());
-#endif
                 var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsId);
                
                 if(strSpineModel.isValid)
@@ -209,6 +206,35 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     _logger.LogError(message: $"Model error: ", args: errorModel);
                     return View("Error", errorModel);
                 }           
+           
+                await FillUserDetailsFromAzureAsync(spineModel);
+
+                spineModel.DateOfBirth = strDod;
+                spineModel.CorrelationId = correlationId;
+
+
+                SetPatientModelSession(spineModel, true);
+
+                await LogAuditRecordModel(Request, spineModel, guid, Constants.Summary);
+
+                var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
+                if (null == pBundle)
+                {
+                    _logger.LogError(message: $"Patient care record null error: ", args: spineModel);
+                    return View("Error");
+                }
+
+                var vm = GetViewModel(pBundle.StrBundle, strDod, nhsNumber, Constants.Summary, spineModel);
+
+                if (null == vm)
+                {
+                    _logger.LogError(message: $"View model empty error: NHS Number {nhsNumber}");
+                    return View("Error", pBundle);
+                }
+
+                vm.ActiveView = Constants.Summary;
+
+                return View(Constants.All, vm);
             }
             catch (InvalidCertificateException certificateException)
             {
@@ -218,7 +244,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 errorModel.CorrelationId = correlationId;
                 return View("InvalidCertErrorPage", errorModel);
             }
-            catch(MsalUiRequiredException msalException)
+            catch (MsalUiRequiredException msalException)
             {
                 _logger.LogError($"An exception has occured: { msalException}");
                 return RedirectToAction("SignOut", "Account");
@@ -228,50 +254,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 _logger.LogError($"An exception has occured: { ex}");
                 return RedirectToAction("SignOut", "Account");
             }
-                    
-            await FillUserDetailsFromAzureAsync(spineModel);
-
-            //The following fields must come from the AZURE AD Account of the current user
-            //spineModel.OrganisationOdsCode = Constants.OrganisationOdsCode; //
-            //spineModel.OrganisationAsId = Constants.OrganisationAsId;
-
-            //spineModel.PractitionerId = "123459990";
-            //spineModel.RequestorId = "bc131b18-a908-4056-96f4-ba4752848605";//same as practitioer id
-            //spineModel.Username = "BRUNO";
-            //spineModel.PractitionerNamePrefix = "Dr"; //title {a.JobTitle}
-            //spineModel.PractitionerGivenName = "LAKE";
-            //spineModel.PractitionerFamilyName = "Gregory"; //?? find out
-            //spineModel.PractitionerRoleId = "UNK"; //const
-            //spineModel.GpPractice.Name = Constants.SPFT; //azure.company name
-            //spineModel.SdsUserId = "UNK"; //const
-
-            spineModel.DateOfBirth = strDod;
-            spineModel.CorrelationId = correlationId;
-
-
-            SetPatientModelSession(spineModel, true);
-
-            await LogAuditRecordModel(Request, spineModel, guid, Constants.Summary);
-
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
-            if (null == pBundle)
-            {
-                _logger.LogError(message: $"Patient care record null error: ", args: spineModel);
-                return View("Error");
-            }
-
-            var vm = GetViewModel(pBundle.StrBundle, strDod, nhsNumber, Constants.Summary, spineModel);
-
-            if (null == vm)
-            {
-                _logger.LogError(message: $"View model empty error: NHS Number {nhsNumber}");
-                return View("Error", pBundle);
-            }
-
-            vm.ActiveView = Constants.Summary;
-
-            return View(Constants.All, vm);
-
         }
 
         private async Task FillUserDetailsFromAzureAsync(PatientCareRecordRequestDomainModel requestModel)
@@ -300,17 +282,15 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         private void CheckForNull(PlexusUser plexusUser)
         {
-            var nullProperties = plexusUser.GetType().GetProperties()
+            var missingProperties = plexusUser.GetType().GetProperties()
                     .Where(p => p.PropertyType == typeof(string) && string.IsNullOrEmpty((string)p.GetValue(plexusUser)) == true)
                     .Select(p => p.Name);
-                    
-            //var nullProp = plexusUser.GetType().GetProperties()
-            //       .Where(p => p.PropertyType == typeof(string))
-            //       .Select(p => (string)p.GetValue(plexusUser))
-            //       .Any(value => string.IsNullOrEmpty(value));
 
-            if (nullProperties.Count() > 0)
-                throw new Exception($"Some of the required properties of the logged in user are missing in Azure {string.Join(",", nullProperties)}");
+            if (missingProperties.Count() > 0)
+            {
+                _logger.LogError($"Some of the mandatory details of the logged in user are missing in Azure", string.Join(",", missingProperties));
+                throw new MissingUserDetailsException($"Some of the mandatory details of the logged in user are missing in Azure {string.Join(",", missingProperties)}");
+            }
         }
 
         public void SetPatientModelSession(PatientCareRecordRequestDomainModel model, bool clear = false)

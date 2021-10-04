@@ -31,15 +31,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
         public const string Investigations = "Investigations";
         public const string Immunisations = "Immunisations";
         public const string OrganisationOdsCode = "QNX";//OCC ODS CODE
-       public const string OrganisationAsId = "200000032019";//OCC ORG ASID
-     //   public const string OrganisationAsId = "200000001564";//OCC ORG ASID in INT
-
+        public const string OrganisationAsId = "200000032019";//OCC ORG ASID
     }
 
 
     public static class MandatoryFields
     {
-        public static readonly  List<string> UserAzureProperties = new ReadOnlyCollection<string>( new List<string> { "Id", "GivenName", "Surname", "DisplayName", "Companyname", "Department", "EmployeeId", "JobTitle" }));
-
+        public static readonly IEnumerable<string> UserAzureProperties = new ReadOnlyCollection<string>( new List<string> { "Id", "GivenName", "Surname", "DisplayName", "Companyname", "Department", "EmployeeId", "JobTitle" });
+       
     }
 }
