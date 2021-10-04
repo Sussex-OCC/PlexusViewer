@@ -6,6 +6,6 @@ namespace Sussex.Lhcra.Roci.Viewer.Domain
 {
     public interface IGraphProvider
     {
-        Task<PlexusUser> GetLoggedInUserDetails(IList<string> properties);
+        Task<PlexusUser> GetLoggedInUserDetails(IEnumerable<string> properties);
     }
 }

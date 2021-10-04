@@ -17,7 +17,7 @@ namespace Sussex.Lhcra.Roci.Viewer.Services
             this.graphServiceClient = graphServiceClient;
         }
 
-        public async Task<PlexusUser> GetLoggedInUserDetails(IList<string> properties)
+        public async Task<PlexusUser> GetLoggedInUserDetails(IEnumerable<string> properties)
         {
             var azureUser = await graphServiceClient.Me.Request().Select(string.Join(",", properties)).GetAsync();
 
