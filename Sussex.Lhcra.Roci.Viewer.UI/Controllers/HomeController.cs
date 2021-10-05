@@ -260,8 +260,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         {
             var plexusUser = await _graphProvider.GetLoggedInUserDetails(MandatoryFields.UserAzureProperties);
 
-            CheckForNull(plexusUser);
-
+            if (!plexusUser.IsValid())
+            {
+                _logger.LogWarning($"Some of the mandatory details of the logged in user are missing in Azure", string.Join(",", plexusUser.MissingProperties()));
+               // throw new MissingUserDetailsException($"Some of the mandatory details of the logged in user are missing in Azure {string.Join(",", plexusUser.MissingProperties())}");
+            }
+            
             requestModel.PractitionerId = plexusUser.UserId;
             requestModel.RequestorId = plexusUser.UserId;
             requestModel.Username = plexusUser.Username;
@@ -272,12 +276,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             requestModel.SdsUserId = "UNK";
 
             if (requestModel.GpPractice != null)
-                requestModel.GpPractice.Name = plexusUser.OrganisationName;
+                requestModel.GpPractice.Name = plexusUser.OrganisationName ?? ""; //todo
             else
                 requestModel.GpPractice = new Smsp.Domain.Models.GpPracticeModel() { Name = plexusUser.OrganisationName };   
             
-            requestModel.OrganisationOdsCode = plexusUser.OrganisationOdsCode;
-            requestModel.OrganisationAsId = plexusUser.OrganisationAsid;
+            requestModel.OrganisationOdsCode = string.IsNullOrEmpty(plexusUser.OrganisationOdsCode) ? Constants.OrganisationOdsCode : plexusUser.OrganisationOdsCode;
+            requestModel.OrganisationAsId = string.IsNullOrEmpty(plexusUser.OrganisationAsid)? Constants.OrganisationAsId : plexusUser.OrganisationAsid ;
         }
 
         private void CheckForNull(PlexusUser plexusUser)

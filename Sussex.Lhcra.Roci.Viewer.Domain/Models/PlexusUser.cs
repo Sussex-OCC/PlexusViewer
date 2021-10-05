@@ -27,7 +27,7 @@ namespace Sussex.Lhcra.Roci.Viewer.Domain
         {
             return GetType().GetProperties()
                     .Where(p => p.PropertyType == typeof(string) && string.IsNullOrEmpty((string)p.GetValue(this)) == true)
-                    .Select(p => p.Name);
+                    .Select(p => p.Name).ToList();
         }
 
     }
