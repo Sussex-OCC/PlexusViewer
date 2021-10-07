@@ -281,7 +281,10 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 requestModel.GpPractice = new Smsp.Domain.Models.GpPracticeModel() { Name = plexusUser.OrganisationName };   
             
             requestModel.OrganisationOdsCode = string.IsNullOrEmpty(plexusUser.OrganisationOdsCode) ? Constants.OrganisationOdsCode : plexusUser.OrganisationOdsCode;
-            requestModel.OrganisationAsId = string.IsNullOrEmpty(plexusUser.OrganisationAsid)? Constants.OrganisationAsId : plexusUser.OrganisationAsid ;
+           
+            //uncomment once the users' details are ready in Azure
+            // requestModel.OrganisationAsId = string.IsNullOrEmpty(plexusUser.OrganisationAsid)? Constants.OrganisationAsId : plexusUser.OrganisationAsid ;
+            requestModel.OrganisationAsId = Constants.OrganisationAsId;
         }
 
         private void CheckForNull(PlexusUser plexusUser)
