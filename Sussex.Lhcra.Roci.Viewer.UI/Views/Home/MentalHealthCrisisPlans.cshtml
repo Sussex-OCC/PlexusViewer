@@ -1,8 +1,6 @@
 ﻿@model Sussex.Lhcra.Roci.Viewer.UI.Models.ResourceViewModel
 
-@{
-    ViewData["Title"] = "Home Page";
-}
+@{ ViewData["Title"] = "Home Page"; }
 
 
 <link href="~/css/CoolTable.css" rel="stylesheet" />
@@ -101,7 +99,7 @@
 
                                 <li>
                                     <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.MentalHealthCrisisPlans })" class="@(Model.ActiveView == Constants.MentalHealthCrisisPlans ? "active" : "Inactive")">
-                                        <strong style="font-size:11px;">Crisis Plans</strong>
+                                        <strong style="font-size:11px;">MH Crisis Plans</strong>
                                     </a>
                                 </li>
 
@@ -122,6 +120,7 @@
         </div>
         <div class="col-sm-12 col-lg-10">
             <div class="card">
+
                 <div class="card-header d-flex justify-content-between">
                     <div class="header-title">
                         <h4 class="card-title">Mental Health Crisis Plans <span>NHS Number: <strong> @Model.NhsNumber</strong></span></h4>
@@ -129,39 +128,37 @@
                 </div>
                 <div class="card-body">
 
-                    <div class="alert alert-danger fade in alert-dismissible">
-                        <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
-                        <strong>Info Message: </strong> Plexus is unable to retrieve this part of the record. This may be because the patient has no record of this type or that information from this source is not yet available.
-                    </div>
-
-                    @*<div>
-
-            <h4 class="card-title"><span><strong>Sussex Partnership NHS Foundation Trust</strong></span></h4>
-            <h4 class="card-title" style="float:right;"></h4>
-
-            <table id="enc-tab">
-                <thead>
-                    <tr>
-                        <th width="10%">Plan Date</th>
-                        <th width="80%">Aim</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    @foreach (var m in Model.Plans.ToList())
+                    @if (Model.Plans?.Count() <= 0)
                     {
+
+        <div class="alert alert-danger fade in alert-dismissible">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
+            <strong>Info Message: </strong> Plexus is unable to retrieve this part of the record. This may be because the patient has no record of this type or that information from this source is not yet available.
+        </div> }
+    else
+    {
+
+<h4 class="card-title"><span><strong>Sussex Partnership NHS Foundation Trust</strong></span></h4>
+                <h4 class="card-title" style="float:right;"></h4>
+
+                                <table id="enc-tab">
+                                    <thead>
+                                        <tr>
+                                            <th width="10%">Plan Date</th>
+                                            <th width="80%">Aim</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                        @foreach (var m in Model.Plans.ToList())
+                                        {
                         <tr>
                             <td class="date-column">@(m.DateStart.HasValue ? m.DateStart.Value.ToShortDateString() : "UNKNOWN") </td>
                             <td>@m.Aim</td>
-                        </tr>
-                    }
-
-
-                </tbody>
-            </table>
-        </div>*@
-
+                        </tr>}
+                                    </tbody>
+                                </table>}
                 </div>
             </div>
         </div>

@@ -100,7 +100,7 @@
 
                                 <li>
                                     <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.MentalHealthCrisisPlans })" class="@(Model.ActiveView == Constants.MentalHealthCrisisPlans ? "active" : "Inactive")">
-                                        <strong style="font-size:11px;">Crisis Plans</strong>
+                                        <strong style="font-size:11px;">MH Crisis Plans</strong>
                                     </a>
                                 </li>
 
@@ -130,12 +130,7 @@
                 <div class="card-body">
 
 
-                    <div class="alert alert-danger fade in alert-dismissible">
-                        <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
-                        <strong>Info Message: </strong> Plexus is unable to retrieve this part of the record. This may be because the patient has no record of this type or that information from this source is not yet available.
-                    </div>
-
-                    @*@if (Model.Plans != null && Model.Plans.Any())
+        @if (Model.Plans != null && Model.Plans.Any())
         {
 
             <br />
@@ -216,8 +211,14 @@
 
             </div>
 
-        }*@
+        }
 
+                    else{
+                    <div class="alert alert-danger fade in alert-dismissible">
+                        <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
+                        <strong>Info Message: </strong> Plexus is unable to retrieve this part of the record. This may be because the patient has no record of this type or that information from this source is not yet available.
+                    </div>
+                    }
 
                 </div>
             </div>
