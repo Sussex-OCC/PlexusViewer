@@ -1,0 +1,49 @@
+
+trigger: 
+  branches:
+    include: 
+    - develop
+
+pool:
+  vmImage: 'ubuntu-20.04'
+steps:
+- task: NuGetToolInstaller@1
+  displayName: 'Use NuGet '
+  inputs:
+    checkLatest: true
+
+- task: NuGetCommand@2
+  displayName: 'NuGet restore'
+  inputs:
+    vstsFeed: 'da07bc00-933c-49e5-a923-a8c35c7679ab'
+
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet publish'
+  inputs:
+    command: publish
+    arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+    modifyOutputPath: false
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Pipeline Artifact'
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+    artifact: 'drop'
+    publishLocation: 'Container'
+
+- task: Docker@2
+  displayName: 'Build an image'
+  inputs:
+    containerRegistry: 'occreg'
+    repository: '$(Build.Repository.Name)'
+    command: 'build'
+    Dockerfile: 'Dockerfile'
+    tags: '$(Build.BuildNumber)'
+
+- task: Docker@2
+  displayName: 'Push an image'
+  inputs:
+    containerRegistry: 'occreg'
+    repository: '$(Build.Repository.Name)'
+    command: 'push'
+    tags: '$(Build.BuildNumber)'
