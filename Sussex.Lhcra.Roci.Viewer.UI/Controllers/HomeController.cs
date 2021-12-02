@@ -85,7 +85,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 else
                 {
                     userDetailsFromAzure = await GetAzureUserDetails();
-
                     if (!userDetailsFromAzure.IsValid())
                     {
                         var err = $"Some of the mandatory details of the logged in user are missing in Azure : {string.Join(",", userDetailsFromAzure.MissingProperties())}";
@@ -182,8 +181,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             IEnumerable<PatientCarePlanRecord> patientCarePlanRecords = null;
 
-            if(patientView == Constants.CommunityCarePlans ||  _viewerConfiguration.FetchMentalHealthData)
-                patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
+            patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
 
             var vm = new ResourceViewModel
             {
@@ -226,7 +224,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 else
                 {
                     userDetailsFromAzure = await GetAzureUserDetails();
-
                     if (!userDetailsFromAzure.IsValid())
                     {
                         var err = $"Some of the mandatory details of the logged in user are missing in Azure : {string.Join(",", userDetailsFromAzure.MissingProperties())}";
@@ -392,9 +389,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private async Task<PlexusUser> GetAzureUserDetails()
         {
             var plexusUser = await _graphProvider.GetLoggedInUserDetails(MandatoryFields.UserAzureProperties);
-#if DEBUG
-            plexusUser.OrganisationAsid = Constants.OrganisationAsId;
-#endif
             return plexusUser;
         }
 
