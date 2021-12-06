@@ -1,18 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
-using System;
-using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
-using Microsoft.Extensions.Options;
+using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
+using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -25,7 +23,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly ICertificateProvider _appSecretsProvider;
         private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
 
-        public AccountController(ICertificateProvider appSecretsProvider, 
+        public AccountController(ICertificateProvider appSecretsProvider,
             IHttpContextAccessor httpContextAccessor, IOptions<ViewerAppSettingsConfiguration> configurationOption)
         {
             _viewerConfiguration = configurationOption.Value;

@@ -10,6 +10,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
         public const string ViewerSessionDemographicDiv = "Plexus.Viewer.Session.Demographics";
         public const string ViewerSessionUrlParametersKeyName = "Plexus.Viewer.Session.UrlParameters";
 
+        public const string UserDetailsSessionKeyName = "Plexus.Viewer.UserSession";
+
         public const string ClinicianRole = "CLINICIAN";
         public const string UnknownRole = "UNK";//"SUSSEX MENTAL HEALTH SERVICES (INTEGRATIONS)”"
         public const string SPFT = "SUSSEX MENTAL HEALTH SERVICES (INTEGRATIONS)";
@@ -37,7 +39,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
     public static class MandatoryFields
     {
-        public static readonly IEnumerable<string> UserAzureProperties = new ReadOnlyCollection<string>( new List<string> { "Id", "GivenName", "Surname", "DisplayName", "Companyname", "Department", "EmployeeId", "JobTitle" });
-       
+        public static readonly IEnumerable<string> UserAzureProperties = new ReadOnlyCollection<string>(new List<string> { "Id", "GivenName", "Surname", "DisplayName", "Companyname", "Department", "EmployeeId", "JobTitle" });
+
     }
 }

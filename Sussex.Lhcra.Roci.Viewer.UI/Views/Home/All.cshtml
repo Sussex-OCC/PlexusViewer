@@ -170,73 +170,70 @@
                             <ul class="mcd-menu">
 
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Summary })" class="@(Model.ActiveView == Constants.Summary ? "active" : "Inactive")">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Summary, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.Summary ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Summary</strong>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.ProblemsAndIssues })" class="@(Model.ActiveView == Constants.ProblemsAndIssues ? "active" : "Inactive")">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.ProblemsAndIssues, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.ProblemsAndIssues ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Problems & Issues</strong>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Medication })" class="@(Model.ActiveView == Constants.Medication ? "active" : "Inactive")">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Medication, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.Medication ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Medications</strong>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Allergies })" class="@(Model.ActiveView == Constants.Allergies ? "active" : "Inactive")">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Allergies, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.Allergies ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Allergies</strong>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Encounters })" class="@(Model.ActiveView == Constants.Encounters ? "active" : "Inactive")">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Encounters, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.Encounters ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Encounters</strong>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Observations })" class="@(Model.ActiveView == Constants.Observations ? "active" : "Inactive")">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Observations, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.Observations ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Observations</strong>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Immunisations })" class="@(Model.ActiveView == Constants.Immunisations ? "active" : "Inactive")">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Immunisations, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.Immunisations ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Immunisations</strong>
                                     </a>
                                 </li>
 
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Referrals })" class="@(Model.ActiveView == Constants.Referrals ? "active" : "Inactive")">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Referrals, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.Referrals ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Referrals</strong>
                                     </a>
                                 </li>
 
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Clinical })" class="@(Model.ActiveView == Constants.Clinical ? "active" : "Inactive")">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Clinical, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.Clinical ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Clinical Items</strong>
                                     </a>
                                 </li>
 
                                 <li>
-                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Admin })" class="@(Model.ActiveView == Constants.Admin ? "active" : "Inactive")">
+                                    <a href="@Url.Action("GetPatientData", new { patientView = Constants.Admin, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.Admin ? "active" : "Inactive")">
                                         <strong style="font-size:11px;">Admin Items</strong>
                                     </a>
                                 </li>
 
                                 <li>
-                                    <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.MentalHealthCrisisPlans })" class="@(Model.ActiveView == Constants.MentalHealthCrisisPlans ? "active" : "Inactive")">
+                                    <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.MentalHealthCrisisPlans, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.MentalHealthCrisisPlans ? "active" : "Inactive")">
                                         <strong style="font-size:11px;" title="Mental Health Crisis Plans">MH Crisis Plans</strong>
                                     </a>
                                 </li>
 
                                 <li>
-                                    <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.CommunityCarePlans })" class="@(Model.ActiveView == Constants.CommunityCarePlans ? "active" : "Inactive")">
+                                    <a href="@Url.Action("MentalHealthCrisisPlans", new { patientView = Constants.CommunityCarePlans, nhsNumber = Model.NhsNumber  })" class="@(Model.ActiveView == Constants.CommunityCarePlans ? "active" : "Inactive")">
                                         <strong style="font-size:11px;" title="Community Care Plans">Community Plans</strong>
                                     </a>
                                 </li>
-
-
-
                             </ul>
                         </nav>
                     </div>

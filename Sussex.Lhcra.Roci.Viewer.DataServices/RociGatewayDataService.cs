@@ -47,7 +47,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
                 var strBody = JsonConvert.SerializeObject(model);
                 var fullEndPoint = endPoint + controllerName + "/" + model.NhsNumber;
-             
+
                 using (var request = new HttpRequestMessage(HttpMethod.Get, fullEndPoint))
                 {
                     _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
@@ -112,7 +112,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
                 var strBody = JsonConvert.SerializeObject(model);
                 var fullEndPoint = endPoint + controllerName;
-              
+
                 using (var request = new HttpRequestMessage(HttpMethod.Get, fullEndPoint))
                 {
                     _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", appToken);
@@ -144,12 +144,12 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                             responseContent = await response.Content.ReadAsStringAsync();
                             result = new PatientCareRecordBundleDomainViewModel
                             {
-                               Content = responseContent,
-                               StrBundle = responseContent,
-                               StatusCode = response.StatusCode,
-                               ErrorCode = "",
-                               Message = "Retrieve patient data was successful",
-                             };
+                                Content = responseContent,
+                                StrBundle = responseContent,
+                                StatusCode = response.StatusCode,
+                                ErrorCode = "",
+                                Message = "Retrieve patient data was successful",
+                            };
                         }
                         else
                         {

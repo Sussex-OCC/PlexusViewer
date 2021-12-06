@@ -1,8 +1,6 @@
 ﻿@model Sussex.Lhcra.Roci.Viewer.Domain.Models.PatientCareRecordBundleDomainViewModel
 
-@{
-    ViewData["Title"] = "Error";
-}
+@{ ViewData["Title"] = "Error"; }
 
 <style>
     .fade.in {
@@ -37,7 +35,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <p> @(Model.Message ?? "There was an error whilst retrieving the patient record. Please contact admin.") </p>
+                    <p> There was an error whilst retrieving the patient record - Invalid certificate error. Please contact admin. </p>
                     <div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true">
                         <div class="toast-header">
                             <svg class="bd-placeholder-img rounded mr-2" width="20" height="20" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img">
@@ -51,19 +49,19 @@
                         <div class="toast-body">
 
                             <div class="alert alert-danger fade in alert-dismissible">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
                                 <strong>Error Message: </strong> Patient data retrieve unsuccessful
                             </div>
 
                             <div class="alert alert-danger fade in alert-dismissible">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
                                 <strong>Action: </strong> Please contact your support desk quoting reference below.
                             </div>
 
-                            <div class="alert alert-danger fade in alert-dismissible">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
-                                <strong>Look Up Ref Number: </strong> @Model.CorrelationId <span>If required by service desk</span>
-                            </div>
+                            @if (!string.IsNullOrEmpty(@Model.CorrelationId))
+                            {
+                                <div class="alert alert-danger fade in alert-dismissible">
+                                    <strong>Look Up Ref Number: </strong> @Model.CorrelationId &nbsp; <span>If required by service desk</span>
+                                </div>
+                            }
 
                         </div>
                     </div>

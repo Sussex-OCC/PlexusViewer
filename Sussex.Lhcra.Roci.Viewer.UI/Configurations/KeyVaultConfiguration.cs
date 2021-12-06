@@ -2,6 +2,6 @@
 {
     public class KeyVaultConfiguration
     {
-        public string KeyVaultUrl { get; set; }     
+        public string KeyVaultUrl { get; set; }
     }
 }

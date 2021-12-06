@@ -1,20 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Localization.Routing;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
-using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
-using System.Security.Claims;
+using Microsoft.Extensions.Options;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
-using Microsoft.Extensions.Options;
+using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
+using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
+using System;
+using System.Security.Claims;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
 {
@@ -38,7 +31,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
         {
             try
             {
-               
+
                 var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
                 var userSessionLoggedInId = _userSession.Get<string>(Constants.ViewerSessionLoggedIn);
 
@@ -51,13 +44,13 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
                 {
                     filterContext.Result = new RedirectResult("~/Account/SignOut");
                     return;
-                }               
+                }
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
-           
+
             base.OnActionExecuting(filterContext);
         }
     }

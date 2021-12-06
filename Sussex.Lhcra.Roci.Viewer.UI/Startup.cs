@@ -28,7 +28,6 @@ using Sussex.Lhcra.Roci.Viewer.Services;
 using Sussex.Lhcra.Roci.Viewer.Services.Configurations;
 using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
-using Sussex.Lhcra.Roci.Viewer.UI.Controllers;
 using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using System;
@@ -56,7 +55,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
                 services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                     .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAD"))
-                    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)                    
+                    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
                      .AddMicrosoftGraph(Configuration.GetSection("DownstreamAPI"))
                     .AddInMemoryTokenCaches();
 
@@ -70,7 +69,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 services.AddHttpClient<IDownStreamAuthorisation, ADDownStreamAuthorisation>()
                     .UseHttpClientMetrics();
             }
-         
+
             services.AddScoped<IGraphProvider, GraphProvider>();
 
             DetermineCertificateType(services, config);
@@ -201,7 +200,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             app.UseStaticFiles();
 
             app.UseRouting();
-            
+
 
             app.UseAuthentication();
             app.UseAuthorization();

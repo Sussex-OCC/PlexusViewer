@@ -33,7 +33,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             {
                 throw new InvalidCertificateException("Invalid or wrong certificate name.");
             }
-           
+
             request.Headers.Add("X-ClientCert", Convert.ToBase64String(certificate.GetRawCertData()));
 
             return await base.SendAsync(request, cancellationToken);

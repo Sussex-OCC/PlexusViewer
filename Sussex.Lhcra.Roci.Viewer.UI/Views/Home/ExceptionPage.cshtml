@@ -51,19 +51,19 @@
                         <div class="toast-body">
 
                             <div class="alert alert-danger fade in alert-dismissible">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
                                 <strong>Error Message: </strong> Patient data retrieve unsuccessful
                             </div>
 
                             <div class="alert alert-danger fade in alert-dismissible">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
                                 <strong>Action: </strong> Please contact your support desk quoting reference below.
                             </div>
 
-                            <div class="alert alert-danger fade in alert-dismissible">
-                                <a href="#" class="close" data-dismiss="alert" aria-label="close" title="close">×</a>
-                                <strong>Look Up Ref Number: </strong> @Model.CorrelationId <span>If required by service desk</span>
-                            </div>
+                            @if(!string.IsNullOrEmpty(Model.CorrelationId))
+                            {
+                                <div class="alert alert-danger fade in alert-dismissible">
+                                    <strong>Look Up Ref Number: </strong> @Model.CorrelationId &nbsp; <span>If required by service desk</span>
+                                </div>
+                            }
 
                         </div>
                     </div>

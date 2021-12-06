@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.Serialization;
 
 namespace Sussex.Lhcra.Roci.Viewer.Services
 {

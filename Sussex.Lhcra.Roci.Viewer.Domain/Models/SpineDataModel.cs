@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sussex.Lhcra.Roci.Viewer.Domain.Models
+﻿namespace Sussex.Lhcra.Roci.Viewer.Domain.Models
 {
     public class SpineDataModel
     {

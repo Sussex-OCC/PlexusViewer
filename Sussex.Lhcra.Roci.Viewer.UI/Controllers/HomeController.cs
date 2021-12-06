@@ -3,31 +3,31 @@ using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.Domain.Audit.Models;
 using Sussex.Lhcra.Common.Domain.Constants;
 using Sussex.Lhcra.Roci.Viewer.DataServices;
-using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
+using Sussex.Lhcra.Roci.Viewer.Domain;
+using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
 using Sussex.Lhcra.Roci.Viewer.Domain.Models;
+using Sussex.Lhcra.Roci.Viewer.Services;
+using Sussex.Lhcra.Roci.Viewer.Services.Core;
 using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
 using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
 using Sussex.Lhcra.Roci.Viewer.UI.Models;
 using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
-using Sussex.Lhcra.Roci.Viewer.Services.Core;
-using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
-using Sussex.Lhcra.Roci.Viewer.Services;
-using Microsoft.Identity.Client;
-using Sussex.Lhcra.Roci.Viewer.Domain;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 {
@@ -71,25 +71,67 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         protected string SmspIntEnvAsid => _configuration.GetValue<string>("SmspIntEnvAsid");
 
 
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
-            var model = new ResourceViewModel
+            try
             {
-                DateOfBirth = new DateTime(1927, 6, 19),
-                NhsNumber = "9658218873"
-            };
+                PlexusUser userDetailsFromAzure;
+                var userFromSession = GetUserDetailsSession();
 
-            return View(model);
+                if (userFromSession != null)
+                {
+                    userDetailsFromAzure = userFromSession;
+                }
+                else
+                {
+                    userDetailsFromAzure = await GetAzureUserDetails();
+
+                    if (!userDetailsFromAzure.IsValid())
+                    {
+                        var err = $"Some of the mandatory details of the logged in user are missing in Azure : {string.Join(",", userDetailsFromAzure.MissingProperties())}";
+                        _logger.LogError(err);
+                        var errorModel = new PatientCareRecordBundleDomainViewModel() { Message = err };
+                        return View("ExceptionPage", errorModel);
+                    }
+
+                    SetUserDetailsSession(userDetailsFromAzure);
+                }
+
+                var model = new ResourceViewModel
+                {
+                    DateOfBirth = new DateTime(1927, 6, 19),
+                    NhsNumber = "9658218873"
+                };
+
+                return View(model);
+            }
+            catch (MsalUiRequiredException msalException)
+            {
+                _logger.LogError($"An exception has occured: { msalException}");
+                return RedirectToAction("SignOut", "Account");
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null && (ex.InnerException.Message.Contains("MsalUiRequiredException")))
+                {
+                    _logger.LogError($"An exception has occured: { ex.InnerException}");
+                    return RedirectToAction("SignOut", "Account");
+                }
+
+                _logger.LogError($"An exception has occured: { ex}");
+                var errorModel = new PatientCareRecordBundleDomainViewModel() { Message = ex.Message };
+                return View("ExceptionPage", errorModel);
+            }
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPatientData(string patientView)
-        {   
+        public async Task<IActionResult> GetPatientData(string patientView, string nhsNumber)
+        {
             var guid = Guid.NewGuid();
 
             var correlationId = guid.ToString();
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = GetPatientModelSession(nhsNumber);
 
             if (spineModel == null)
             {
@@ -105,7 +147,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             if (null == pBundle || pBundle.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 pBundle.CorrelationId = correlationId;
-                _logger.LogError(message: $"Not found error for patient {spineModel.NhsNumber} and correlation Id {spineModel.CorrelationId}", args: spineModel );
+                _logger.LogError(message: $"Not found error for patient {spineModel.NhsNumber} and correlation Id {spineModel.CorrelationId}", args: spineModel);
                 return View("Error", pBundle);
             }
 
@@ -125,15 +167,11 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
         }
 
-        public static string SerialisedMentalHealthCP = @"[{""NHSNumber"":""9990099782"",""PlanType"":null,""Category"":null,""Name"":null,""DateStart"":""2016-01-01T00:00:00"",""DateEnd"":null,""Aim"":""In the event of a crisis between 8:30am and 5pm on week days please contact the Assessment and Treatment Team on 01323 747222 and ask to speak to your lead practitioner. If they are not available at this time leave a message and it will be answered within the working day. Outside of the above hours, please contact the Mental Healthline on 0300 5000 101, this service is available from 5pm-9am Monday to Friday and 24/7/ at weekends and Bank Holidays.If you are feeling that you cannot keep yourself safe, present to A&E to be seen by Mental Health Liaison Service."",""ProviderName"":""SPFT""}]";
-        public static string SerialisedCCP = @"[{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""skin flap injury to back  1-2 units"",""DateStart"":""2015-02-03T14:42:32"",""DateEnd"":""2015-03-03T00:00:00"",""Aim"":""Curative"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""?urine burns to groins 1-2 units"",""DateStart"":""2015-03-02T11:29:18"",""DateEnd"":""2015-03-03T00:00:00"",""Aim"":""Curative"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""ESHT Blood Sampling"",""DateStart"":""2015-11-23T10:54:29"",""DateEnd"":""2016-01-15T00:00:00"",""Aim"":""Assessment"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Blood Pressure"",""Name"":""Check blood pressure"",""DateStart"":""2015-11-23T10:54:29"",""DateEnd"":""2016-01-15T00:00:00"",""Aim"":""Assessment"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Blood Sampling"",""DateStart"":""2016-11-02T13:37:52"",""DateEnd"":""2016-11-11T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Blood Sampling\nCSN PLEASE ATTEND"",""DateStart"":""2018-07-03T08:46:00"",""DateEnd"":""2018-11-03T00:00:00"",""Aim"":""Assessment"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""assess for pressure relieving equipment."",""DateStart"":""2019-06-11T08:55:12"",""DateEnd"":""2019-06-11T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Blood Sampling"",""DateStart"":""2019-06-12T12:47:16"",""DateEnd"":""2019-06-20T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""breast wound dressing"",""DateStart"":""2016-03-14T12:49:43"",""DateEnd"":""2016-04-12T00:00:00"",""Aim"":""Curative"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""pressure area care"",""DateStart"":""2016-03-15T11:00:00"",""DateEnd"":""2016-04-12T00:00:00"",""Aim"":""Curative"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""BP check"",""DateStart"":""2017-03-29T12:36:12"",""DateEnd"":""2017-04-17T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Blood Sampling"",""DateStart"":""2017-04-03T13:33:33"",""DateEnd"":""2017-04-12T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Ear syringing  4 units"",""DateStart"":""2017-08-14T14:09:54"",""DateEnd"":""2017-08-20T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""Lying / Sitting / Standing BP check check heart rate"",""DateStart"":""2018-03-12T16:20:38"",""DateEnd"":""2018-05-20T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Blood Sampling"",""DateStart"":""2018-03-13T11:11:03"",""DateEnd"":""2018-03-14T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Nursing Care Plan"",""DateStart"":""2018-04-25T12:42:42"",""DateEnd"":""2018-05-20T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Initial Nursing Assessment 2"",""DateStart"":""2020-04-17T09:24:07"",""DateEnd"":""2020-05-29T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT Pressure Ulcer to heel (2 units)"",""DateStart"":""2020-04-17T09:24:07"",""DateEnd"":""2020-05-29T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""ESHT Community Nursing"",""Name"":""ESHT  Primary  Prevention Plan (Purpose T)"",""DateStart"":""2020-04-28T10:00:00"",""DateEnd"":""2020-05-29T00:00:00"",""Aim"":""Unset"",""ProviderName"":""ESHT""},{""NHSNumber"":""4149277095"",""PlanType"":""Physical health"",""Category"":""Community Nursing"",""Name"":""sore grion assess 2-3 units"",""DateStart"":""2015-01-09T10:49:43"",""DateEnd"":""2015-01-22T00:00:00"",""Aim"":""Curative"",""ProviderName"":""ESHT""}]";
-
-
-        public async Task<IActionResult> MentalHealthCrisisPlans(string patientView)
+        public async Task<IActionResult> MentalHealthCrisisPlans(string patientView, string nhsNumber)
         {
             var correlationId = Guid.NewGuid().ToString();
 
-            var spineModel = GetPatientModelSession();
+            var spineModel = GetPatientModelSession(nhsNumber);
 
             if (spineModel == null)
             {
@@ -144,26 +182,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             IEnumerable<PatientCarePlanRecord> patientCarePlanRecords = null;
 
-            patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
-
-            if(patientView == Constants.CommunityCarePlans)
-            {
-                var scftpatientCarePlanRecords = patientCarePlanRecords.ToList();
-
-                scftpatientCarePlanRecords.Add(new PatientCarePlanRecord 
-                { 
-                    Aim = "Continence Problems",
-                    Category = "Priority 2 - Within 48 hours",
-                    DateEnd = new DateTime(2019, 01, 19, 0, 0, 0),
-                    DateStart = new DateTime(2019,01,19,0,0,0),
-                    Name = "Community Nursing",
-                    PlanType = "PCN Community Team Burgess Hill and Villages SCFT",
-                    ProviderName = "SPFT",
-                });
-
-                patientCarePlanRecords = scftpatientCarePlanRecords.ToList();
-            }
-
+            if(patientView == Constants.CommunityCarePlans ||  _viewerConfiguration.FetchMentalHealthData)
+                patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
 
             var vm = new ResourceViewModel
             {
@@ -173,28 +193,56 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             };
 
             return View(patientView, vm);
-
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> Summary(DateTime dateOfBirth, string nhsNumber)
-        {        
+        public async Task<IActionResult> Summary(DateTime dateOfBirth, string nhsNumber, string UserId)
+        {
             var guid = Guid.NewGuid();
             var correlationId = guid.ToString();
-            var strDod = dateOfBirth.ToString("dd-MM-yyyy");
-            ViewBag.Dob = strDod;
+            var strDob = dateOfBirth.ToString("dd-MM-yyyy");
+            nhsNumber = nhsNumber.Trim().Replace(" ", "");
+
+            var validation = ValidateDobAndNhsNumber(dateOfBirth, nhsNumber);
+
+            if (!validation.IsValid)
+            {
+                ViewBag.ErrorMessage = validation.ValidationMessage;
+                return View("Index");
+            }
+
+            ViewBag.Dob = strDob;
             ViewBag.NhsNumber = nhsNumber;
-
-            PatientCareRecordRequestDomainModel spineModel = null;
-
-            var organisationAsId = Constants.OrganisationAsId;//Pass on from user Credentials
-
+            PlexusUser userDetailsFromAzure;
             try
             {
-                var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDod}", correlationId, organisationAsId);
-               
-                if(strSpineModel.isValid)
+                var userFromSession = GetUserDetailsSession();
+
+                if (userFromSession != null)
+                {
+                    userDetailsFromAzure = userFromSession;
+                }
+                else
+                {
+                    userDetailsFromAzure = await GetAzureUserDetails();
+
+                    if (!userDetailsFromAzure.IsValid())
+                    {
+                        var err = $"Some of the mandatory details of the logged in user are missing in Azure : {string.Join(",", userDetailsFromAzure.MissingProperties())}";
+                        _logger.LogError(err);
+                        var errorModel = new PatientCareRecordBundleDomainViewModel() { Message = err };
+                        return View("ExceptionPage", errorModel);
+                    }
+                    SetUserDetailsSession(userDetailsFromAzure);
+                }
+
+                string organisationAsId = userDetailsFromAzure.OrganisationAsid;
+
+                PatientCareRecordRequestDomainModel spineModel = null;
+                var strSpineModel = await _smspProxyDataService.GetDataContent($"Spine/{nhsNumber}/{strDob}", correlationId, organisationAsId);
+
+                if (strSpineModel.isValid)
                 {
                     spineModel = JsonConvert.DeserializeObject<PatientCareRecordRequestDomainModel>(strSpineModel.SpineData);
                 }
@@ -205,13 +253,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     errorModel.CorrelationId = correlationId;
                     _logger.LogError(message: $"Model error: ", args: errorModel);
                     return View("Error", errorModel);
-                }           
-           
-                await FillUserDetailsFromAzureAsync(spineModel);
+                }
 
-                spineModel.DateOfBirth = strDod;
+                MapUserDetails(spineModel, userDetailsFromAzure);
+
+                spineModel.DateOfBirth = strDob;
                 spineModel.CorrelationId = correlationId;
-
 
                 SetPatientModelSession(spineModel, true);
 
@@ -224,7 +271,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     return View("Error");
                 }
 
-                var vm = GetViewModel(pBundle.StrBundle, strDod, nhsNumber, Constants.Summary, spineModel);
+                var vm = GetViewModel(pBundle.StrBundle, strDob, nhsNumber, Constants.Summary, spineModel);
 
                 if (null == vm)
                 {
@@ -240,7 +287,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             {
                 _logger.LogError($"A certificate exception has occured: { certificateException}");
                 var errorModel = new PatientCareRecordBundleDomainViewModel();
-                errorModel.Message = certificateException.Message;
                 errorModel.CorrelationId = correlationId;
                 return View("InvalidCertErrorPage", errorModel);
             }
@@ -251,21 +297,75 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             }
             catch (Exception ex)
             {
+                if (ex.InnerException != null && (ex.InnerException.Message.Contains("MsalUiRequiredException")))
+                {
+                    _logger.LogError($"An exception has occured: { ex.InnerException}");
+                    return RedirectToAction("SignOut", "Account");
+                }
+
                 _logger.LogError($"An exception has occured: { ex}");
-                return RedirectToAction("SignOut", "Account");
+                var errorModel = new PatientCareRecordBundleDomainViewModel() { Message = ex.Message };
+                return View("ExceptionPage", errorModel);
             }
         }
 
-        private async Task FillUserDetailsFromAzureAsync(PatientCareRecordRequestDomainModel requestModel)
+        private (bool IsValid, string ValidationMessage) ValidateDobAndNhsNumber(DateTime dob, string nhsNumber)
         {
-            var plexusUser = await _graphProvider.GetLoggedInUserDetails(MandatoryFields.UserAzureProperties);
+            var dobResult = ValidateDob(dob);
 
-            if (!plexusUser.IsValid())
+            nhsNumber = nhsNumber.Trim().Replace(" ", "");
+            var nhsNumberResult = ValidateNhsNumber(nhsNumber);
+
+            var validationErr = new StringBuilder();
+            if (!nhsNumberResult.IsValid)
             {
-                _logger.LogWarning($"Some of the mandatory details of the logged in user are missing in Azure", string.Join(",", plexusUser.MissingProperties()));
-               // throw new MissingUserDetailsException($"Some of the mandatory details of the logged in user are missing in Azure {string.Join(",", plexusUser.MissingProperties())}");
+                validationErr.Append(nhsNumberResult.ValidationMessage);
             }
-            
+
+            if (!dobResult.IsValid)
+            {
+                validationErr.Append(dobResult.ValidationMessage);
+            }
+
+            return (IsValid: nhsNumberResult.IsValid && dobResult.IsValid, ValidationMessage: validationErr.ToString());
+        }
+
+        private (bool IsValid, string ValidationMessage) ValidateDob(DateTime dob)
+        {
+            var age = dob.AgeInDaysAndYears();
+            if (!(age.ageInDays > 0 && age.ageInYears <= 120))
+            {
+                return (IsValid: false, ValidationMessage: "DOB is invalid! Age must be greater than 0 days and less than 120 years.");
+            }
+
+            return (IsValid: true, ValidationMessage: string.Empty);
+        }
+
+        private static (bool IsValid, StringBuilder ValidationMessage) ValidateNhsNumber(string validatedNhsNumber)
+        {
+            var valid = false;
+            var validationMessage = new StringBuilder();
+            validationMessage.Append("NHS number entered invalid! ");
+
+            if (validatedNhsNumber.Length == 10)
+                valid = true;
+            else
+            {
+                validationMessage.Append("NHS number must be exactly 10 digits without any spaces or special characters. ");
+            }
+            var regex = new Regex(@"^[0-9]+$");
+            var isRegexMatch = regex.IsMatch(validatedNhsNumber);
+            valid = valid && isRegexMatch;
+
+            if (!isRegexMatch)
+            {
+                validationMessage.Append("Only numbers 0-9 allowed, no special characters allowed. ");
+            }
+            return (IsValid: valid, ValidationMessage: validationMessage);
+        }
+
+        private void MapUserDetails(PatientCareRecordRequestDomainModel requestModel, PlexusUser plexusUser)
+        {
             requestModel.PractitionerId = plexusUser.UserId;
             requestModel.RequestorId = plexusUser.UserId;
             requestModel.Username = plexusUser.Username;
@@ -276,50 +376,65 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             requestModel.SdsUserId = "UNK";
 
             if (requestModel.GpPractice != null)
-                requestModel.GpPractice.Name = plexusUser.OrganisationName ?? ""; //todo
+                requestModel.GpPractice.Name = plexusUser.OrganisationName;
             else
-                requestModel.GpPractice = new Smsp.Domain.Models.GpPracticeModel() { Name = plexusUser.OrganisationName };   
-            
-            requestModel.OrganisationOdsCode = string.IsNullOrEmpty(plexusUser.OrganisationOdsCode) ? Constants.OrganisationOdsCode : plexusUser.OrganisationOdsCode;
-           
-            //uncomment once the users' details are ready in Azure
-            // requestModel.OrganisationAsId = string.IsNullOrEmpty(plexusUser.OrganisationAsid)? Constants.OrganisationAsId : plexusUser.OrganisationAsid ;
-            requestModel.OrganisationAsId = Constants.OrganisationAsId;
+                requestModel.GpPractice = new Smsp.Domain.Models.GpPracticeModel() { Name = plexusUser.OrganisationName };
+
+            requestModel.OrganisationOdsCode = plexusUser.OrganisationOdsCode;
+            requestModel.OrganisationAsId = plexusUser.OrganisationAsid;
+#if DEBUG
+            requestModel.OrganisationOdsCode = Constants.OrganisationOdsCode ?? plexusUser.OrganisationOdsCode;
+            requestModel.OrganisationAsId = Constants.OrganisationAsId ?? plexusUser.OrganisationAsid;
+#endif
         }
 
-        private void CheckForNull(PlexusUser plexusUser)
-        {
-            var missingProperties = plexusUser.GetType().GetProperties()
-                    .Where(p => p.PropertyType == typeof(string) && string.IsNullOrEmpty((string)p.GetValue(plexusUser)) == true)
-                    .Select(p => p.Name);
 
-            if (missingProperties.Count() > 0)
-            {
-                _logger.LogError($"Some of the mandatory details of the logged in user are missing in Azure", string.Join(",", missingProperties));
-                throw new MissingUserDetailsException($"Some of the mandatory details of the logged in user are missing in Azure {string.Join(",", missingProperties)}");
-            }
+        private async Task<PlexusUser> GetAzureUserDetails()
+        {
+            var plexusUser = await _graphProvider.GetLoggedInUserDetails(MandatoryFields.UserAzureProperties);
+#if DEBUG
+            plexusUser.OrganisationAsid = Constants.OrganisationAsId;
+#endif
+            return plexusUser;
         }
 
         public void SetPatientModelSession(PatientCareRecordRequestDomainModel model, bool clear = false)
         {
-            if(clear)
-                HttpContext.Session.Set<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName, null);
+            if (clear)
+                HttpContext.Session.Set<PatientCareRecordRequestDomainModel>($"{Constants.ViewerSessionKeyName}.{model.NhsNumber}", null);
 
-            if (HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName) == null)
+            if (HttpContext.Session.Get<PatientCareRecordRequestDomainModel>($"{Constants.ViewerSessionKeyName}.{model.NhsNumber}") == null)
             {
-                HttpContext.Session.Set<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName, model);
+                HttpContext.Session.Set<PatientCareRecordRequestDomainModel>($"{Constants.ViewerSessionKeyName}.{model.NhsNumber}", model);
             }
+        }
+
+
+        public void SetUserDetailsSession(PlexusUser user, bool clear = true)
+        {
+            if (clear)
+                HttpContext.Session.Set<PlexusUser>($"{Constants.UserDetailsSessionKeyName}", null);
+
+            if (HttpContext.Session.Get<PlexusUser>($"{Constants.UserDetailsSessionKeyName}") == null)
+            {
+                HttpContext.Session.Set<PlexusUser>($"{Constants.UserDetailsSessionKeyName}", user);
+            }
+        }
+
+        public PlexusUser GetUserDetailsSession()
+        {
+            return HttpContext.Session.Get<PlexusUser>($"{Constants.UserDetailsSessionKeyName}");
         }
 
         private ResourceViewModel GetViewModel(string bundle, string dateOfBirth, string nhsNumber, string heading,
         PatientCareRecordRequestDomainModel spineModel)
         {
-            
+
             try
             {
 
                 var fjp = new FhirJsonParser();
-                var gpBundle = fjp.Parse<Hl7.Fhir.Model.Bundle>(bundle);
+                var gpBundle = fjp.Parse<Bundle>(bundle);
                 var vm = new ResourceViewModel();
 
                 var compositions = gpBundle.GetResources().Where(x => x.ResourceType == ResourceType.Composition).Cast<Composition>().ToList();
@@ -333,9 +448,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                 var sectionsDivs = compositions.SelectMany(x => x.Section.Select(y => y.Text.Div)).ToList();
                 var div = sectionsDivs.FirstOrDefault();
 
-                var dob = DateTime.Now;
-                DateTime.TryParse(dateOfBirth, out dob);
-                var age = dob.CalculateAge();
+                var age = dateOfBirth.CalculateAge();
 
                 vm.Div = div;
 
@@ -354,7 +467,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                     }
                 }
 
-              
+
                 vm.Patient = patient;
                 vm.Detail = "PLEXUS SUMMARY";
                 vm.Heading = heading;
@@ -372,9 +485,9 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         }
 
 
-        public PatientCareRecordRequestDomainModel GetPatientModelSession()
+        public PatientCareRecordRequestDomainModel GetPatientModelSession(string nhsNumber)
         {
-            return HttpContext.Session.Get<PatientCareRecordRequestDomainModel>(Constants.ViewerSessionKeyName);
+            return HttpContext.Session.Get<PatientCareRecordRequestDomainModel>($"{Constants.ViewerSessionKeyName}.{nhsNumber}");
         }
 
         private string GetAbsolutePath(HttpRequest request)
@@ -389,12 +502,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             return absoluteUri;
 
-        }
-
-        public JsonResult GetDemographicDiv()
-        {
-            var s = HttpContext.Session.Get<string>(Constants.ViewerSessionDemographicDiv);
-            return Json(new { content = s });
         }
 
         private async Task<bool> LogAuditRecordModel(HttpRequest request, PatientCareRecordRequestDomainModel model, Guid correlationId, string section)
@@ -430,7 +537,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             string patientPracticeOdsCode = spineModel.GpPractice.OdsCode;
             string patientAddress = person.Address.AddressLine1;
 
-            if(string.IsNullOrEmpty(patientAddress))
+            if (string.IsNullOrEmpty(patientAddress))
             {
                 patientAddress = person.Address.AddressLine2;
             }
@@ -513,7 +620,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
                         model.DifferencesFound = true;
                     }
                 }
-            }            
+            }
 
             if (patient.Gender.HasValue)
             {

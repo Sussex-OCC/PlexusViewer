@@ -1,5 +1,4 @@
-﻿using Sussex.Lhcra.Roci.Viewer.Domain;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.Domain

@@ -1,14 +1,33 @@
 ﻿@model ResourceViewModel
+<style>
+    .hidden {
+        display: none;
+    }
+
+    .validation-alert {
+        margin: 10px;
+    }
+</style>
 
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-12 col-lg-12">
             <div class="card">
+
                 <div class="card-header d-flex justify-content-between">
                     <div class="header-title">
                         <h4 class="card-title">Patient Information</h4>
                     </div>
                 </div>
+
+                <div class="nhsno-validation-alert alert alert-danger alert-dismissible hidden">                    
+                    <span>Error:&nbsp; </span> <span class="nhsno-validation-msg"></span>
+                </div>
+
+                <div class="dob-validation-alert alert alert-danger alert-dismissible hidden">
+                    <span>Error:&nbsp; </span> <span class="dob-validation-msg"></span>
+                </div>
+
                 <div class="card-body">
                     <p>
                         Please enter a patient NHS Number and Date Of Birth
@@ -19,13 +38,15 @@
                         <div class="form-group">
                             <div class="form-row">
                                 <div class="col-md-6">
-                                    <label style="float:left;">NHS Number*</label>
-                                    @Html.TextBoxFor(m => m.NhsNumber, new { @maxlength = "100", @type = "text", @required = "required", @class = "form-control", @placeholder = "Enter NHSNumber" })
+                                    <label style="float:left;">NHS Number* (ex: 9658218873)</label>
+                                    @Html.TextBoxFor(m => m.NhsNumber, new { @maxlength = "10", @type = "text", @required = "required", @class = "form-control", @placeholder = "ex: 9658218873", @id = "nhs-number" })
                                     <span asp-validation-for="NhsNumber"></span>
                                 </div>
                                 <div class="col-md-6">
                                     <label style="float:left;" for="dateOfBirth">Date Of Birth(dd/mm/yyyy)*</label>
-                                    <input type="date" name="DateOfBirth" class="form-control" id="DateOfBirth" value="1927-06-19">
+                                    @* @Html.TextBoxFor(m => m.DateOfBirth, new { @maxlength = "10", @type = "date", @required = "required", @class = "form-control", @placeholder = "ex: 10/02/1945", @id = "DateOfBirth" })*@
+
+                                    <input type="date" name="DateOfBirth" class="form-control" id="dob" value="1927-06-19" max="12-12-3000" maxlength="10" required pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}" >
                                     <span asp-validation-for="DateOfBirth"></span>
                                 </div>
                             </div>
@@ -39,8 +60,143 @@
                     </form>
                 </div>
             </div>
-           
+
         </div>
     </div>
-    
+
 </div>
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/lib/momentjs/moment.js"></script>
+
+<script>
+        $(function () {
+
+            var viewBagError = "@ViewBag.ErrorMessage";
+            var isNhsNumberValid = true;
+            var isDobValid = true;
+            
+            if (viewBagError.length > 0) {
+                $(".nhsno-validation-alert ").removeClass("hidden");
+                $(".nhsno-validation-msg ").text(viewBagError);
+            }
+
+            //validate NHS number field
+            $("#nhs-number").bind("keypress", function (e) {
+                var keyCode = e.which ? e.which : e.keyCode
+
+                if (!(keyCode >= 48 && keyCode <= 57 || keyCode == 13)) {
+                    $(".nhsno-validation-alert ").removeClass("hidden");
+                    $(".nhsno-validation-msg ").text("Only numbers 0-9 allowed, no other characters allowed.")
+                    disableSubmit();
+                    isNhsNumberValid = false;
+                    return false;
+                } else {
+                    $(".nhsno-validation-alert ").addClass("hidden");
+                    isNhsNumberValid = true;
+                }
+
+                validateNhsNumber($("#nhs-number").val());
+            });
+
+            $("#dob").on("focusout", function (e) {
+                var dob = $("#dob").val();
+                validateDob(dob);
+            });
+
+            $("#dob").on("change", function (e) {
+                var dob = $("#dob").val();
+                if (dob.length > 10) {
+                    var rev = dob.split("-").reverse().join("-");
+                    var splc = rev.slice(0, 10);
+                    $("#dob").val(splc.split("-").reverse().join("-"));
+                }
+                validateDob(dob);
+            });
+
+            $("#nhs-number").on("focusout change", function (e) {
+                validateNhsNumber($("#nhs-number").val());
+            });
+
+
+            $("#submitbutton").on("click", function (e) {
+
+                if (validateNhsNumber($("#nhs-number").val()) && validateDob($("#dob").val())) {
+                    $('.loader').show();
+                    enableSubmit();
+                    return true;
+                }
+                else {
+                    e.stopPropagation();
+                    disableSubmit();
+                }
+            });
+
+            $(document).keypress(function(e){
+            if (e.which == 13){
+                $("#submitbutton").click();
+                }
+            });
+
+            function disableSubmit() {
+                $("#submitbutton").prop('disabled', true);
+            }
+
+            function enableSubmit() {
+                $("#submitbutton").prop('disabled', false);
+            }
+
+            function validateDob(dob) {                
+                var dateFormat = "YYYY-MM-DD";
+                var errMsg = "";
+                var momentDob = new moment(dob, dateFormat);
+                var validDate = moment(dob, dateFormat, true).isValid();
+                if (!validDate) {
+                    errMsg += "Date of birth entered is in invalid format. ";
+                }
+
+                var age = moment.duration(moment().diff(momentDob)); 
+                var hasMinAge = age.years() > 0 || age.months() > 0 || age.days() > 0;
+
+                if (hasMinAge && age.years() <= 120)
+                    validDate = true;
+                else {
+                    validDate = false;
+                    errMsg += "Age must be greater than 0 days and less than 120 years.";
+                }
+
+                if (!validDate) {
+                    $(".dob-validation-alert ").removeClass("hidden");
+                    $(".dob-validation-msg ").text(errMsg);
+                    isDobValid = false;
+                    disableSubmit();
+                    return false;
+                } else {
+                    $(".dob-validation-alert ").addClass("hidden");
+                    isDobValid = true;
+                    if (isNhsNumberValid)
+                        enableSubmit();
+                    return true;
+                }
+            }
+
+            function validateNhsNumber(nhsNumber, e) {
+                var pattern = new RegExp('^[0-9]+$');
+               
+                if (nhsNumber.length != 10 || !pattern.test(nhsNumber) || nhsNumber === "0000000000") {
+                    $(".nhsno-validation-alert ").removeClass("hidden");
+                    $(".nhsno-validation-msg ").text("NHS number must be a valid 10 digit number & no other characters allowed.");
+                    isNhsNumberValid = false;
+                    disableSubmit();
+                    return false;
+                }
+                else {
+                    $(".nhsno-validation-alert ").addClass("hidden");
+                    isNhsNumberValid = true;
+                    if (isDobValid)
+                        enableSubmit();
+                    return true;
+                }
+            }
+        });
+</script>

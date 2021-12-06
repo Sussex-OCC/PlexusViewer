@@ -2,9 +2,6 @@
 using StackExchange.Redis;
 using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
 {
@@ -25,7 +22,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
             cacheInstance.StringSet(cacheItemKey, serializedCacheValue);
         }
 
-      
+
 
         public T GetValueOrTimeOut<T>(string cacheItemKey)
         {

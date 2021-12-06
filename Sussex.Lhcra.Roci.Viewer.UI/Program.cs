@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Graph;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI
 {
@@ -17,6 +15,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                });                
+                });
     }
 }

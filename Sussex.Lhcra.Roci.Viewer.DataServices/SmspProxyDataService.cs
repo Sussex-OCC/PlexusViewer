@@ -1,18 +1,16 @@
 ﻿using Microsoft.Extensions.Options;
-using Microsoft.Identity.Web;
 using Newtonsoft.Json;
+using Sussex.Lhcra.Common.AzureADServices.Interfaces;
+using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.Domain.Constants;
 using Sussex.Lhcra.Common.Domain.Logging.Models;
-using Sussex.Lhcra.Common.Domain.Logging.Services;
 using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
+using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
+using Sussex.Lhcra.Roci.Viewer.Domain.Models;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Sussex.Lhcra.Common.AzureADServices.Interfaces;
-using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
-using Sussex.Lhcra.Common.ClientServices.Interfaces;
-using Sussex.Lhcra.Roci.Viewer.Domain.Models;
 
 namespace Sussex.Lhcra.Roci.Viewer.DataServices
 {
@@ -103,9 +101,9 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
                     Resource = endpoint,
                     RequestBody = content,
                     RequestHeader = headerjson,
-                    UserId="Todo:Add user id",
-                    NhsNumber= "Todo:Add nhs number",
-                    OrganisationOdsCode="Todo: Add ods code",
+                    UserId = "Todo:Add user id",
+                    NhsNumber = "Todo:Add nhs number",
+                    OrganisationOdsCode = "Todo: Add ods code",
                     PracticeOdsCode = "Todo"
                 };
 

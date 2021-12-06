@@ -1,5 +1,4 @@
 ﻿using Sussex.Lhcra.Roci.Viewer.Domain.Models;
-using System;
 using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.DataServices

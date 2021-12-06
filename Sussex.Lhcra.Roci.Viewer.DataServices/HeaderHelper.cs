@@ -23,7 +23,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
         {
             httpClient.DefaultRequestHeaders.Add("X-UserRoleId", userRoleId);
         }
-        
+
         public static void AddAppDomainTypeId(string appDomainType, HttpClient httpClient)
         {
             httpClient.DefaultRequestHeaders.Add("X-AppDomainType", appDomainType);

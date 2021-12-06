@@ -9,6 +9,7 @@
         public string OrganisationAsId { get; set; }
 
         public bool UseLocalCertificate { get; set; }
+        public bool FetchMentalHealthData { get; set; }
 
         public ProxyEndPointsConfiguration ProxyEndpoints { get; set; }
 

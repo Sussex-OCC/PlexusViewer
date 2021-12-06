@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Models
 {
@@ -61,12 +58,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
             }
             else
             {
-                if(UserRole.Trim().ToUpper() != Constants.ClinicianRole && UserRole.Trim().ToUpper() != Constants.UnknownRole)
+                if (UserRole.Trim().ToUpper() != Constants.ClinicianRole && UserRole.Trim().ToUpper() != Constants.UnknownRole)
                 {
                     return false;
                 }
             }
-                
+
 
             if (string.IsNullOrEmpty(SessionId))
                 return false;
@@ -137,12 +134,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Models
             {
                 HasValidationErrors = true;
             }
-           
+
             return this;
 
         }
 
-        
+
 
         public UrlParemetersModel AddOrganisationASID(string val)
         {

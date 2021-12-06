@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System;
 using System.Text.Json;
 
 namespace Sussex.Lhcra.Roci.Viewer.UI.Extensions
 {
     public static class SessionExtensions
     {
-        
+
         public static void Set<T>(this ISession session, string key, T value)
         {
             session.SetString(key, JsonSerializer.Serialize(value));
