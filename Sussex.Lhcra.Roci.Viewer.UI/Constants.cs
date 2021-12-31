@@ -32,8 +32,8 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
         public const string All = "All";
         public const string Investigations = "Investigations";
         public const string Immunisations = "Immunisations";
-        public const string OrganisationOdsCode = "QNX";//OCC ODS CODE
-        public const string OrganisationAsId = "200000001564";//OCC ORG ASID
+        public const string OrganisationOdsCode = "TEST";//OCC ODS CODE
+        public const string OrganisationAsId = "000000000";//OCC ORG ASID
     }
 
 

@@ -103,16 +103,12 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             services.AddScoped<IAuditLogTopicPublisher>(x => new AuditLogTopicPublisher(auditMessageBrokerTopicPublisher));
 
-            //services.AddSingleton<ICacheService>(provider => new CacheService(config.DatabaseConnectionStrings.RedisCacheConnectionString));
-
             var loggingConfig = new MessageBrokerTopicConfig();
             var loggingSection = Configuration.GetSection("LogRecordTopicServiceBusConfig");
             loggingSection.Bind(loggingConfig);
 
             var logMessageBrokerTopicPublisher = new TopicPublisher(loggingConfig);
             services.AddScoped<ILoggingTopicPublisher>(x => new LoggingTopicPublisher(logMessageBrokerTopicPublisher));
-
-
 
             services.AddHttpClient<ISmspProxyDataService, SmspProxyDataService>(client =>
             {
@@ -133,11 +129,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                 options.IdleTimeout = TimeSpan.FromSeconds(config.SessionTimeout);
                 options.Cookie.IsEssential = true;
             });
-
-            //services.AddDistributedRedisCache(o =>
-            //{
-            //    o.Configuration = Configuration.GetConnectionString(redisConn);
-            //});          
 
             services.AddControllersWithViews();
 
@@ -206,23 +197,6 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             app.UseAuthorization();
 
             app.UseSession();
-
-            //app.Use(async (context, next) =>
-            //{
-            //    if (context.Request.RouteValues.Values.Count == 0)
-            //    {
-            //        await next.Invoke();
-            //        return;
-            //    }
-
-            //    var loginDuration = Metrics.CreateHistogram("MiddleWare_Metric_for_" + context.Request.Path.Value.Replace("/", "_"), "Timming the duration of any request to the controller");
-
-            //    using (loginDuration.NewTimer())
-            //    {
-            //        await next.Invoke();
-            //    }
-
-            //});
 
             app.UseEndpoints(endpoints =>
             {
