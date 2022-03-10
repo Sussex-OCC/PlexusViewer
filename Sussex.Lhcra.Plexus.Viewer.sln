@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Plexus.Viewer.Domain", "Sussex.Lhcra.Roci.Viewer.Domain\Sussex.Lhcra.Plexus.Viewer.Domain.csproj", "{35B15858-8AED-4A58-8E46-629D12F29F60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Plexus.Viewer.Domain", "Sussex.Lhcra.Plexus.Viewer.Domain\Sussex.Lhcra.Plexus.Viewer.Domain.csproj", "{35B15858-8AED-4A58-8E46-629D12F29F60}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Plexus.Viewer.UI", "Sussex.Lhcra.Roci.Viewer.UI\Sussex.Lhcra.Plexus.Viewer.UI.csproj", "{5EE871D0-7542-4B7E-B0AA-E2691665DEC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Plexus.Viewer.UI", "Sussex.Lhcra.Plexus.Viewer.UI\Sussex.Lhcra.Plexus.Viewer.UI.csproj", "{5EE871D0-7542-4B7E-B0AA-E2691665DEC4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Plexus.Viewer.DataServices", "Sussex.Lhcra.Roci.Viewer.DataServices\Sussex.Lhcra.Plexus.Viewer.DataServices.csproj", "{9380EBBB-44DF-4A6B-9E58-7A08691305F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Plexus.Viewer.DataServices", "Sussex.Lhcra.Plexus.Viewer.DataServices\Sussex.Lhcra.Plexus.Viewer.DataServices.csproj", "{9380EBBB-44DF-4A6B-9E58-7A08691305F8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{93C65B22-53CD-4918-8109-C3244CDE0444}"
 	ProjectSection(SolutionItems) = preProject
@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Nuget.Config = Nuget.Config
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Plexus.Viewer.Services", "Sussex.Lhcra.Roci.Viewer.Services\Sussex.Lhcra.Plexus.Viewer.Services.csproj", "{C7E923F1-83FA-4FE3-A720-58A80B209E93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sussex.Lhcra.Plexus.Viewer.Services", "Sussex.Lhcra.Plexus.Viewer.Services\Sussex.Lhcra.Plexus.Viewer.Services.csproj", "{C7E923F1-83FA-4FE3-A720-58A80B209E93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
