@@ -50,7 +50,7 @@ namespace Sussex.Lhcra.Plexus.Viewer.UI.Controllers
             ILogger<HomeController> logger,
             IOptions<ViewerAppSettingsConfiguration> configurationOption,
             ISmspProxyDataService smspProxyDataService,
-            IPlexusGatewayDataService rociGatewayDataService,
+            IPlexusGatewayDataService plexusGatewayDataService,
             IIpAddressProvider ipAddressProvider,
             ITokenService tokenService,
             IConfiguration configuration, ICertificateProvider appSecretsProvider, IAuditLogTopicPublisher auditLogTopicPublisher, IGraphProvider graphProvider)
@@ -58,7 +58,7 @@ namespace Sussex.Lhcra.Plexus.Viewer.UI.Controllers
             _logger = logger;
             _viewerConfiguration = configurationOption.Value;
             _smspProxyDataService = smspProxyDataService;
-            _plexusGatewayDataService = rociGatewayDataService;
+            _plexusGatewayDataService = plexusGatewayDataService;
             _ipAddressProvider = ipAddressProvider;
             _tokenService = tokenService;
             _configuration = configuration;

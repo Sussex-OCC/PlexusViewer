@@ -25,7 +25,7 @@ namespace Sussex.Lhcra.Plexus.Viewer.DataServices
 
         public PlexusGatewayDataService(
             ITokenService tokenService,
-            IOptions<PlexusGatewayAdSetting> rociGatewayOptions,
+            IOptions<PlexusGatewayAdSetting> plexusGatewayOptions,
             IIpAddressProvider ipAddressProvider,
             ILoggingTopicPublisher loggingTopicPublisher,
             HttpClient httpClient)
@@ -34,7 +34,7 @@ namespace Sussex.Lhcra.Plexus.Viewer.DataServices
             _ipAddressProvider = ipAddressProvider;
             _loggingTopicPublisher = loggingTopicPublisher;
             _httpClient = httpClient;
-            _plexusGatewayADSetting = rociGatewayOptions.Value;
+            _plexusGatewayADSetting = plexusGatewayOptions.Value;
         }
 
         public async Task<IEnumerable<PatientCarePlanRecord>> GetCarePlanDataContentAsync(string endPoint, string controllerName, string correlationId, string organisationAsId, PatientCareRecordRequestDomainModel model)

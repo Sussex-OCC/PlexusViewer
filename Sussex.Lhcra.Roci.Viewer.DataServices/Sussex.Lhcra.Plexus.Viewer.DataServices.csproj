@@ -11,7 +11,7 @@
     <PackageReference Include="Sussex.Lhcra.Common.ClientServices" Version="1.3.45" />
     <PackageReference Include="Sussex.Lhcra.Common.Domain" Version="1.3.45" />
     <ProjectReference Include="..\Sussex.Lhcra.Plexus.Viewer.Domain\Sussex.Lhcra.PlexusPlexus.Viewer.Domain.csproj" />
-    <ProjectReference Include="..\Sussex.Lhcra.Roci.Viewer.Domain\Sussex.Lhcra.Plexus.Viewer.Domain.csproj" />
+    <ProjectReference Include="..\Sussex.Lhcra.plexus.Viewer.Domain\Sussex.Lhcra.Plexus.Viewer.Domain.csproj" />
   </ItemGroup>
 
 </Project>

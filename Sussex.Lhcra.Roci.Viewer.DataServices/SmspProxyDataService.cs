@@ -28,14 +28,14 @@ namespace Sussex.Lhcra.Plexus.Viewer.DataServices
             HttpClient httpClient,
             ITokenService tokenService,
             IIpAddressProvider ipAddressProvider,
-            IOptions<PlexusGatewayAdSetting> rociGatewayOptions,
+            IOptions<PlexusGatewayAdSetting> plexusGatewayOptions,
             ILoggingTopicPublisher loggingTopicPublisher)
         {
             _httpClient = httpClient;
             _tokenService = tokenService;
             _ipAddressProvider = ipAddressProvider;
             _loggingTopicPublisher = loggingTopicPublisher;
-            _plexusGatewayADSetting = rociGatewayOptions.Value;
+            _plexusGatewayADSetting = plexusGatewayOptions.Value;
         }
 
         public async Task<SpineDataModel> GetDataContent(string url, string correlationId, string organisationAsId)
