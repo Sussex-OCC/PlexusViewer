@@ -20,19 +20,19 @@ using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices.Logging;
 using Sussex.Lhcra.Common.Domain.Audit.Services;
 using Sussex.Lhcra.Common.Domain.Logging.Services;
-using Sussex.Lhcra.Roci.Viewer.DataServices;
-using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
-using Sussex.Lhcra.Roci.Viewer.Domain;
-using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
-using Sussex.Lhcra.Roci.Viewer.Services;
-using Sussex.Lhcra.Roci.Viewer.Services.Configurations;
-using Sussex.Lhcra.Roci.Viewer.Services.Core;
-using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
-using Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
+using Sussex.Lhcra.Plexus.Viewer.DataServices;
+using Sussex.Lhcra.Plexus.Viewer.DataServices.Models;
+using Sussex.Lhcra.Plexus.Viewer.Domain;
+using Sussex.Lhcra.Plexus.Viewer.Domain.Interfaces;
+using Sussex.Lhcra.Plexus.Viewer.Services;
+using Sussex.Lhcra.Plexus.Viewer.Services.Configurations;
+using Sussex.Lhcra.Plexus.Viewer.Services.Core;
+using Sussex.Lhcra.Plexus.Viewer.UI.Configurations;
+using Sussex.Lhcra.Plexus.Viewer.UI.EmbeddedMode;
+using Sussex.Lhcra.Plexus.Viewer.UI.Helpers;
 using System;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI
+namespace Sussex.Lhcra.Plexus.Viewer.UI
 {
     public class Startup
     {
@@ -77,7 +77,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
             services.AddTransient<CertificateHttpClientHandler>();
 
             services.Configure<ViewerAppSettingsConfiguration>(Configuration.GetSection("ViewerAppSettings"));
-            services.Configure<RociGatewayADSetting>(Configuration.GetSection(nameof(RociGatewayADSetting)));
+            services.Configure<PlexusGatewayADSetting>(Configuration.GetSection(nameof(PlexusGatewayADSetting)));
             services.Configure<EmbeddedTokenConfig>(Configuration.GetSection(nameof(EmbeddedTokenConfig)));
 
             services.AddHttpClient<IAuditDataService, AuditDataService>()
@@ -88,7 +88,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
                     .UseHttpClientMetrics();
 
 
-            services.AddHttpClient<IRociGatewayDataService, RociGatewayDataService>()
+            services.AddHttpClient<IPlexusGatewayDataService, PlexusGatewayDataService>()
                      .AddHttpMessageHandler<CertificateHttpClientHandler>()
                      .UseHttpClientMetrics();
 
@@ -125,7 +125,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI
 
             services.AddSession(options =>
             {
-                options.Cookie.Name = ".Sussex.LHCRA.Roci.Session";
+                options.Cookie.Name = ".Sussex.LHCRA.Plexus.Session";
                 options.IdleTimeout = TimeSpan.FromSeconds(config.SessionTimeout);
                 options.Cookie.IsEssential = true;
             });

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sussex.Lhcra.Roci.Viewer.Domain\Sussex.Lhcra.Roci.Viewer.Domain.csproj" />
+    <ProjectReference Include="..\Sussex.Lhcra.Plexus.Viewer.Domain\Sussex.Lhcra.Plexus.Viewer.Domain.csproj" />
   </ItemGroup>
 
 </Project>

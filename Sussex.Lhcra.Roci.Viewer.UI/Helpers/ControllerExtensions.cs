@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Helpers
 {
     public static class ControllerExtensions
     {

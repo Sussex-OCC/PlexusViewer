@@ -1,9 +1,9 @@
-﻿using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
+﻿using Sussex.Lhcra.Plexus.Viewer.Domain.Interfaces;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Helpers
 {
     public class IpAddressProvider : IIpAddressProvider
     {

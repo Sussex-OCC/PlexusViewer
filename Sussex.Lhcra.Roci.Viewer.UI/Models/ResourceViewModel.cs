@@ -1,9 +1,9 @@
 ﻿using Hl7.Fhir.Model;
-using Sussex.Lhcra.Roci.Viewer.Domain.Models;
+using Sussex.Lhcra.Plexus.Viewer.Domain.Models;
 using System;
 using System.Collections.Generic;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Models
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Models
 {
     public class ResourceViewModel
     {

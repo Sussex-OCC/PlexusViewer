@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Sussex.Lhcra.Roci.Viewer.Domain
+namespace Sussex.Lhcra.Plexus.Viewer.Domain.Models
 {
     public class PlexusUser
     {

@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.Options;
-using Sussex.Lhcra.Roci.Viewer.Services;
-using Sussex.Lhcra.Roci.Viewer.Services.Configurations;
-using Sussex.Lhcra.Roci.Viewer.Services.Core;
+using Sussex.Lhcra.Plexus.Viewer.Services;
+using Sussex.Lhcra.Plexus.Viewer.Services.Configurations;
+using Sussex.Lhcra.Plexus.Viewer.Services.Core;
 using System;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI
+namespace Sussex.Lhcra.Plexus.Viewer.UI
 {
     public class CertificateHttpClientHandler : DelegatingHandler
     {

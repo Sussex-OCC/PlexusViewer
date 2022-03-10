@@ -1,7 +1,7 @@
-﻿using Sussex.Lhcra.Roci.Viewer.Domain.Models;
+﻿using Sussex.Lhcra.Plexus.Viewer.Domain.Models;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.DataServices
+namespace Sussex.Lhcra.Plexus.Viewer.DataServices
 {
     public interface ISmspProxyDataService
     {

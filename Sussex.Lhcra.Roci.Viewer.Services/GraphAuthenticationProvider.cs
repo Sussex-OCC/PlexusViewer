@@ -4,7 +4,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.Services
+namespace Sussex.Lhcra.Plexus.Viewer.Services
 {
     public class GraphAuthenticationProvider : IAuthenticationProvider
     {

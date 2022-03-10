@@ -4,28 +4,28 @@ using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.Domain.Constants;
 using Sussex.Lhcra.Common.Domain.Logging.Models;
-using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
-using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
-using Sussex.Lhcra.Roci.Viewer.Domain.Models;
+using Sussex.Lhcra.Plexus.Viewer.DataServices.Models;
+using Sussex.Lhcra.Plexus.Viewer.Domain.Interfaces;
+using Sussex.Lhcra.Plexus.Viewer.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.DataServices
+namespace Sussex.Lhcra.Plexus.Viewer.DataServices
 {
-    public class RociGatewayDataService : IRociGatewayDataService
+    public class PlexusGatewayDataService : IPlexusGatewayDataService
     {
         private readonly ITokenService _tokenService;
         private readonly IIpAddressProvider _ipAddressProvider;
         private readonly ILoggingTopicPublisher _loggingTopicPublisher;
         private readonly HttpClient _httpClient;
-        private readonly RociGatewayADSetting _rociGatewayADSetting;
+        private readonly PlexusGatewayAdSetting _plexusGatewayADSetting;
 
-        public RociGatewayDataService(
+        public PlexusGatewayDataService(
             ITokenService tokenService,
-            IOptions<RociGatewayADSetting> rociGatewayOptions,
+            IOptions<PlexusGatewayAdSetting> rociGatewayOptions,
             IIpAddressProvider ipAddressProvider,
             ILoggingTopicPublisher loggingTopicPublisher,
             HttpClient httpClient)
@@ -34,7 +34,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
             _ipAddressProvider = ipAddressProvider;
             _loggingTopicPublisher = loggingTopicPublisher;
             _httpClient = httpClient;
-            _rociGatewayADSetting = rociGatewayOptions.Value;
+            _plexusGatewayADSetting = rociGatewayOptions.Value;
         }
 
         public async Task<IEnumerable<PatientCarePlanRecord>> GetCarePlanDataContentAsync(string endPoint, string controllerName, string correlationId, string organisationAsId, PatientCareRecordRequestDomainModel model)
@@ -43,7 +43,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
             try
             {
-                string appToken = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_rociGatewayADSetting);
+                string appToken = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_plexusGatewayADSetting);
 
                 var strBody = JsonConvert.SerializeObject(model);
                 var fullEndPoint = endPoint + controllerName + "/" + model.NhsNumber;
@@ -108,7 +108,7 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
 
             try
             {
-                string appToken = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_rociGatewayADSetting);
+                string appToken = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_plexusGatewayADSetting);
 
                 var strBody = JsonConvert.SerializeObject(model);
                 var fullEndPoint = endPoint + controllerName;

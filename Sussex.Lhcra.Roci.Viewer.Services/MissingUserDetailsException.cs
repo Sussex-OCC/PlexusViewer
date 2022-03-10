@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sussex.Lhcra.Roci.Viewer.Services
+namespace Sussex.Lhcra.Plexus.Viewer.Services
 {
     public class MissingUserDetailsException : Exception
     {

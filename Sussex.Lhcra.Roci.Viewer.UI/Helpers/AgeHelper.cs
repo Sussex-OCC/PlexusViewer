@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Extensions
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Extensions
 {
     public static class AgeHelper
     {

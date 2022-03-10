@@ -1,4 +1,4 @@
-﻿namespace Sussex.Lhcra.Roci.Viewer.Domain.Models
+﻿namespace Sussex.Lhcra.Plexus.Viewer.Domain.Models
 {
     public class SpineDataModel
     {

@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.Services.Core
+namespace Sussex.Lhcra.Plexus.Viewer.Services.Core
 {
     public interface ICertificateProvider
     {

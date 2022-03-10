@@ -1,11 +1,11 @@
 ﻿using Microsoft.Graph;
 using Microsoft.Identity.Client;
-using Sussex.Lhcra.Roci.Viewer.Domain;
+using Sussex.Lhcra.Plexus.Viewer.Domain;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.Services
+namespace Sussex.Lhcra.Plexus.Viewer.Services
 {
     public class GraphProvider : IGraphProvider
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Models
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Models
 {
     public class UrlParemetersModel
     {

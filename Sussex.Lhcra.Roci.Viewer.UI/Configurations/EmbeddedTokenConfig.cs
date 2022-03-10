@@ -1,4 +1,4 @@
-﻿namespace Sussex.Lhcra.Roci.Viewer.UI.Configurations
+﻿namespace Sussex.Lhcra.Plexus.Viewer.UI.Configurations
 {
     public class EmbeddedTokenConfig
     {

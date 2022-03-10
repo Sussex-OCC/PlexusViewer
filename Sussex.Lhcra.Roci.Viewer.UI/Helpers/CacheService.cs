@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
 using StackExchange.Redis;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
+using Sussex.Lhcra.Plexus.Viewer.UI.Helpers.Core;
 using System;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Helpers
 {
     public class CacheService : ICacheService
     {

@@ -10,19 +10,19 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["Sussex.Lhcra.Roci.Viewer.UI/Sussex.Lhcra.Roci.Viewer.UI.csproj", "Sussex.Lhcra.Roci.Viewer.UI/"]
-COPY ["Sussex.Lhcra.Roci.Viewer.DataServices/Sussex.Lhcra.Roci.Viewer.DataServices.csproj", "Sussex.Lhcra.Roci.Viewer.DataServices/"]
-COPY ["Sussex.Lhcra.Roci.Viewer.Domain/Sussex.Lhcra.Roci.Viewer.Domain.csproj", "Sussex.Lhcra.Roci.Viewer.Domain/"]
+COPY ["Sussex.Lhcra.Plexus.Viewer.UI/Sussex.Lhcra.Plexus.Viewer.UI.csproj", "Sussex.Lhcra.Plexus.Viewer.UI/"]
+COPY ["Sussex.Lhcra.Plexus.Viewer.DataServices/Sussex.Lhcra.Plexus.Viewer.DataServices.csproj", "Sussex.Lhcra.Plexus.Viewer.DataServices/"]
+COPY ["Sussex.Lhcra.Plexus.Viewer.Domain/Sussex.Lhcra.Plexus.Viewer.Domain.csproj", "Sussex.Lhcra.Plexus.Viewer.Domain/"]
 COPY Nuget.Config ./
-RUN dotnet restore "Sussex.Lhcra.Roci.Viewer.UI/Sussex.Lhcra.Roci.Viewer.UI.csproj" --configfile  Nuget.Config
+RUN dotnet restore "Sussex.Lhcra.Plexus.Viewer.UI/Sussex.Lhcra.Plexus.Viewer.UI.csproj" --configfile  Nuget.Config
 COPY . .
-WORKDIR "/src/Sussex.Lhcra.Roci.Viewer.UI"
-RUN dotnet build "Sussex.Lhcra.Roci.Viewer.UI.csproj" -c Release -o /app/build
+WORKDIR "/src/Sussex.Lhcra.Plexus.Viewer.UI"
+RUN dotnet build "Sussex.Lhcra.Plexus.Viewer.UI.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Sussex.Lhcra.Roci.Viewer.UI.csproj" -c Release -o /app/publish
+RUN dotnet publish "Sussex.Lhcra.Plexus.Viewer.UI.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Sussex.Lhcra.Roci.Viewer.UI.dll"]
+ENTRYPOINT ["dotnet", "Sussex.Lhcra.Plexus.Viewer.UI.dll"]

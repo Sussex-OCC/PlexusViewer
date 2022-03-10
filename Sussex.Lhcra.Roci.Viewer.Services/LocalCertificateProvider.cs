@@ -1,9 +1,9 @@
-﻿using Sussex.Lhcra.Roci.Viewer.Services.Core;
+﻿using Sussex.Lhcra.Plexus.Viewer.Services.Core;
 using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.Services
+namespace Sussex.Lhcra.Plexus.Viewer.Services
 {
     public class LocalCertificateProvider : ICertificateProvider
     {

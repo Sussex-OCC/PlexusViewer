@@ -1,4 +1,4 @@
-﻿namespace Sussex.Lhcra.Roci.Viewer.Services.Configurations
+﻿namespace Sussex.Lhcra.Plexus.Viewer.Services.Configurations
 {
     public class ClientCertificateConfig
     {

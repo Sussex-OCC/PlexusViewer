@@ -2,10 +2,10 @@
 using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.Domain.Constants;
-using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
+using Sussex.Lhcra.Plexus.Viewer.UI.Configurations;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.EmbeddedMode
+namespace Sussex.Lhcra.Plexus.Viewer.UI.EmbeddedMode
 {
     public class EmbeddedTokenService : ITokenService
     {

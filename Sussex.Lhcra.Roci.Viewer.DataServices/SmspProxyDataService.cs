@@ -4,15 +4,15 @@ using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.Domain.Constants;
 using Sussex.Lhcra.Common.Domain.Logging.Models;
-using Sussex.Lhcra.Roci.Viewer.DataServices.Models;
-using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
-using Sussex.Lhcra.Roci.Viewer.Domain.Models;
+using Sussex.Lhcra.Plexus.Viewer.DataServices.Models;
+using Sussex.Lhcra.Plexus.Viewer.Domain.Interfaces;
+using Sussex.Lhcra.Plexus.Viewer.Domain.Models;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.DataServices
+namespace Sussex.Lhcra.Plexus.Viewer.DataServices
 {
     public class SmspProxyDataService : ISmspProxyDataService
     {
@@ -22,25 +22,25 @@ namespace Sussex.Lhcra.Roci.Viewer.DataServices
         private readonly ITokenService _tokenService;
         private readonly IIpAddressProvider _ipAddressProvider;
         private readonly ILoggingTopicPublisher _loggingTopicPublisher;
-        private readonly RociGatewayADSetting _rociGatewayADSetting;
+        private readonly PlexusGatewayAdSetting _plexusGatewayADSetting;
 
         public SmspProxyDataService(
             HttpClient httpClient,
             ITokenService tokenService,
             IIpAddressProvider ipAddressProvider,
-            IOptions<RociGatewayADSetting> rociGatewayOptions,
+            IOptions<PlexusGatewayAdSetting> rociGatewayOptions,
             ILoggingTopicPublisher loggingTopicPublisher)
         {
             _httpClient = httpClient;
             _tokenService = tokenService;
             _ipAddressProvider = ipAddressProvider;
             _loggingTopicPublisher = loggingTopicPublisher;
-            _rociGatewayADSetting = rociGatewayOptions.Value;
+            _plexusGatewayADSetting = rociGatewayOptions.Value;
         }
 
         public async Task<SpineDataModel> GetDataContent(string url, string correlationId, string organisationAsId)
         {
-            string token = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_rociGatewayADSetting);
+            string token = await _tokenService.GetTokenOnBehalfOfUserOrSystem(_plexusGatewayADSetting);
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 

@@ -1,4 +1,4 @@
-﻿namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core
+﻿namespace Sussex.Lhcra.Plexus.Viewer.UI.Helpers.Core
 {
     public interface ICacheService
     {

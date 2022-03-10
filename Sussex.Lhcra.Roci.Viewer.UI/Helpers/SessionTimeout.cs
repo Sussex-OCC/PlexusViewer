@@ -2,14 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
-using Sussex.Lhcra.Roci.Viewer.Services.Core;
-using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
-using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
+using Sussex.Lhcra.Plexus.Viewer.Services.Core;
+using Sussex.Lhcra.Plexus.Viewer.UI.Configurations;
+using Sussex.Lhcra.Plexus.Viewer.UI.Extensions;
+using Sussex.Lhcra.Plexus.Viewer.UI.Helpers.Core;
 using System;
 using System.Security.Claims;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Helpers
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Helpers
 {
     public class SessionTimeout : ActionFilterAttribute
     {

@@ -1,8 +1,8 @@
-﻿namespace Sussex.Lhcra.Roci.Viewer.UI.Configurations
+﻿namespace Sussex.Lhcra.Plexus.Viewer.UI.Configurations
 {
     public class ProxyEndPointsConfiguration
     {
-        public string RociGatewayApiEndPoint { get; set; }
+        public string PlexusGatewayApiEndPoint { get; set; }
 
         public string SpineMiniServicesEndpoint { get; set; }
     }

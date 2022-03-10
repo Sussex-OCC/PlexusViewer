@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Sussex.Lhcra.Roci.Viewer.Services.Core;
-using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
-using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers.Core;
+using Sussex.Lhcra.Plexus.Viewer.Services.Core;
+using Sussex.Lhcra.Plexus.Viewer.UI.Configurations;
+using Sussex.Lhcra.Plexus.Viewer.UI.Extensions;
+using Sussex.Lhcra.Plexus.Viewer.UI.Helpers.Core;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Controllers
 {
     [AllowAnonymous]
     public class AccountController : Controller

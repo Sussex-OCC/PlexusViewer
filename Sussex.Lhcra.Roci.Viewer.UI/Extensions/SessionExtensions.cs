@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Extensions
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Extensions
 {
     public static class SessionExtensions
     {

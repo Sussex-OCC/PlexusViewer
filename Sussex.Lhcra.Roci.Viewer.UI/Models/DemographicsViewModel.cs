@@ -1,6 +1,6 @@
 ﻿using Sussex.Lhcra.Smsp.Domain.Models;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Models
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Models
 {
     public class DemographicsViewModel
     {

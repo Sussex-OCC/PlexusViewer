@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI
+namespace Sussex.Lhcra.Plexus.Viewer.UI
 {
     public static class Constants
     {

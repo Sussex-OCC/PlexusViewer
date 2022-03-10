@@ -1,8 +1,8 @@
 ﻿using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 
-namespace Sussex.Lhcra.Roci.Viewer.DataServices.Models
+namespace Sussex.Lhcra.Plexus.Viewer.DataServices.Models
 {
-    public class RociGatewayADSetting : IAzureADSettings
+    public class PlexusGatewayAdSetting : IAzureADSettings
     {
         public string[] UserScope { get; set; }
 

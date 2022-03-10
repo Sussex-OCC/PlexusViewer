@@ -12,16 +12,16 @@ using Sussex.Lhcra.Common.AzureADServices.Interfaces;
 using Sussex.Lhcra.Common.ClientServices.Interfaces;
 using Sussex.Lhcra.Common.Domain.Audit.Models;
 using Sussex.Lhcra.Common.Domain.Constants;
-using Sussex.Lhcra.Roci.Viewer.DataServices;
-using Sussex.Lhcra.Roci.Viewer.Domain;
-using Sussex.Lhcra.Roci.Viewer.Domain.Interfaces;
-using Sussex.Lhcra.Roci.Viewer.Domain.Models;
-using Sussex.Lhcra.Roci.Viewer.Services;
-using Sussex.Lhcra.Roci.Viewer.Services.Core;
-using Sussex.Lhcra.Roci.Viewer.UI.Configurations;
-using Sussex.Lhcra.Roci.Viewer.UI.Extensions;
-using Sussex.Lhcra.Roci.Viewer.UI.Helpers;
-using Sussex.Lhcra.Roci.Viewer.UI.Models;
+using Sussex.Lhcra.Plexus.Viewer.DataServices;
+using Sussex.Lhcra.Plexus.Viewer.Domain;
+using Sussex.Lhcra.Plexus.Viewer.Domain.Interfaces;
+using Sussex.Lhcra.Plexus.Viewer.Domain.Models;
+using Sussex.Lhcra.Plexus.Viewer.Services;
+using Sussex.Lhcra.Plexus.Viewer.Services.Core;
+using Sussex.Lhcra.Plexus.Viewer.UI.Configurations;
+using Sussex.Lhcra.Plexus.Viewer.UI.Extensions;
+using Sussex.Lhcra.Plexus.Viewer.UI.Helpers;
+using Sussex.Lhcra.Plexus.Viewer.UI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +29,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
+namespace Sussex.Lhcra.Plexus.Viewer.UI.Controllers
 {
     [ServiceFilter(typeof(SessionTimeout))]
     [Authorize()]
@@ -40,7 +40,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
         private readonly ICertificateProvider _appSecretsProvider;
         private readonly ViewerAppSettingsConfiguration _viewerConfiguration;
         private readonly ISmspProxyDataService _smspProxyDataService;
-        private readonly IRociGatewayDataService _rociGatewayDataService;
+        private readonly IPlexusGatewayDataService _plexusGatewayDataService;
         private readonly IIpAddressProvider _ipAddressProvider;
         private readonly ITokenService _tokenService;
         private readonly IAuditLogTopicPublisher _auditLogTopicPublisher;
@@ -50,7 +50,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             ILogger<HomeController> logger,
             IOptions<ViewerAppSettingsConfiguration> configurationOption,
             ISmspProxyDataService smspProxyDataService,
-            IRociGatewayDataService rociGatewayDataService,
+            IPlexusGatewayDataService rociGatewayDataService,
             IIpAddressProvider ipAddressProvider,
             ITokenService tokenService,
             IConfiguration configuration, ICertificateProvider appSecretsProvider, IAuditLogTopicPublisher auditLogTopicPublisher, IGraphProvider graphProvider)
@@ -58,7 +58,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             _logger = logger;
             _viewerConfiguration = configurationOption.Value;
             _smspProxyDataService = smspProxyDataService;
-            _rociGatewayDataService = rociGatewayDataService;
+            _plexusGatewayDataService = rociGatewayDataService;
             _ipAddressProvider = ipAddressProvider;
             _tokenService = tokenService;
             _configuration = configuration;
@@ -142,7 +142,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
             await LogAuditRecordModel(Request, spineModel, guid, patientView);
 
-            var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
+            var pBundle = await _plexusGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.PlexusGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
 
             if (null == pBundle || pBundle.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
@@ -183,7 +183,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
             IEnumerable<PatientCarePlanRecord> patientCarePlanRecords = null;
 
             if(patientView == Constants.CommunityCarePlans ||  _viewerConfiguration.FetchMentalHealthData)
-                patientCarePlanRecords = await _rociGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
+                patientCarePlanRecords = await _plexusGatewayDataService.GetCarePlanDataContentAsync(_viewerConfiguration.ProxyEndpoints.PlexusGatewayApiEndPoint, patientView, correlationId, spineModel.OrganisationAsId, spineModel);
 
             var vm = new ResourceViewModel
             {
@@ -264,7 +264,7 @@ namespace Sussex.Lhcra.Roci.Viewer.UI.Controllers
 
                 await LogAuditRecordModel(Request, spineModel, guid, Constants.Summary);
 
-                var pBundle = await _rociGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.RociGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
+                var pBundle = await _plexusGatewayDataService.GetDataContentAsync(_viewerConfiguration.ProxyEndpoints.PlexusGatewayApiEndPoint, Constants.Summary, correlationId, spineModel.OrganisationAsId, spineModel);
                 if (null == pBundle)
                 {
                     _logger.LogError(message: $"Patient care record null error: ", args: spineModel);
